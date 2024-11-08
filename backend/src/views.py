@@ -1,11 +1,18 @@
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 
-# Create your views here.
-# This is request handler
+@login_required
+def home(request):
+	# user = request.user
+	# user_info = {
+ #        'name': user.first_name or user.username,
+ #        'email': user.email,
+	# }
+	return render(request, "home.html")
 
-def mainPage(request):
-    return HttpResponse("Renting made easy with EasyRent!")
 def userRegister():
 	return
 
