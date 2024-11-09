@@ -10,7 +10,7 @@ export default function Header() {
       boxShadow="md"
       color={'brandblack'}
       fontSize="sm"
-      zIndex="1"
+      zIndex={1}
     >
       <Flex align="center" maxW="1200px" mx="auto" px={6} py={4}>
         {/* Logo */}
@@ -32,7 +32,21 @@ export default function Header() {
 
           <AnimatedSignUp />
 
-          <Button bg={'brandyellow'}>Talk to us</Button>
+          <Button
+            bg={'brandblue'}
+            color={'brandwhite'}
+            fontWeight={'normal'}
+            fontSize="sm"
+            size="sm"
+            _hover={{
+              bg: 'brandblue',
+              boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
+              transform: 'translateY(-2px)',
+              transition: 'transform 0.2s ease, box-shadow 0.3s ease',
+            }}
+          >
+            Talk to us
+          </Button>
         </Flex>
       </Flex>
     </Box>

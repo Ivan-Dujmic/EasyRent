@@ -1,7 +1,7 @@
 'use client';
 
 import Header from '@/components/shared/Header/Header';
-import { Center, Flex, Heading } from '@chakra-ui/react';
+import { Flex, Heading, Text } from '@chakra-ui/react';
 
 export default function HomePage() {
   return (
@@ -17,7 +17,13 @@ export default function HomePage() {
         justify={'flex-start'}
         pt={20}
       >
-        <Heading>Your Key to Effortless Car Rentals</Heading>
+        <Heading>
+          Your{' '}
+          <Text as="span" color={'brandyellow'}>
+            Key
+          </Text>{' '}
+          to Effortless Car Rentals
+        </Heading>
       </Flex>
     </Flex>
   );
