@@ -1,5 +1,14 @@
-import styles from './page.module.css';
+'use client';
 
-export default function Home() {
-  return <div className={styles.page}></div>;
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+export default function HomeRedirect() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push('/home');
+  });
+
+  return null;
 }
