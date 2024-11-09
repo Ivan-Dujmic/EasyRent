@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Providers>
-          <Flex bg={'white'} color="black">
+          <Flex bg={'brandwhite'} color="brandblack">
             {children}
           </Flex>
         </Providers>

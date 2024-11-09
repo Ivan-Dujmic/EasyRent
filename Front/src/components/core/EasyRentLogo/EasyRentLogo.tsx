@@ -3,7 +3,7 @@ import { IoCarSport } from 'react-icons/io5';
 
 export default function EasyRentLogo() {
   return (
-    <Heading size="lg" color={'blue'}>
+    <Heading size="lg" color={'brandblue'}>
       <Flex align={'flex-end'} gap={2}>
         EasyRent
         <IoCarSport />

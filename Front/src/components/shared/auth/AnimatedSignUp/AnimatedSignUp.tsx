@@ -7,7 +7,7 @@ import NextLink from 'next/link';
 
 export const AnimatedSignUp = () => {
   return (
-    <Text color="blue" fontWeight="semibold">
+    <Text color="brandblue" fontWeight="semibold">
       <motion.span
         initial={{ opacity: 1, x: 0 }} // Početni položaj
         whileHover={{ opacity: 1, x: 4 }} // Pomakni tekst udesno pri hoveru
@@ -21,7 +21,7 @@ export const AnimatedSignUp = () => {
         <Text
           as={NextLink}
           href="/register"
-          color={'blue'}
+          color={'brandblue'}
           fontWeight={'semibold'}
         >
           Sign up
