@@ -133,13 +133,15 @@ import {
   Text,
   MenuGroup,
   IconButton,
+  useOutsideClick,
 } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons';
-import { SetStateAction, useState } from 'react';
+import { SetStateAction, useState, useRef } from 'react';
 import { FaCarAlt } from 'react-icons/fa';
 import { FaCity } from 'react-icons/fa';
 import { MdLocalAirport } from 'react-icons/md';
 import { FaTrain } from 'react-icons/fa';
+import LocationFormatter from './LocationFormatter/LocationFormatter';
 
 const options: { [key: string]: string[] } = {
   'Cities (including airports)': [
@@ -147,9 +149,20 @@ const options: { [key: string]: string[] } = {
     'Sesvete, Croatia',
     'Velika Gorica, Croatia',
     'Samobor, Croatia',
+    'Split, Croatia',
+    'Rijeka, Croatia',
   ],
-  Airports: ['Franjo Tuđman ZAG, Zagreb, Croatia'],
-  'Train stations': [], // Add train stations if available
+  Airports: [
+    'Franjo Tuđman, ZAG, Zagreb, Croatia',
+    'Split Airport, SPU, Split, Croatia',
+    'Dubrovnik Airport, DBV, Dubrovnik, Croatia',
+  ],
+  'Train stations': [
+    'Zagreb Central Station, Zagreb, Croatia',
+    'Split Train Station, Split, Croatia',
+    'Osijek Train Station, Osijek, Croatia',
+    'Rijeka Train Station, Rijeka, Croatia',
+  ],
 };
 
 type Category = 'Cities (including airports)' | 'Airports' | 'Train stations';
@@ -165,20 +178,32 @@ export default function FromDDM() {
   const [search, setSearch] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
 
+  const ref = useRef(null);
+
+  useOutsideClick({
+    ref,
+    handler: () => setIsOpen(false),
+  });
+
   const locations = ['Location 1', 'Location 2', 'Location 3']; // Ovo su primjeri
   const filteredLocations = locations.filter((location) =>
     location.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleSelectLocation = (location: SetStateAction<string>) => {
+  const handleSelectLocation = (location: string) => {
+    const parts = location.split(',').map((part) => part.trim());
     setSelectedLocation(location);
     setSearch(location); // Prikaz odabrane lokacije u Input
     setIsOpen(false); // Zatvori menu
   };
 
-  const handleInputClick = (e: { stopPropagation: () => void }) => {
-    e.stopPropagation(); // Sprječava zatvaranje prilikom klika na Input
-    setIsOpen(true); // Otvori menu
+  const handleInputClick = () => {
+    if (!isOpen) setIsOpen(true); // Only set to open if not already open
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+    if (!isOpen) setIsOpen(true); // Ensure the menu stays open while typing
   };
 
   const toggleMenu = () => {
@@ -205,7 +230,7 @@ export default function FromDDM() {
   };
 
   return (
-    <Stack gap={0} position={'relative'}>
+    <Stack gap={0} position={'relative'} ref={ref}>
       <Menu isOpen={isOpen}>
         <Text fontSize={'0.8rem'} color={'brandblue'}>
           Pick-up location
@@ -228,11 +253,11 @@ export default function FromDDM() {
             <FaCarAlt />
           </InputLeftElement>
           <Input
-            onClick={toggleMenu}
+            onClick={handleInputClick}
             cursor="pointer"
             placeholder="Search locations..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={handleInputChange}
             color={'brandblack'}
             border={'none'}
             _focus={{ borderColor: 'none', boxShadow: 'none' }}
@@ -247,27 +272,34 @@ export default function FromDDM() {
           zIndex="1000"
           color={'brandblack'}
         >
-          {Object.keys(filteredOptions).map((category) => (
-            <MenuGroup title={category} key={category}>
-              {filteredOptions[category].map((item) => (
-                <MenuItem
-                  key={item}
-                  onClick={() => {
-                    setSelectedLocation(item);
-                    setSearch(''); // Clear search on selection
-                    setIsOpen(false); // Close menu on selection
-                  }}
-                  fontSize={'sm'}
-                  gap={2}
-                >
-                  <Box p={2} borderRadius={'3px'} bg={'brandmiddlegray'}>
-                    {renderCategoryIcon(category as Category)}
-                  </Box>
-                  {item}
-                </MenuItem>
-              ))}
-            </MenuGroup>
-          ))}
+          {Object.keys(filteredOptions).length > 0 ? (
+            Object.keys(filteredOptions).map((category) => (
+              <MenuGroup title={category} key={category}>
+                {filteredOptions[category as Category].map((item) => (
+                  <MenuItem
+                    key={item}
+                    onClick={() => {
+                      handleSelectLocation(item);
+                    }}
+                    fontSize="sm"
+                    gap={2}
+                  >
+                    <Box p={2} borderRadius="3px" bg="brandmiddlegray">
+                      {renderCategoryIcon(category as Category)}
+                    </Box>
+                    <LocationFormatter
+                      input={item}
+                      type={category as Category}
+                    />
+                  </MenuItem>
+                ))}
+              </MenuGroup>
+            ))
+          ) : (
+            <MenuItem fontSize="sm" color="brandgray">
+              No matching locations found
+            </MenuItem>
+          )}
         </MenuList>
       </Menu>
     </Stack>
