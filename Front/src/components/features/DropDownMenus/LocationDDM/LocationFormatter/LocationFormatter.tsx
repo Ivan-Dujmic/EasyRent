@@ -2,19 +2,18 @@ import React from 'react';
 import { Box, Flex, Text } from '@chakra-ui/react';
 
 interface LocationProps {
-  input: string; // Ulazni string koji predstavlja lokaciju
-  type: string; // Tip lokacije
+  input: string;
+  type: string;
 }
 
 // Komponenta koja formatira lokaciju prema vrsti
 const LocationFormatter: React.FC<LocationProps> = ({ input, type }) => {
-  // Razdvajanje stringa na dijelove
   const parts = input.split(',').map((part) => part.trim());
 
   if (type === 'Cities (including airports)') {
     return (
       <Box>
-        <Text>{input}</Text> {/* Grad prikazan normalno */}
+        <Text>{input}</Text>
       </Box>
     );
   }
