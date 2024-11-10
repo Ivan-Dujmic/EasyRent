@@ -165,7 +165,7 @@ export default function FromDDM() {
         borderWidth={'2px'}
         borderRadius="md"
         borderColor={'brandblue'}
-        maxWidth="250px"
+        width={'fit-content'}
         bg={'brandlightgray'}
         _focusWithin={{
           bg: 'brandwhite',
@@ -184,6 +184,7 @@ export default function FromDDM() {
           onChange={(e) => setSearch(e.target.value)}
           color={'brandblack'}
           border={'none'}
+          _focus={{ borderColor: 'none', boxShadow: 'none' }}
         />
       </InputGroup>
     </Menu>
