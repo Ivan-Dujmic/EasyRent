@@ -9,8 +9,10 @@ export default function MainFilter() {
       width={'60vw'}
       height={'200px'}
       borderRadius={14}
-      borderColor={'brandyellow'}
+      borderColor={'none'}
       borderWidth="4px"
+      align={'center'}
+      p={5}
     >
       <FromDDM />
     </Flex>

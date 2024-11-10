@@ -128,10 +128,25 @@ import {
   Center,
   Flex,
   InputLeftAddon,
+  Heading,
+  Stack,
+  Text,
+  MenuGroup,
 } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import { SetStateAction, useState } from 'react';
 import { FaCarAlt } from 'react-icons/fa';
+
+const options: { [key: string]: string[] } = {
+  'Cities (including airports)': [
+    'Zagreb, Croatia',
+    'Sesvete, Croatia',
+    'Velika Gorica, Croatia',
+    'Samobor, Croatia',
+  ],
+  Airports: ['Franjo Tuđman ZAG, Zagreb, Croatia'],
+  'Train stations': [], // Add train stations if available
+};
 
 export default function FromDDM() {
   const [isOpen, setIsOpen] = useState(false);
@@ -158,35 +173,81 @@ export default function FromDDM() {
     setIsOpen(!isOpen);
   };
 
+  const filteredOptions: { [key: string]: string[] } = Object.keys(
+    options
+  ).reduce(
+    (acc, category) => {
+      const filteredItems = options[category].filter((item) =>
+        item.toLowerCase().includes(search.toLowerCase())
+      );
+      if (filteredItems.length) {
+        acc[category] = filteredItems;
+      }
+      return acc;
+    },
+    {} as { [key: string]: string[] }
+  );
+
   return (
-    <Menu isOpen={isOpen}>
-      <InputGroup
-        height={'fit-content'}
-        borderWidth={'2px'}
-        borderRadius="md"
-        borderColor={'brandblue'}
-        width={'fit-content'}
-        bg={'brandlightgray'}
-        _focusWithin={{
-          bg: 'brandwhite',
-          borderColor: 'brandblack',
-          color: 'brandblack',
-        }}
-      >
-        <InputLeftElement pointerEvents="none">
-          <FaCarAlt />
-        </InputLeftElement>
-        <Input
-          onClick={toggleMenu}
-          cursor="pointer"
-          placeholder="Search locations..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          color={'brandblack'}
-          border={'none'}
-          _focus={{ borderColor: 'none', boxShadow: 'none' }}
-        />
-      </InputGroup>
-    </Menu>
+    <Stack gap={0} position={'relative'}>
+      <Menu isOpen={isOpen}>
+        <Text fontSize={'0.8rem'} color={'brandblue'}>
+          Pick-up location
+        </Text>
+        <InputGroup
+          height={'fit-content'}
+          borderWidth={'2px'}
+          borderRadius="md"
+          borderColor={'brandblue'}
+          width={'fit-content'}
+          bg={'brandlightgray'}
+          _focusWithin={{
+            bg: 'brandwhite',
+            borderColor: 'brandblack',
+            color: 'brandblack',
+          }}
+          maxWidth={'14rem'}
+        >
+          <InputLeftElement pointerEvents="none" color="brandblack">
+            <FaCarAlt />
+          </InputLeftElement>
+          <Input
+            onClick={toggleMenu}
+            cursor="pointer"
+            placeholder="Search locations..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            color={'brandblack'}
+            border={'none'}
+            _focus={{ borderColor: 'none', boxShadow: 'none' }}
+          />
+        </InputGroup>
+        <MenuList
+          position="absolute"
+          top="calc(100% + 70px)"
+          left="0"
+          maxH="300px"
+          overflowY="auto"
+          zIndex="1000"
+        >
+          {Object.keys(filteredOptions).map((category) => (
+            <MenuGroup title={category} key={category}>
+              {filteredOptions[category].map((item) => (
+                <MenuItem
+                  key={item}
+                  onClick={() => {
+                    setSelectedLocation(item);
+                    setSearch(''); // Clear search on selection
+                    setIsOpen(false); // Close menu on selection
+                  }}
+                >
+                  {item}
+                </MenuItem>
+              ))}
+            </MenuGroup>
+          ))}
+        </MenuList>
+      </Menu>
+    </Stack>
   );
 }
