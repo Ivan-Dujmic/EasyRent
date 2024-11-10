@@ -1,6 +1,6 @@
 "use client"
 
-import { Box, Text, Flex, useColorModeValue } from '@chakra-ui/react';
+import { Box, Text, Flex, useColorModeValue, Heading } from '@chakra-ui/react';
 import { usePathname } from 'next/navigation';
 
 export default function ChooseRegisterType() {
@@ -50,15 +50,16 @@ export default function ChooseRegisterType() {
     const common = {
         p:"10px",
         m:"10px",
-        borderRadius:"10px"
+        borderRadius:"md"
     }
   return (
     <Flex direction="row" alignItems="center" justifyContent="center"
     p="20px">
-        <Text
-        sx={common}
+        <Heading
+        mr={50}
         >
-        Register</Text>
+        Register</Heading>
+
         <Box
         bg={bgColor.first}
         color={colors.first.txt}
@@ -68,7 +69,7 @@ export default function ChooseRegisterType() {
         >User</Box>
 
         {/*vertical line */}
-        <Box height="10" borderLeft="1px" borderColor="gray" />
+        <Box height="10" borderLeft="1px" borderColor="blue" />
 
         <Box
         bg={bgColor.second}
