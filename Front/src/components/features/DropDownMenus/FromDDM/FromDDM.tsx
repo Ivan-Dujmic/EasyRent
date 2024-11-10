@@ -132,10 +132,14 @@ import {
   Stack,
   Text,
   MenuGroup,
+  IconButton,
 } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import { SetStateAction, useState } from 'react';
 import { FaCarAlt } from 'react-icons/fa';
+import { FaCity } from 'react-icons/fa';
+import { MdLocalAirport } from 'react-icons/md';
+import { FaTrain } from 'react-icons/fa';
 
 const options: { [key: string]: string[] } = {
   'Cities (including airports)': [
@@ -146,6 +150,14 @@ const options: { [key: string]: string[] } = {
   ],
   Airports: ['Franjo Tuđman ZAG, Zagreb, Croatia'],
   'Train stations': [], // Add train stations if available
+};
+
+type Category = 'Cities (including airports)' | 'Airports' | 'Train stations';
+
+const categoryIcons: { [key in Category]: JSX.Element } = {
+  'Cities (including airports)': <FaCity />,
+  Airports: <MdLocalAirport />,
+  'Train stations': <FaTrain />,
 };
 
 export default function FromDDM() {
@@ -188,6 +200,10 @@ export default function FromDDM() {
     {} as { [key: string]: string[] }
   );
 
+  const renderCategoryIcon = (category: Category): JSX.Element => {
+    return categoryIcons[category] || <span />; // Return a fallback (empty span) if no icon is found
+  };
+
   return (
     <Stack gap={0} position={'relative'}>
       <Menu isOpen={isOpen}>
@@ -229,6 +245,7 @@ export default function FromDDM() {
           maxH="300px"
           overflowY="auto"
           zIndex="1000"
+          color={'brandblack'}
         >
           {Object.keys(filteredOptions).map((category) => (
             <MenuGroup title={category} key={category}>
@@ -240,7 +257,12 @@ export default function FromDDM() {
                     setSearch(''); // Clear search on selection
                     setIsOpen(false); // Close menu on selection
                   }}
+                  fontSize={'sm'}
+                  gap={2}
                 >
+                  <Box p={2} borderRadius={'3px'} bg={'brandmiddlegray'}>
+                    {renderCategoryIcon(category as Category)}
+                  </Box>
                   {item}
                 </MenuItem>
               ))}
