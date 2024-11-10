@@ -1,7 +1,9 @@
 'use client';
 
+import EasyRentMoto from '@/components/core/EasyRentMoto/EasyRentMoto';
+import MainFilter from '@/components/shared/filter/MainFilter/MainFilter';
 import Header from '@/components/shared/Header/Header';
-import { Flex, Heading, Text } from '@chakra-ui/react';
+import { Center, Flex, Heading, Text } from '@chakra-ui/react';
 
 export default function HomePage() {
   return (
@@ -10,20 +12,16 @@ export default function HomePage() {
       <Header />
       <Flex
         bg="brandgray"
-        h="250px"
+        minHeight="300px"
         color="brandblue"
         direction={'column'}
         align={'center'}
         justify={'flex-start'}
-        pt={20}
+        py={14}
+        gap={14}
       >
-        <Heading>
-          Your{' '}
-          <Text as="span" color={'brandyellow'}>
-            Key
-          </Text>{' '}
-          to Effortless Car Rentals
-        </Heading>
+        <EasyRentMoto />
+        <MainFilter />
       </Flex>
     </Flex>
   );
