@@ -49,7 +49,10 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
+    "auth",
+    "home",
 ]
+AUTH_USER_MODEL = "auth.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
