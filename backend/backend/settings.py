@@ -104,7 +104,11 @@ DATABASES = {
         'USER': 'postgres',
         'PASSWORD': 'admin',
         'HOST': 'localhost',
-        'PORT': '5432',
+        'PORT': '5433',
+    },
+    'sqlite': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': './db.sqlite3'
     }
 }
 
@@ -154,6 +158,8 @@ AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 )
+
+DATABASE_ROUTERS = ['backend.database_router.AuthRouter']
 
 LOGIN_REDIRECT_URL = "/"
 

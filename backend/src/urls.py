@@ -7,5 +7,6 @@ urlpatterns = [
 	path("", views.home, name="home"),
 	path("profile/", views.profile, name = "profile"),
 	path("car/", views.car, name = "cars"),
+    path("getDealershipInfo/", views.getDealershipInfo, name = "dealership-info")
 	# allauth for OAuth
 ]
