@@ -26,7 +26,7 @@ class Rentoid(models.Model):
     appUserID = models.ForeignKey(AppUser, on_delete=models.CASCADE)
     firstName = models.CharField(max_length=50)
     lastName = models.CharField(max_length=50)
-    balance = models.DecimalField(decimal_places=2, default=0.00, blank=True)
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=True)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -49,7 +49,7 @@ class City(models.Model):
 
 
 class Location(models.Model):
-    cityID = models.ForeignKey(City)
+    cityID = models.ForeignKey(City, on_delete=models.SET_NULL, null=True)
     streetName = models.CharField(max_length=100)
     streetNo = models.CharField(max_length=10)
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
@@ -71,7 +71,7 @@ class Location(models.Model):
     
 
 class WorkingHours(models.Model):
-    locationID = models.ForeignKey(Location)
+    locationID = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True)
     dayOfTheWeek = models.IntegerField(choices=[(i, day) for i, day in enumerate(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])])
     startTime = models.TimeField()
     endTime = models.TimeField()
