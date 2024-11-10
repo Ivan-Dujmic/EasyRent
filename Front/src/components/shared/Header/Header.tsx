@@ -10,7 +10,7 @@ export default function Header() {
       boxShadow="md"
       color={'brandblack'}
       fontSize="sm"
-      zIndex={1}
+      zIndex={2}
     >
       <Flex align="center" maxW="1200px" mx="auto" px={6} py={4}>
         {/* Logo */}

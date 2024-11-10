@@ -1,5 +1,6 @@
+import DateTimeDDM from '@/components/features/DropDownMenus/DateTimeDDM/DateTimeDDM';
 import LocationDDM from '@/components/features/DropDownMenus/LocationDDM/LocationDDM';
-import { Flex } from '@chakra-ui/react';
+import { Button, Flex, Input, InputGroup } from '@chakra-ui/react';
 
 const options: { [key: string]: string[] } = {
   'Cities (including airports)': [
@@ -29,13 +30,14 @@ export default function MainFilter() {
       direction={'row'}
       bg={'white'}
       width={'60vw'}
-      height={'200px'}
+      height={'110px'}
       borderRadius={14}
       borderColor={'none'}
-      borderWidth="4px"
+      borderWidth="0px"
       align={'center'}
-      p={2}
-      gap={5}
+      p={5}
+      gap={7}
+      pb={7}
     >
       <Flex gap={2}>
         <LocationDDM
@@ -49,6 +51,30 @@ export default function MainFilter() {
           placeHolder={'To?'}
         />
       </Flex>
+      <Flex gap={2}>
+        {/* placeholderi */}
+        <DateTimeDDM
+          options={{}}
+          description={'Pick-up date/time'}
+          placeHolder={'Start?'}
+        />
+        <DateTimeDDM
+          options={{}}
+          description={'Drop-off date/time'}
+          placeHolder={'End?'}
+        />
+      </Flex>
+
+      <Button
+        bg={'brandblue'}
+        mt={4}
+        size="lg"
+        ml={'auto'}
+        color={'white'}
+        _hover={{ bg: 'brandyellow', color: 'brandblack' }}
+      >
+        Search
+      </Button>
     </Flex>
   );
 }
