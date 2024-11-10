@@ -17,7 +17,7 @@ class Offer(models.Model):
     class Meta:
         unique_together = ('modelID', 'dealerID')
     def __str__(self):
-        return "ModelID: " + self.modelID + " DealerID:" + self.dealerID
+        return "ModelID: " + self.modelID + " DealerID: " + self.dealerID
 
 # for mapping the model DB table
 class Model(models.Model):
@@ -51,4 +51,4 @@ class Vehicle(models.Model):
     timesRented = models.IntegerField(blank=True, default=0)
     location = models.ForeignKey("Location", on_delete=models.SET_NULL, blank=True, default=None, null=True)
     def __str__(self):
-        return "Reg: " + self.registration + " DealerID:" + self.dealerID
+        return "Reg: " + self.registration + " DealerID: " + self.dealerID
