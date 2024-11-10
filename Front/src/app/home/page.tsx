@@ -3,8 +3,10 @@
 import EasyRentMoto from '@/components/core/EasyRentMoto/EasyRentMoto';
 import MainFilter from '@/components/shared/filter/MainFilter/MainFilter';
 import Header from '@/components/shared/Header/Header';
-import CompanyList from '@/components/shared/Lists/CompanyList/CompanyList';
+import CompanyList from '@/components/shared/company/CompanyList/CompanyList';
 import { Flex, Heading } from '@chakra-ui/react';
+import { Vehicle } from '@/typings/vehicles/vehicles';
+import VehicleCard from '@/components/shared/cars/VehicleCard/VechileCard';
 
 //privremeno
 const companies: Company[] = [
@@ -37,12 +39,25 @@ const companies: Company[] = [
     logo: 'https://content.r9cdn.net/rimg/provider-logos/cars/h/enterprise.png?crop=false&height=40&fallback=default3.png&_v=e58e7c74ab38dad83c27b49b39d0986f',
   },
 ];
+const mockVechile: Vehicle = {
+  image:
+    'https://content.r9cdn.net/rimg/car-images/generic/10_station-wagon_white.png?height=116',
+  brand: 'Toyota Corolla Wagon',
+  company: 'Enterprise Rent-A-Car',
+  pricePerDay: 134,
+  rating: 5,
+  reviews: 30,
+  transmission: 'automatic',
+  seats: 5,
+  id: 1,
+};
 
 export default function HomePage() {
   return (
     <Flex direction="column" grow={1}>
       {/* <AuthRedirect to="/login" condition="isLoggedOut" /> */}
       <Header />
+      {/* Drugi dio stranice */}
       <Flex
         bg="brandgray"
         minHeight="300px"
@@ -63,6 +78,11 @@ export default function HomePage() {
           </Heading>
           <CompanyList companies={companies} />
         </Flex>
+      </Flex>
+
+      {/* Dio stranice sa Listom automobila */}
+      <Flex justify={'center'} align={'center'}>
+        <VehicleCard vehicle={mockVechile} />
       </Flex>
     </Flex>
   );
