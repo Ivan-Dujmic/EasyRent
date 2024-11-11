@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Flex, Text } from '@chakra-ui/react';
+import { Box, Button, Flex, Text } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { AnimatedSignUp } from '../auth/AnimatedSignUp/AnimatedSignUp';
 import EasyRentLogo from '@/components/core/EasyRentLogo/EasyRentLogo';

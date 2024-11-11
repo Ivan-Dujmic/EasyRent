@@ -20,7 +20,6 @@ export default function LocationDDMGroups({
   options,
   handleSelectLocation,
   search,
-  setSearch,
 }: LocationDDMGroupsProps) {
   const inputTextSize = useBreakpointValue({
     md: 'xs',
