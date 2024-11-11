@@ -9,7 +9,7 @@ import VehicleList from '@/components/shared/cars/VechileList/VechileList';
 import { companies } from '@/mockData/mockCompanies';
 import AuthHeader from '@/components/shared/Header/AuthUserHeader/AuthHeader';
 
-export default function HomePage() {
+export default function UserHomePage() {
   const gapSize = useBreakpointValue({
     base: 8, // Small gap for small screens (mobile)
     md: 10, // Slightly larger gap for medium screens (laptop/tablet)
