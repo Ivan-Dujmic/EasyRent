@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractUser
 
 class AppUser(models.Model):
     email = models.CharField(max_length=254, unique=True)
-    UID = models.CharField(max_length=16)
+    UID = models.CharField(max_length=18)
     phoneNumber = models.CharField(max_length=20, null=True, blank=True)
     passwordHash = models.CharField(max_length=255)
     isActivated = models.BooleanField(default=False, blank=True)
