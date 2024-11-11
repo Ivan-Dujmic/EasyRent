@@ -16,7 +16,7 @@ class AppUser(models.Model):
 
 class RegistrationRequest(models.Model):
     appUserID = models.ForeignKey(AppUser, on_delete=models.CASCADE)
-    token = models.CharField(max_length=255)
+    token = models.CharField(max_length=255, unique=True)
     generationTimestamp = models.DateTimeField(auto_now_add=True)
     isComplete = models.BooleanField(default=False, blank=True)
 
@@ -25,7 +25,7 @@ class RegistrationRequest(models.Model):
 
 
 class Rentoid(models.Model):
-    appUserID = models.ForeignKey(AppUser, on_delete=models.CASCADE)
+    appUserID = models.ForeignKey(AppUser, on_delete=models.CASCADE, unique=True)
     firstName = models.CharField(max_length=50)
     lastName = models.CharField(max_length=50)
     balance = models.DecimalField(
@@ -37,16 +37,25 @@ class Rentoid(models.Model):
 
 
 class Dealership(models.Model):
-    appUserID = models.ForeignKey(AppUser, on_delete=models.CASCADE)
-    companyName = models.CharField(max_length=50)
+    appUserID = models.ForeignKey(AppUser, on_delete=models.CASCADE, unique=True)
+    companyName = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True, default="")
+    picturePath = models.CharField(max_length=50, default='')
 
     def __str__(self):
         return self.companyName
 
 
+class Country(models.Model):
+    countryName = models.CharField(max_length=50, unique=True)
+
+
 class City(models.Model):
-    cityName = models.CharField(max_length=30)
+    cityName = models.CharField(max_length=50)
+    countryID = models.ForeignKey(Country, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('cityName', 'countryID')
 
     def __str__(self):
         return self.cityName

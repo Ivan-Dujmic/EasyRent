@@ -1,3 +1,36 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from django.http import JsonResponse
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django import forms
+import random
+from .models import *
+from .serializers import *
+from src.models import *
+from src.serializers import *
+
+
+@api_view(['GET'])
+def get_showcased(request):
+    showcased_dealerships = random.sample(list(Dealership.objects.all()), 6)
+    most_popular = Offer.objects.all().order_by('-noOfReviews')[:5]
+    best_value = Offer.objects.all().order_by('price')[:5]
+    
+    showcased_dealership_data = DealershipLogoSerializer(showcased_dealerships, many=True).data
+    most_popular_data = OfferCardSerializer(most_popular, many=True).data
+    best_value_data = OfferCardSerializer(best_value, many=True).data
+
+    response_data = {
+        "showcased_dealerships": showcased_dealership_data,
+        "most_popular_offers": most_popular_data,
+        "best_value": best_value_data
+    }
+    
+    return Response(response_data, safe=False)
+
+
+@api_view(['GET'])
+def get_countries_cities(request):
+    countries = Country.objects.all()
+    countriesCities = CountryCitySerializer(countries, many=True)
+    return Response(countriesCities.data)
