@@ -98,18 +98,17 @@ WSGI_APPLICATION = "backend.wsgi.application"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'EasyRentTest',
-        'USER': 'postgres',
-        'PASSWORD': 'admin',
-        'HOST': 'localhost',
-        'PORT': '5433',
-    },
-    'sqlite': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': './db.sqlite3'
-    }
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "EasyRentTest",
+        "USER": "postgres",
+        "PASSWORD": "postgres",
+        "HOST": "localhost",
+        "PORT": "5433",
+    },'sqlite': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': './db.sqlite3'
+        }
 }
 
 
@@ -159,7 +158,7 @@ AUTHENTICATION_BACKENDS = (
     "allauth.account.auth_backends.AuthenticationBackend",
 )
 
-DATABASE_ROUTERS = ['backend.database_router.AuthRouter']
+DATABASE_ROUTERS = ["backend.database_router.AuthRouter"]
 
 LOGIN_REDIRECT_URL = "/"
 

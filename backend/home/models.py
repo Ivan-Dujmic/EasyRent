@@ -26,8 +26,8 @@ class Model(models.Model):
         unique_together = ('makeName', 'modelName')
     def __str__(self):
         return self.makeName + " " + self.modelName
-   
-# for mapping the offer DB table 
+
+# for mapping the offer DB table
 class Offer(models.Model):
     modelID = models.ForeignKey(Model, on_delete=models.CASCADE)
     dealerID = models.ForeignKey(Dealership, on_delete=models.CASCADE)
@@ -42,7 +42,7 @@ class Offer(models.Model):
         unique_together = ('modelID', 'dealerID')
     def __str__(self):
         return "ModelID: " + self.modelID + " DealerID: " + self.dealerID
-    
+
 # for mapping the Vehicle DB table
 class Vehicle(models.Model):
     registration = models.CharField(max_length=20, unique=True)

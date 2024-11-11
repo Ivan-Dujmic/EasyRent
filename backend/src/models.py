@@ -1,6 +1,8 @@
 from django.db import models
 from django.forms import ValidationError
-    
+from django.contrib.auth.models import AbstractUser
+
+
 class AppUser(models.Model):
     email = models.CharField(max_length=254, unique=True)
     UID = models.CharField(max_length=16)
@@ -26,11 +28,13 @@ class Rentoid(models.Model):
     appUserID = models.ForeignKey(AppUser, on_delete=models.CASCADE)
     firstName = models.CharField(max_length=50)
     lastName = models.CharField(max_length=50)
-    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=True)
+    balance = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.00, blank=True
+    )
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
-    
+
 
 class Dealership(models.Model):
     appUserID = models.ForeignKey(AppUser, on_delete=models.CASCADE)
@@ -39,7 +43,7 @@ class Dealership(models.Model):
 
     def __str__(self):
         return self.companyName
-    
+
 
 class City(models.Model):
     cityName = models.CharField(max_length=30)
@@ -59,29 +63,50 @@ class Location(models.Model):
 
     class Meta:
         unique_together = (
-            ('cityID', 'streetName', 'streetNo'),
-            ('latitude', 'longitude')
+            ("cityID", "streetName", "streetNo"),
+            ("latitude", "longitude"),
         )
         constraints = [
-            models.UniqueConstraint(fields=['dealershipID', 'isHQ'], condition=models.Q(isHQ=True), name='unique_hq_per_dealership')
+            models.UniqueConstraint(
+                fields=["dealershipID", "isHQ"],
+                condition=models.Q(isHQ=True),
+                name="unique_hq_per_dealership",
+            )
         ]
 
     def __str__(self):
         return f"{self.cityID} {self.streetName} {self.streetNo}"
-    
+
 
 class WorkingHours(models.Model):
     locationID = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True)
-    dayOfTheWeek = models.IntegerField(choices=[(i, day) for i, day in enumerate(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])])
+    dayOfTheWeek = models.IntegerField(
+        choices=[
+            (i, day)
+            for i, day in enumerate(
+                [
+                    "Monday",
+                    "Tuesday",
+                    "Wednesday",
+                    "Thursday",
+                    "Friday",
+                    "Saturday",
+                    "Sunday",
+                ]
+            )
+        ]
+    )
     startTime = models.TimeField()
     endTime = models.TimeField()
 
     class Meta:
-        unique_together = ('locationID', 'dayOfTheWeek')
+        unique_together = ("locationID", "dayOfTheWeek")
 
     def clean(self):
         if self.startTime >= self.endTime:
             raise ValidationError("Start time must be before the end time.")
-        
+
     def __str__(self):
-        return f"Working hours for {self.locationID} on {self.get_dayOfTheWeek_display()}"
+        return (
+            f"Working hours for {self.locationID} on {self.get_dayOfTheWeek_display()}"
+        )
