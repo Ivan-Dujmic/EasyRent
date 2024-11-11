@@ -1,6 +1,6 @@
 "use client"
 
-import { Box, Text, Flex, useColorModeValue, Heading } from '@chakra-ui/react';
+import { Box, Text, Flex, useColorModeValue, Heading, transition } from '@chakra-ui/react';
 import { usePathname } from 'next/navigation';
 
 export default function ChooseRegisterType() {
@@ -50,7 +50,11 @@ export default function ChooseRegisterType() {
     const common = {
         p:"10px",
         m:"10px",
-        borderRadius:"md"
+        borderRadius:"md",
+        transition: 'transform 0.2s ease-in-out',
+        _hover: {
+          transform: 'scale(1.1)',
+        }
     }
   return (
     <Flex direction="row" alignItems="center" justifyContent="center"
@@ -69,7 +73,7 @@ export default function ChooseRegisterType() {
         >User</Box>
 
         {/*vertical line */}
-        <Box height="10" borderLeft="1px" borderColor="blue" />
+        <Box height="12" borderLeft="2px" borderColor="black" />
 
         <Box
         bg={bgColor.second}

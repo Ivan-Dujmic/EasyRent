@@ -1,13 +1,21 @@
-import React from 'react';
-import {Box, Button, FormControl, FormLabel, Input, Heading, VStack, Flex, Spacer
-} from '@chakra-ui/react';
+import {Box, Button, FormControl, FormLabel, Input, Heading, VStack, Flex, Spacer} from '@chakra-ui/react';
+import {useForm, SubmitHandler} from 'react-hook-form';
+import {z} from 'zod';
 
-const LoginBox = () => {
+const schema = z.object({
+    email: z.string().email(),
+    password: z.string().min(5)
+});
+
+type FormFields = z.infer<typeof schema>;
+
+export default function HomePage() {
+
     const suppButtons = {
-        bg: "lightgray",
-        p: 5,
-        m: 5,
-        BorderRadius: "md"
+            bg: "lightgray",
+            p: 5,
+            m: 5,
+            BorderRadius: "md"
     }
 
     return (
@@ -64,13 +72,5 @@ const LoginBox = () => {
           </VStack>
         </form>
       </Box>
-    );
-  };
-
-export default function HomePage() {
-  return (
-    <>
-    <LoginBox />
-    </>
   );
 }
