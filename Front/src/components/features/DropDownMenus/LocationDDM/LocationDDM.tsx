@@ -7,6 +7,7 @@ import {
   Stack,
   Text,
   useOutsideClick,
+  useBreakpointValue,
 } from '@chakra-ui/react';
 import { useState, useRef } from 'react';
 import { FaCarAlt } from 'react-icons/fa';
@@ -22,6 +23,12 @@ export default function LocationDDM({
   const [search, setSearch] = useState('');
 
   const ref = useRef(null);
+
+  const inputTextSize = useBreakpointValue({
+    md: 'xs',
+    lg: 'sm',
+    xl: 'md',
+  });
 
   useOutsideClick({
     ref,
@@ -74,6 +81,7 @@ export default function LocationDDM({
             color={'brandblack'}
             border={'none'}
             _focus={{ borderColor: 'none', boxShadow: 'none' }}
+            fontSize={inputTextSize}
           />
         </InputGroup>
         <MenuList

@@ -1,5 +1,5 @@
 import { Category } from '@/typings/locationCategorys/LocationCategroys';
-import { Box, MenuGroup, MenuItem } from '@chakra-ui/react';
+import { Box, MenuGroup, MenuItem, useBreakpointValue } from '@chakra-ui/react';
 import LocationFormatter from '../LocationFormatter/LocationFormatter';
 import { FaCity, FaTrain } from 'react-icons/fa';
 import { MdLocalAirport } from 'react-icons/md';
@@ -22,6 +22,12 @@ export default function LocationDDMGroups({
   search,
   setSearch,
 }: LocationDDMGroupsProps) {
+  const inputTextSize = useBreakpointValue({
+    md: 'xs',
+    lg: 'sm',
+    xl: 'md',
+  });
+
   const filteredOptions: { [key: string]: string[] } = Object.keys(
     options
   ).reduce(
