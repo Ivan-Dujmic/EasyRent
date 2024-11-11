@@ -12,9 +12,13 @@ from src.serializers import *
 
 @api_view(['GET'])
 def get_showcased(request):
-    showcased_dealerships = random.sample(list(Dealership.objects.all()), 6)
-    most_popular = Offer.objects.all().order_by('-noOfReviews')[:5]
-    best_value = Offer.objects.all().order_by('price')[:5]
+    dealerships = list(Dealership.objects.all())
+    size = 6 if len(dealerships) >= 6 else len(dealerships)
+    showcased_dealerships = random.sample(dealerships, size)
+
+    offers = Offer.objects.all()
+    most_popular = offers.order_by('-noOfReviews')[:5]
+    best_value = offers.order_by('price')[:5]
     
     showcased_dealership_data = DealershipLogoSerializer(showcased_dealerships, many=True).data
     most_popular_data = OfferCardSerializer(most_popular, many=True).data
@@ -26,7 +30,7 @@ def get_showcased(request):
         "best_value": best_value_data
     }
     
-    return Response(response_data, safe=False)
+    return Response(response_data)
 
 
 @api_view(['GET'])

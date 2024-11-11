@@ -25,7 +25,7 @@ class RegistrationRequest(models.Model):
 
 
 class Rentoid(models.Model):
-    appUserID = models.ForeignKey(AppUser, on_delete=models.CASCADE, unique=True)
+    appUserID = models.ForeignKey(AppUser, on_delete=models.CASCADE)
     firstName = models.CharField(max_length=50)
     lastName = models.CharField(max_length=50)
     balance = models.DecimalField(
@@ -37,7 +37,7 @@ class Rentoid(models.Model):
 
 
 class Dealership(models.Model):
-    appUserID = models.ForeignKey(AppUser, on_delete=models.CASCADE, unique=True)
+    appUserID = models.ForeignKey(AppUser, on_delete=models.CASCADE)
     companyName = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True, default="")
     picturePath = models.CharField(max_length=50, default='')
@@ -52,7 +52,7 @@ class Country(models.Model):
 
 class City(models.Model):
     cityName = models.CharField(max_length=50)
-    countryID = models.ForeignKey(Country, on_delete=models.CASCADE)
+    countryID = models.ForeignKey(Country, on_delete=models.CASCADE, default="1")
 
     class Meta:
         unique_together = ('cityName', 'countryID')
