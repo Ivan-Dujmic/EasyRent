@@ -28,7 +28,7 @@ export default function HomePage() {
       <Header />
       {/* Drugi dio stranice */}
       <Flex
-        bg="brandgray"
+        bg="brandlightgray"
         minHeight="300px"
         color="brandblue"
         direction={'column'}
@@ -36,13 +36,11 @@ export default function HomePage() {
         justify={'flex-start'}
         py={gapSize}
         gap={gapSize}
-        boxShadow="md"
-        zIndex={1}
       >
         <EasyRentMoto />
         <MainFilter />
         <Flex gap={gapSize} align={'center'} px={5}>
-          <Heading size={headingSize} color={'brandblack'}>
+          <Heading size={headingSize} color={'brandblue'}>
             Trusted by the Best:
           </Heading>
           <CompanyList companies={companies} />
@@ -50,8 +48,23 @@ export default function HomePage() {
       </Flex>
 
       {/* Dio stranice sa Listom automobila */}
-      <Flex justify={'center'} align={'center'}>
-        <VehicleList vehicles={mockVehicles} />
+      <Flex
+        justify={'center'}
+        align={'center'}
+        direction={'column'}
+        py={8}
+        gap={2}
+      >
+        <VehicleList
+          vehicles={mockVehicles}
+          description={'Most popular:'}
+          useDescription={true}
+        />
+        <VehicleList
+          vehicles={mockVehicles}
+          description={'Best value:'}
+          useDescription={true}
+        />
       </Flex>
     </Flex>
   );
