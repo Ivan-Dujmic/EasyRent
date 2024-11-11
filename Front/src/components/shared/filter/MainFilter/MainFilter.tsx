@@ -72,6 +72,7 @@ export default function MainFilter() {
         ml={'auto'}
         color={'white'}
         _hover={{ bg: 'brandyellow', color: 'brandblack' }}
+        alignSelf={'center'}
       >
         Search
       </Button>

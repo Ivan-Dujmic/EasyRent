@@ -1,8 +1,21 @@
-import { Card, CardBody, Image, Flex } from '@chakra-ui/react';
+import {
+  Card,
+  CardBody,
+  Image,
+  Flex,
+  useBreakpointValue,
+} from '@chakra-ui/react';
 
 export default function CompanyList({ companies }: { companies: Company[] }) {
+  const imageSize = useBreakpointValue({
+    base: '25px', // Small gap for small screens (mobile)
+    md: '28px', // Slightly larger gap for medium screens (laptop/tablet)
+    lg: '30px', // Largest gap for large screens (desktop)
+    xl: '35px',
+  });
+
   return (
-    <Flex wrap="nowrap" gap={3} justify="start">
+    <Flex wrap="wrap" gap={3} justify="start">
       {companies.map((company, index) => (
         <Card
           key={index}
@@ -22,7 +35,7 @@ export default function CompanyList({ companies }: { companies: Company[] }) {
             <Image
               objectFit="contain"
               width="auto"
-              height="35px"
+              height={imageSize}
               src={company.logo}
               alt={`${company.name} logo`}
             />

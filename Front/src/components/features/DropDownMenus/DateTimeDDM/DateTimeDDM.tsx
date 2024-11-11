@@ -1,17 +1,16 @@
-// !! ovo je smao placeholder, morat ce se zapravo implementirat
-
+import { useState, useRef } from 'react';
 import {
-  Menu,
-  Input,
-  InputGroup,
-  InputLeftElement,
   Stack,
+  Menu,
   Text,
+  InputGroup,
+  Input,
+  InputLeftElement,
+  useBreakpointValue,
   useOutsideClick,
 } from '@chakra-ui/react';
-import { useState, useRef } from 'react';
-import { LocationDDMProps } from '@/typings/DDM-DropDownMenu/DDM';
 import { CalendarIcon } from '@chakra-ui/icons';
+import { LocationDDMProps } from '@/typings/DDM-DropDownMenu/DDM';
 
 export default function DateTimeDDM({
   description,
@@ -36,10 +35,23 @@ export default function DateTimeDDM({
     if (!isOpen) setIsOpen(true); // osigurava da meni ostaje otvoren dok tipkamo
   };
 
+  // Responsive values for different screen sizes
+  const inputMaxWidth = useBreakpointValue({
+    base: '10rem', // For small screens (like mobile)
+    md: '15rem', // For medium screens (like tablets)
+    lg: '20rem', // For large screens (like desktops/laptops)
+  });
+
+  const descriptionFontSize = useBreakpointValue({
+    base: '0.75rem', // Smaller text on mobile
+    md: '0.8rem', // Slightly bigger text on medium screens
+    lg: '0.8em', // Larger text on larger screens
+  });
+
   return (
     <Stack gap={0} position={'relative'} ref={ref}>
       <Menu isOpen={isOpen}>
-        <Text fontSize={'0.8rem'} color={'brandblue'}>
+        <Text fontSize={descriptionFontSize} color={'brandblue'}>
           {description}
         </Text>
         <InputGroup
@@ -54,7 +66,7 @@ export default function DateTimeDDM({
             borderColor: 'brandblack',
             color: 'brandblack',
           }}
-          maxWidth={'7rem'}
+          maxWidth={inputMaxWidth} // Apply responsive maxWidth
         >
           <InputLeftElement pointerEvents="none" color="brandblack">
             <CalendarIcon />

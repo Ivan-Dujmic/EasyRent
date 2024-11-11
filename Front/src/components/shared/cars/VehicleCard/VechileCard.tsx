@@ -21,7 +21,8 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
     <Card
       as={NextLink}
       href={`/vehicles/${vehicle.id}`}
-      maxW="200px"
+      maxW="210px"
+      minW="180px"
       borderWidth="2px"
       borderRadius="lg"
       overflow="hidden"
@@ -38,11 +39,13 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
         alt={`${vehicle.brand} car`}
         objectFit="cover"
         width="100%"
+        height="110px" // Set a fixed height to make all images uniform
+        borderRadius="md" // Optional: adds a nice rounded edge to the image
       />
       <CardBody px={0} py={2}>
-        <Stack spacing={2}>
+        <Stack spacing={2} height={'100%'} justify={'space-between'}>
           <Flex direction={'column'}>
-            <Flex gap={1}>
+            <Flex gap={1} align={'baseline'} justify={'space-between'}>
               <Heading size="xs">{vehicle.brand}</Heading>
               <Text fontSize="xs">€{vehicle.pricePerDay}/day</Text>
             </Flex>
@@ -52,7 +55,7 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
               {vehicle.company}
             </Text>
           </Flex>
-          <Flex gap={3} wrap={'wrap'} justify={'flex-start'}>
+          <Flex gap={2} wrap={'wrap'} justify={'flex-start'}>
             <Flex align="flex-start">
               <IoPersonSharp />
               <Box fontSize="xs">{vehicle.seats}</Box>
@@ -77,7 +80,7 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
             </Flex>
 
             <Flex
-              gap={1}
+              gap={'1px'}
               fontSize="xs"
               align="baseline"
               ml={vehicle.reviews > 99 ? 0 : 'auto'}
