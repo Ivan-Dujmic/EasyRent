@@ -1,7 +1,9 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
+from django.core.mail import EmailMessage
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
 from django.contrib.auth import logout, authenticate, login
 from .models import *
 from .serializers import *
@@ -10,6 +12,38 @@ from rest_framework.response import Response
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 from .forms import NewUserForm
+from .tokens import account_activation_token
+from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+
+def activate(request, uidb64, token):
+	User = get_user_model()
+	try:
+		uid = force_str(urlsafe_base64_decode(uidb64))
+		user = User.objects.get(pk=uid)
+	except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+		user = None
+	if user is not None and account_activation_token.check_token(user, token):
+		user.is_active = True
+		user.save()
+		return redirect('src:loginUser')
+	return redirect('src:home')
+
+def activateEmail(request, user, toEmail):
+	subject = "Activate EasyRent account"
+	message = render_to_string('templateActivateAccount.html', {
+        'domain': get_current_site(request).domain,
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+        'token': account_activation_token.make_token(user),
+        'protocol': 'https' if request.is_secure() else 'http'
+    })
+	email = EmailMessage(subject, message, to=[toEmail])
+	if email.send():
+		print("Email sent!")
+	else:
+		print("Sending failed!")
 
 
 def home(request):
@@ -28,9 +62,12 @@ def registerUser(request):
     elif request.method == "POST":
         registerForm = NewUserForm(request.POST)
         if registerForm.is_valid():
-            user = registerForm.save()
-            username = registerForm.cleaned_data.get("username")
-            login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+            user = registerForm.save(commit = False)
+            user.is_active = False
+            user.save()
+            activateEmail(request, user, registerForm.cleaned_data.get("email"))
+            # username = registerForm.cleaned_data.get("username")
+            # login(request, user, backend="django.contrib.auth.backends.ModelBackend")
             return redirect("src:home")
 
         else:
@@ -56,10 +93,11 @@ def loginUser(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect("/")
+                return redirect("src:home")
             else:
-                messages.error(request, "Invalid username or password.")
+                return redirect("src:loginUser")
         else:
+            print(form.errors)
             return redirect("src:home")
 
 
