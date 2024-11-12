@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+  <nav>
+    <div class="nav-wrapper">
+      <ul id="nav-mobile" class="right hide-on-med-and-down">
+        <li><a href="/">Home</a></li>
+        {% if user.is_authenticated %}
+        <li><a href="/profileUser">{{user.first_name}}</a></li>
+        <li><a href="/logoutUser">Logout</a></li>
+        {% else %}
+        <li><a href="/loginUser">Login</a></li>
+        <li><a href="/registerUser">Register</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </nav>
+</body>
+
+</html>

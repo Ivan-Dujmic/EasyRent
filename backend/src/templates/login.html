@@ -1,0 +1,12 @@
+<body>
+	{% load socialaccount %}
+	<h2>Sign In</h2>
+	<a href = "{% provider_login_url 'google' %}?next=/">Sign in with Google</a>
+        <form method="POST">
+        {% csrf_token %}
+        {{form.as_p}}
+            <button style="background-color:#F4EB16; color:blue" class="btn btn-outline-info" type="submit">Login</button>
+        </form>
+        Don't have an account? <a href="/registerUser" target="blank"><strong>register here</strong></a>!
+
+</body>
