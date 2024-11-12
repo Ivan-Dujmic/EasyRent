@@ -33,7 +33,7 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-SITE_ID = 2
+SITE_ID = 3
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -104,7 +104,7 @@ DATABASES = {
         "USER": "postgres",
         "PASSWORD": "postgres",    
         "HOST": "localhost",
-        "PORT": "5432",
+        "PORT": "5433",
     }
 }
 
@@ -154,6 +154,19 @@ AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 )
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_HOST_USER = os.getenv("HOST_EMAIL")
+EMAIL_HOST_PASSWORD = os.getenv("HOST_PASSWORD")
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
+ACCOUNT_UNIQUE_EMAIL = True
 
 LOGIN_REDIRECT_URL = "/"
 
