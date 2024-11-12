@@ -1,21 +1,10 @@
 from django.db import models
 from django.forms import ValidationError
-from django.contrib.auth.models import AbstractUser
-
-
-class AppUser(models.Model):
-    email = models.CharField(max_length=254, unique=True)
-    UID = models.CharField(max_length=18)
-    phoneNumber = models.CharField(max_length=20, null=True, blank=True)
-    passwordHash = models.CharField(max_length=255)
-    isActivated = models.BooleanField(default=False, blank=True)
-
-    def __str__(self):
-        return self.email
+from django.contrib.auth.models import AbstractUser, User
 
 
 class RegistrationRequest(models.Model):
-    appUserID = models.ForeignKey(AppUser, on_delete=models.CASCADE)
+    appUserID = models.ForeignKey(User, on_delete=models.CASCADE)
     token = models.CharField(max_length=255, unique=True)
     generationTimestamp = models.DateTimeField(auto_now_add=True)
     isComplete = models.BooleanField(default=False, blank=True)
@@ -25,9 +14,11 @@ class RegistrationRequest(models.Model):
 
 
 class Rentoid(models.Model):
-    appUserID = models.ForeignKey(AppUser, on_delete=models.CASCADE)
+    appUserID = models.ForeignKey(User, on_delete=models.CASCADE)
     firstName = models.CharField(max_length=50)
     lastName = models.CharField(max_length=50)
+    phoneNumber = models.CharField(max_length=20, null=True, blank=True)
+    driversLicenseNumber = models.CharField(max_length=16)
     balance = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.00, blank=True
     )
@@ -37,8 +28,10 @@ class Rentoid(models.Model):
 
 
 class Dealership(models.Model):
-    appUserID = models.ForeignKey(AppUser, on_delete=models.CASCADE)
+    appUserID = models.ForeignKey(User, on_delete=models.CASCADE)
     companyName = models.CharField(max_length=50, unique=True)
+    phoneNumber = models.CharField(max_length=20, null=True, blank=True)
+    TIN = models.CharField(max_length=16)
     description = models.TextField(blank=True, default="")
     image = models.BinaryField(default=b'')
 
