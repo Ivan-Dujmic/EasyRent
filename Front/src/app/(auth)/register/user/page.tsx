@@ -1,35 +1,43 @@
-import {Box, Button, FormControl, FormLabel, Input, Heading, VStack, Flex, Spacer} from '@chakra-ui/react';
-
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  Heading,
+  VStack,
+  Flex,
+  Spacer,
+} from '@chakra-ui/react';
 
 export default function HomePage() {
   const suppButtons = {
-    bg: "lightgray",
+    bg: 'lightgray',
     p: 5,
     m: 5,
-    BorderRadius: "md"
-}
+    BorderRadius: 'md',
+  };
 
   const inputText = {
-    w: "40%"
-  }
+    w: '40%',
+  };
 
   return (
     <Box
-        minWidth="800px"
-        maxW="1200px"
-        w="80vw"
-        margin="0 auto"
-        mt="10"
-        p="6"
-        boxShadow="lg"
-        borderRadius="md"
-        bg="white"
-      >
-  
-        <form>
-          <Flex justifyContent="space-between">
+      minWidth="800px"
+      maxW="1200px"
+      w="80vw"
+      margin="0 auto"
+      mt="10"
+      p="6"
+      boxShadow="lg"
+      borderRadius="md"
+      bg="white"
+    >
+      <form>
+        <Flex justifyContent="space-between">
           <VStack spacing="4" w="45%">
-          <FormControl isRequired>
+            <FormControl isRequired>
               <FormLabel>First Name</FormLabel>
               <Input
                 type="text"
@@ -55,16 +63,12 @@ export default function HomePage() {
                 placeholder="Enter your driver's licence id"
               />
             </FormControl>
-            </VStack>
-          
-            <VStack spacing="4" w="45%">
+          </VStack>
+
+          <VStack spacing="4" w="45%">
             <FormControl isRequired>
               <FormLabel>Email</FormLabel>
-              <Input
-                type="email"
-                name="email"
-                placeholder="Enter your email"
-              />
+              <Input type="email" name="email" placeholder="Enter your email" />
             </FormControl>
 
             <FormControl isRequired>
@@ -75,7 +79,7 @@ export default function HomePage() {
                 placeholder="Enter your phone number"
               />
             </FormControl>
-  
+
             <FormControl isRequired>
               <FormLabel>Password</FormLabel>
               <Input
@@ -94,25 +98,43 @@ export default function HomePage() {
               />
             </FormControl>
           </VStack>
-            </Flex>
-  
-            <Flex direction={'row'} justifyContent={'space-evenly'} alignItems={'center'}
-            w={'full'} mt={5}
-            >
-              <Button  as="a" href='/' sx={suppButtons}>
-                Continue as guest
-              </Button>
-              <Button as="a" href='/login' p={5} borderRadius="md" sx={suppButtons}
-              bg="blue" m="5">
-                Login
-              </Button>
-                <Spacer />
-              <Button type="submit" p={5} borderRadius="md"
-              bg="blue" m="5" color={'white'} mr="30%">
-                Register
-              </Button>
-            </Flex>
-        </form>
-      </Box>
+        </Flex>
+
+        <Flex
+          direction={'row'}
+          justifyContent={'space-evenly'}
+          alignItems={'center'}
+          w={'full'}
+          mt={5}
+        >
+          <Button as="a" href="/home" sx={suppButtons}>
+            Continue as guest
+          </Button>
+          <Button
+            as="a"
+            href="/login"
+            p={5}
+            borderRadius="md"
+            sx={suppButtons}
+            bg="blue"
+            m="5"
+          >
+            Login
+          </Button>
+          <Spacer />
+          <Button
+            type="submit"
+            p={5}
+            borderRadius="md"
+            bg="blue"
+            m="5"
+            color={'white'}
+            mr="30%"
+          >
+            Register
+          </Button>
+        </Flex>
+      </form>
+    </Box>
   );
 }
