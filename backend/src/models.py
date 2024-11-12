@@ -40,7 +40,7 @@ class Dealership(models.Model):
     appUserID = models.ForeignKey(AppUser, on_delete=models.CASCADE)
     companyName = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True, default="")
-    picturePath = models.CharField(max_length=50, default='')
+    image = models.BinaryField(default=b'')
 
     def __str__(self):
         return self.companyName

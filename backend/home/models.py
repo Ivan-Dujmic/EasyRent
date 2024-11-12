@@ -39,8 +39,7 @@ class Offer(models.Model):
     rating = models.FloatField(blank=True, default=None, null=True)
     noOfReviews = models.IntegerField(blank=True, default=0)
     description = models.TextField(blank=True, default='')
-    #path to offer image
-    picturePath = models.CharField(max_length=200, default='')
+    image = models.BinaryField(default=b'')
     #unique
     class Meta:
         unique_together = ('modelID', 'dealerID')
