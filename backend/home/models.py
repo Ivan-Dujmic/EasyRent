@@ -10,7 +10,7 @@ class ModelType(models.Model):
         SUV = 'Suv', _('Suv')
         LIMO = 'Limo', _('Limo')
         COMPACT = 'Compact', _('Compact')
-    modelTypeName = models.CharField(max_length=6, choices=modelName.choices)
+    modelTypeName = models.CharField(max_length=7, choices=modelName.choices)
     def __str__(self):
         return self.modelTypeName
 
