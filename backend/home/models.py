@@ -6,7 +6,11 @@ from src.models import *
 
 # for mapping the ModelType DB table
 class ModelType(models.Model):
-    modelTypeName = models.CharField(max_length=50)
+    class modelName(models.TextChoices):
+        SUV = 'Suv', _('Suv')
+        LIMO = 'Limo', _('Limo')
+        COMPACT = 'Compact', _('Compact')
+    modelTypeName = models.CharField(max_length=6, choices=modelName.choices)
     def __str__(self):
         return self.modelTypeName
 
@@ -36,7 +40,7 @@ class Offer(models.Model):
     noOfReviews = models.IntegerField(blank=True, default=0)
     description = models.TextField(blank=True, default='')
     #path to offer image
-    picturePath = models.CharField(max_length=50, default='')
+    picturePath = models.CharField(max_length=200, default='')
     #unique
     class Meta:
         unique_together = ('modelID', 'dealerID')
