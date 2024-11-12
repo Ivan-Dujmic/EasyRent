@@ -1,6 +1,6 @@
 from django.db import models
 from django.forms import ValidationError
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, User
 
 
 class AppUser(models.Model):
@@ -37,7 +37,7 @@ class Rentoid(models.Model):
 
 
 class Dealership(models.Model):
-    appUserID = models.ForeignKey(AppUser, on_delete=models.CASCADE)
+    appUserID = models.ForeignKey(User, on_delete=models.CASCADE)
     companyName = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True, default="")
     image = models.BinaryField(default=b'')
