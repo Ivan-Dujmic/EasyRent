@@ -33,7 +33,7 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-SITE_ID = 3
+SITE_ID = 1
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -104,7 +104,7 @@ DATABASES = {
         "USER": "postgres",
         "PASSWORD": "postgres",    
         "HOST": "localhost",
-        "PORT": "5433",
+        "PORT": "5432",
     }
 }
 
@@ -167,6 +167,7 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
 ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USERNAME_REQUIRED = False
 
 LOGIN_REDIRECT_URL = "/"
 

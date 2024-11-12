@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
-from .forms import NewUserForm
+from .forms import NewUserForm, NewCompanyForm
 from .tokens import account_activation_token
 from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
@@ -32,18 +32,19 @@ def activate(request, uidb64, token):
 	return redirect('src:home')
 
 def activateEmail(request, user, toEmail):
-	subject = "Activate EasyRent account"
-	message = render_to_string('templateActivateAccount.html', {
-        'domain': get_current_site(request).domain,
+    subject = "Activate EasyRent account"
+    message = render_to_string('templateActivateAccount.html', {
+        #'domain': get_current_site(request).domain,
+        'domain': 'http://127.0.0.1:8000',
         'uid': urlsafe_base64_encode(force_bytes(user.pk)),
         'token': account_activation_token.make_token(user),
         'protocol': 'https' if request.is_secure() else 'http'
     })
-	email = EmailMessage(subject, message, to=[toEmail])
-	if email.send():
-		print("Email sent!")
-	else:
-		print("Sending failed!")
+    email = EmailMessage(subject, message, to=[toEmail])
+    if email.send():
+        print("Email sent!")
+    else:
+        print("Sending failed!")
 
 
 def home(request):
@@ -71,8 +72,31 @@ def registerUser(request):
             return redirect("src:home")
 
         else:
+            registerForm.errors()
             return redirect("src:registerUser")
+        
+def registerCompany(request):
+    form = NewCompanyForm
+    if request.method == "GET":
+        return render(
+            request=request, template_name="register.html", context={"form": form}
+        )
+    elif request.method == "POST":
+        registerForm = NewCompanyForm(request.POST)
+        if registerForm.is_valid():
+            user = registerForm.save(commit = False)
+            user.is_active = False
+            user.save()
+            activateEmail(request, user, registerForm.cleaned_data.get("email"))
+            # username = registerForm.cleaned_data.get("username")
+            # login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+            return redirect("src:home")
 
+        else:
+            return redirect("src:registerUser")
+        
+
+        
 
 def logoutUser(request):
     logout(request)
