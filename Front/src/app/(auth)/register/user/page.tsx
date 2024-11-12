@@ -41,7 +41,7 @@ export default function HomePage() {
             <FormControl isRequired>
               <FormLabel>Last Name</FormLabel>
               <Input
-                type='text'
+                type="text"
                 name="surname"
                 placeholder="Enter your last name"
               />
@@ -50,8 +50,8 @@ export default function HomePage() {
             <FormControl isRequired>
               <FormLabel>Driver's Licence</FormLabel>
               <Input
-                type="email"
-                name="email"
+                type="number"
+                name="licence"
                 placeholder="Enter your driver's licence id"
               />
             </FormControl>
@@ -70,8 +70,8 @@ export default function HomePage() {
             <FormControl isRequired>
               <FormLabel>Phone number</FormLabel>
               <Input
-                type="email"
-                name="email"
+                type="tel"
+                name="tel"
                 placeholder="Enter your phone number"
               />
             </FormControl>

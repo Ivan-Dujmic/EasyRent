@@ -1,22 +1,41 @@
-import {Box, Button, FormControl, FormLabel, Input, Heading, VStack, Flex, Spacer} from '@chakra-ui/react';
-import {useForm, SubmitHandler} from 'react-hook-form';
-import {z} from 'zod';
+'use client';
 
-const schema = z.object({
-    email: z.string().email(),
-    password: z.string().min(5)
-});
+import {chakra, Box, Button, FormControl, FormLabel, Input, Heading, VStack, Flex, Spacer, FormErrorMessage} from '@chakra-ui/react';
+import {SubmitHandler, useForm} from 'react-hook-form';
 
-type FormFields = z.infer<typeof schema>;
+type FormFields = {
+  email:string,
+  password: string
+}
 
 export default function HomePage() {
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: {errors, isSubmitting}
+  } = useForm<FormFields>();
 
-    const suppButtons = {
-            bg: "lightgray",
-            p: 5,
-            m: 5,
-            BorderRadius: "md"
-    }
+  const onSubmit: SubmitHandler<FormFields> = async (data) => {
+    console.log(data)
+    await new Promise((resolve) => {
+      try{ // tu saljem pudatke backendu
+        setTimeout(resolve, 1000);
+      }
+      catch (error){ // tu hvatam error-e okje mi backend posalje
+        setError("root", {
+          message: "This email is not registered."
+        })
+      }
+    })
+  };
+
+  const suppButtons = {
+          bg: "lightgray",
+          p: 5,
+          m: 5,
+          BorderRadius: "md"
+  }
 
     return (
       <Box
@@ -33,21 +52,30 @@ export default function HomePage() {
         <Heading as="h2" size="lg" mb="6">
           Login
         </Heading>
-  
-        <form>
+      
+        <chakra.form onSubmit={handleSubmit(onSubmit)}>
           <VStack spacing="4">
             <FormControl isRequired>
               <FormLabel>Email</FormLabel>
               <Input
+                {...register("email", {
+                  required: "Email is required",
+                  validate: (value: string) => {
+                    value.includes("@");
+                    return "Email must include @";
+                  }
+                })}
                 type="email"
                 name="email"
                 placeholder="Enter your email"
               />
+            {errors.email && <FormErrorMessage color={"red"}>{errors.email.message}</FormErrorMessage>}
             </FormControl>
   
             <FormControl isRequired>
               <FormLabel>Password</FormLabel>
               <Input
+                {...register("email")}
                 type="password"
                 name="password"
                 placeholder="Enter your password"
@@ -58,8 +86,8 @@ export default function HomePage() {
             w={'full'}
             >
                 <Button  type="submit" p={5} borderRadius="md"
-                bg="blue" m="5" color={'white'}>
-                Login
+                bg="blue" m="5" color={'white'} disabled={isSubmitting}>
+                {isSubmitting ? "Logging in..." : "Login"}
                 </Button>
                 <Spacer />
                 <Button as="a" href='/register/user' sx={suppButtons}>
@@ -70,7 +98,7 @@ export default function HomePage() {
                 </Button>
             </Flex>
           </VStack>
-        </form>
+        </chakra.form>
       </Box>
   );
 }

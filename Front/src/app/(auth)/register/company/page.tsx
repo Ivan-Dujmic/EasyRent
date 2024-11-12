@@ -1,5 +1,5 @@
 import {Box, Button, FormControl, FormLabel, Input, Heading, VStack, Flex, Spacer} from '@chakra-ui/react';
-
+import WorkingHoursForm from '@/components/shared/auth/WorkingHoursForm';
 
 export default function HomePage() {
   const suppButtons = {
@@ -28,75 +28,67 @@ export default function HomePage() {
   
         <form>
           <Flex justifyContent="space-between">
-          <VStack spacing="4" w="45%">
-          <FormControl isRequired>
-              <FormLabel>First Name</FormLabel>
-              <Input
-                type="text"
-                name="name"
-                placeholder="Enter your first name"
-              />
-            </FormControl>
+            <VStack spacing="4" w="45%">
+              <FormControl isRequired>
+                  <FormLabel>Company name</FormLabel>
+                  <Input
+                    type="text"
+                    name="name"
+                    placeholder="Enter company name"
+                  />
+              </FormControl>
 
-            <FormControl isRequired>
-              <FormLabel>Last Name</FormLabel>
-              <Input
-                type='text'
-                name="surname"
-                placeholder="Enter your last name"
-              />
-            </FormControl>
+              <FormControl isRequired>
+                <FormLabel>Company email</FormLabel>
+                <Input
+                  type="email"
+                  name="email"
+                  placeholder="Enter company email"
+                />
+              </FormControl>
 
-            <FormControl isRequired>
-              <FormLabel>Driver's Licence</FormLabel>
-              <Input
-                type="email"
-                name="email"
-                placeholder="Enter your driver's licence id"
-              />
-            </FormControl>
+              <FormControl isRequired>
+                <FormLabel>Phone number</FormLabel>
+                <Input
+                  type="tel"
+                  name="tel"
+                  placeholder="Enter company phone number"
+                />
+              </FormControl>
+
+              <FormControl isRequired>
+                <FormLabel>HQ address</FormLabel>
+                <Input
+                  type="text"
+                  name="address"
+                  placeholder="Enter company address"
+                />
+              </FormControl>
             </VStack>
           
             <VStack spacing="4" w="45%">
-            <FormControl isRequired>
-              <FormLabel>Email</FormLabel>
-              <Input
-                type="email"
-                name="email"
-                placeholder="Enter your email"
-              />
-            </FormControl>
+              <WorkingHoursForm />
+              <FormControl isRequired>
+                <FormLabel>Password</FormLabel>
+                <Input
+                  type="password"
+                  name="password"
+                  placeholder="Enter your password"
+                />
+              </FormControl>
 
-            <FormControl isRequired>
-              <FormLabel>Phone number</FormLabel>
-              <Input
-                type="email"
-                name="email"
-                placeholder="Enter your phone number"
-              />
-            </FormControl>
+              <FormControl isRequired>
+                <FormLabel>Confirm password</FormLabel>
+                <Input
+                  type="password"
+                  name="password"
+                  placeholder="Repeat your password"
+                />
+              </FormControl>
+            </VStack>
+          </Flex>
   
-            <FormControl isRequired>
-              <FormLabel>Password</FormLabel>
-              <Input
-                type="password"
-                name="password"
-                placeholder="Enter your password"
-              />
-            </FormControl>
-
-            <FormControl isRequired>
-              <FormLabel>Confirm password</FormLabel>
-              <Input
-                type="password"
-                name="password"
-                placeholder="Repeat your password"
-              />
-            </FormControl>
-          </VStack>
-            </Flex>
-  
-            <Flex direction={'row'} justifyContent={'space-evenly'} alignItems={'center'}
+          <Flex direction={'row'} justifyContent={'space-evenly'} alignItems={'center'}
             w={'full'} mt={5}
             >
               <Button  as="a" href='/' sx={suppButtons}>
