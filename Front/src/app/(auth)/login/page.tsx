@@ -31,7 +31,7 @@ export default function HomePage() {
   };
 
   const suppButtons = {
-          bg: "lightgray",
+          bg: "brandlightgray",
           p: 5,
           m: 5,
           BorderRadius: "md"
@@ -47,7 +47,7 @@ export default function HomePage() {
         p="6"
         boxShadow="lg"
         borderRadius="md"
-        bg="white"
+        bg="brandwhite"
       >
         <Heading as="h2" size="lg" mb="6">
           Login
@@ -69,7 +69,7 @@ export default function HomePage() {
                 name="email"
                 placeholder="Enter your email"
               />
-            {errors.email && <FormErrorMessage color={"red"}>{errors.email.message}</FormErrorMessage>}
+            {errors.email && <FormErrorMessage color={"brandred"}>{errors.email.message}</FormErrorMessage>}
             </FormControl>
   
             <FormControl isRequired>
@@ -86,7 +86,7 @@ export default function HomePage() {
             w={'full'}
             >
                 <Button  type="submit" p={5} borderRadius="md"
-                bg="blue" m="5" color={'white'} disabled={isSubmitting}>
+                bg="brandblue" m="5" color={'brandwhite'} disabled={isSubmitting}>
                 {isSubmitting ? "Logging in..." : "Login"}
                 </Button>
                 <Spacer />

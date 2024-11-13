@@ -3,7 +3,7 @@ import {Box, Button, FormControl, FormLabel, Input, Heading, VStack, Flex, Space
 
 export default function HomePage() {
   const suppButtons = {
-    bg: "lightgray",
+    bg: "brandlightgray",
     p: 5,
     m: 5,
     BorderRadius: "md"
@@ -23,7 +23,7 @@ export default function HomePage() {
         p="6"
         boxShadow="lg"
         borderRadius="md"
-        bg="white"
+        bg="brandwhite"
       >
   
         <form>
@@ -108,7 +108,7 @@ export default function HomePage() {
               </Button>
                 <Spacer />
               <Button type="submit" p={5} borderRadius="md"
-              bg="blue" m="5" color={'white'} mr="30%">
+              bg="brandblue" m="5" color={'brandwhite'} mr="30%">
                 Register
               </Button>
             </Flex>
