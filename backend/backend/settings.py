@@ -29,7 +29,7 @@ SECRET_KEY = "django-insecure-upfieqv^tvk=6qdn1b3aps5-&!kqknvu-pa573k_2401*1uqvf
 # SECURITY WARNING: don"t run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['http://localhost:3000','127.0.0.1' ]
 
 
 # Application definition
@@ -50,12 +50,15 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
     "src",
     "home",
+    'corsheaders',
 ]
 AUTH_USER_MODEL = "auth.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    # 'django.middleware.csrf.CsrfViewMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -164,6 +167,22 @@ EMAIL_HOST_USER = os.getenv("HOST_EMAIL")
 EMAIL_HOST_PASSWORD = os.getenv("HOST_PASSWORD")
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+
+
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+]
+CRSF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+]
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_HEADERS = [
+    'content-type',
+    'authorization',
+]
 
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_EMAIL_REQUIRED = True

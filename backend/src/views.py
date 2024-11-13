@@ -9,6 +9,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth import logout, authenticate, login, get_user_model
 from .models import *
 import json
+from django.views.decorators.csrf import csrf_exempt
 from .serializers import *
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -50,8 +51,10 @@ def activateEmail(request, user, toEmail):
         print("Sending failed!")
         return 0
 
+@csrf_exempt
 def registerUser(request):
     if request.method == "POST":
+        print(request, "ovde")
         try:
             data = json.loads(request.body)
             username = "user" + str(User.objects.aggregate(Max("id"))["id__max"] + 1)
@@ -68,6 +71,9 @@ def registerUser(request):
                 return JsonResponse({"success": 1},status=200)
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    else:
+        return 0
 
 def registerCompany(request):
     if request.method == "POST":
