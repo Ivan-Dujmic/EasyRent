@@ -79,17 +79,17 @@ def registerCompany(request):
             username = "company" + str(User.objects.aggregate(Max("id"))["id__max"] + 1)
             email = data.get("email")
             password = data.get("password")
-            if  not email or not password:
-            	return JsonResponse({"error": "All fields (username, email, password) are required."}, status=400)
+            if not email or not password:
+                return JsonResponse({"error": "All fields (username, email, password) are required."}, status=400)
             if User.objects.filter(email=email).exists():
-		        return JsonResponse({"error": "Email already registered."}, status=400)
-			user = User.objects.create_user(username=username, email=email, password=password)
-			user.is_active = False
-			user.save()
-			if (activateEmail(request, user, email)):
-		        return JsonResponse({"success": 1},status=200)
-	    except json.JSONDecodeError:
-		    return JsonResponse({"error": "Invalid JSON"}, status=400)
+                return JsonResponse({"error": "Email already registered."}, status=400)
+            user = User.objects.create_user(username=username, email=email, password=password)
+            user.is_active = False
+            user.save()
+            if activateEmail(request, user, email):
+                return JsonResponse({"success": 1}, status=200)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
 
 def logoutUser(request):
     logout(request)
