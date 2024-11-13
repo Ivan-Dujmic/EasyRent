@@ -6,12 +6,10 @@ from . import views
 
 app_name = "src"
 urlpatterns = [
-    path("registerUser/", csrf_exempt(views.registerUser), name="registerUser"),
-    path("registerCompany/", csrf_exempt(views.registerCompany), name="registerCompany"),
-    path("logoutUser/", views.logoutUser, name="logoutUser"),
-    path("loginUser/", csrf_exempt(views.loginUser), name="loginUser"),
-    path('activate/<uidb64>/<token>/', views.activate, name="activateUser"),
-    path("profile/", views.profile, name="profile"),
-    path("car/", views.car, name="cars"),
-    path("getDealershipInfo/", views.getDealershipInfo, name="dealership-info"),
+    path("api/auth/registerUser/", csrf_exempt(views.registerUser), name="registerUser"),
+    path("api/auth/registerCompany/", csrf_exempt(views.registerCompany), name="registerCompany"),
+    path("api/auth/logoutUser/", views.logoutUser, name="logoutUser"),
+    path("api/auth/loginUser/", csrf_exempt(views.loginUser), name="loginUser"),
+    path('api/auth/activate/<uidb64>/<token>/', views.activate, name="activateUser"),
+    path("api/auth/profile/", views.profile, name="profile"),
 ]

@@ -56,16 +56,25 @@ def registerUser(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            username = "user" + str(User.objects.aggregate(Max("id"))["id__max"] + 1)
             email = data.get("email")
+            username = "user_" + email
+            firstName = data.get("firstName")
+            lastName = data.get("lastName")
+            driverLicense = data.get("driverLicense")
+            phoneNumber = data.get("phoneNumber")
             password = data.get("password")
-            if  not email or not password:
-                return JsonResponse({"error": "All fields (username, email, password) are required."}, status=400)
+            confirmPassword = data.get("confirmPassword")
+            
+            if not email or not firstName or not lastName or not phoneNumber or not password or not confirmPassword or not driverLicense:
+                return JsonResponse({"error": "All fields are required."}, status=400)
             if User.objects.filter(email=email).exists():
                 return JsonResponse({"error": "Email already registered."}, status=400)
-            user = User.objects.create_user(username=username, email=email, password=password)
+            if password != confirmPassword:
+                return JsonResponse({"error: Passwords do not match."}, status=400)
+            user = User.objects.create_user(username=username, email=email, password=password, first_name=firstName, last_name=lastName)
             user.is_active = False
             user.save()
+            rentoid = Rentoid.objects.create(user=user.id, phoneNumber=phoneNumber, driverLicenseNumber=driverLicense)
             if (activateEmail(request, user, email)):
                 return JsonResponse({"success": 1},status=200)
         except json.JSONDecodeError:
@@ -76,18 +85,27 @@ def registerCompany(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            username = "company" + str(User.objects.aggregate(Max("id"))["id__max"] + 1)
             email = data.get("email")
+            username = "company_" + email
+            companyName = data.get("name")
+            tin = data.get("TIN")
+            phoneNumber = data.get("phone")
             password = data.get("password")
-            if not email or not password:
-                return JsonResponse({"error": "All fields (username, email, password) are required."}, status=400)
+            address = data.get("HQaddress")
+            workingHours = data.get("workingHours")
+            confirmPassword = data.get("confirm_password")
+            if not email or not companyName or not tin or not phoneNumber or not password or not confirmPassword:
+                return JsonResponse({"error": "All fields are required."}, status=400)
             if User.objects.filter(email=email).exists():
                 return JsonResponse({"error": "Email already registered."}, status=400)
-            user = User.objects.create_user(username=username, email=email, password=password)
+            if password != confirmPassword:
+                return JsonResponse({"error: Passwords do not match."}, status=400)
+            user = User.objects.create_user(username=username, email=email, password=password, first_name=companyName, last_name='')
             user.is_active = False
             user.save()
-            if activateEmail(request, user, email):
-                return JsonResponse({"success": 1}, status=200)
+            dealership = Dealership.objects.create(user=user.id, phoneNumber=phoneNumber, TIN=tin)
+            if (activateEmail(request, user, email)):
+                return JsonResponse({"success": 1},status=200)
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON"}, status=400)
 
@@ -101,17 +119,33 @@ def loginUser(request):
         data = json.loads(request.body)
         email = data.get("email")
         password = data.get("password")
-        if  not email or not password:
-            return JsonResponse({"error": "All fields (username, email, password) are required."}, status=400)
+        if not email or not password:
+            return JsonResponse({"error": "All fields are required."}, status=400)
         try:
             user = User.objects.get(email=email)
             username = user.username
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
+                role = None
+                balance = None
+                try:
+                    # Try to find rentoid
+                    rentoid = Rentoid.objects.get(user=user.id)
+                    role = 'user'
+                    balance = rentoid.balance
+                except Rentoid.DoesNotExist:
+                    # If Rentoid does not exist, try to find the Dealership
+                    try:
+                        dealership = Dealership.objects.get(user=user.id)
+                        role = 'company'
+                    except Dealership.DoesNotExist:
+                        # If neither exists return none
+                        return None
                 return JsonResponse({
                                 'success': 1,
-                                'name': user.first_name
+                                'role': role,
+                                'balance': balance
                             }, status=200)
             else:
                 return JsonResponse({'success': 0}, status=400)
@@ -120,31 +154,16 @@ def loginUser(request):
 
 
 
-def userProfile():
+def userProfile(request):
     return
 
 
-def companyProfile():
-    return
-
-
-@api_view(["GET"])
-def getDealershipInfo(request):
-    dealership = Dealership.objects.get(id=1)
-    serializer = UserViewDealershipSerializer(
-        dealership, many=False
-    )  # we are only returning one dealership so many = False
-    if request.method == "GET":
-        return Response({"dealership": serializer.data})
+def companyProfile(request):
     return
 
 
 def profile(request):
     # based on content of request redirect to user/company
-    userProfile()
-    companyProfile()
-    return
-
-
-def car(request):
+    userProfile(request)
+    companyProfile(request)
     return
