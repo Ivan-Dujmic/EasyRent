@@ -1,22 +1,60 @@
 'use client';
 
-import {FormErrorMessage, chakra, Box, Button, FormControl, FormLabel, Input, VStack, Flex, Spacer, Container} from '@chakra-ui/react';
+import {
+  FormErrorMessage, 
+  chakra, 
+  Box, 
+  Button, 
+  FormControl, 
+  FormLabel, 
+  Input, 
+  VStack, 
+  Flex, 
+  Spacer
+} from '@chakra-ui/react';
 import {useForm} from 'react-hook-form';
+import { useState } from 'react';
 import WorkingHoursForm from '@/components/shared/auth/WorkingHoursForm';
-import { IRegisterCompany } from '@/typings/CompanyTyping/CompanyTyping';
+import { IRegisterCompany } from '@/typings/company/companyRegister.type';
+import useSWRMutation from 'swr/mutation';
+
+//ovo sam ja napravio novo za company
+import { registerCompany } from '@/mutation/authCompany';
+//nezz dali su ovo dobri inportovi ili napravit nove fileove za company register
+import { swrKeys } from '@/fetchers/swrKeys';
+import SuccessWindow from '@/components/shared/SuccessWidnow/SuccessWidnow';
+
 
 
 export default function HomePage() {
+  const [registered, setRegistered] = useState(false);
   const {
     register,
     handleSubmit,
     formState: { isSubmitting, errors },
     setError,
+    clearErrors,
     getValues,
   } = useForm<IRegisterCompany>();
 
+
+  const { trigger } = useSWRMutation(swrKeys.registerCompany, registerCompany, {
+    onSuccess: () => {
+      setRegistered(true);
+    },
+    onError: () => {
+      setError('email', {
+        type: 'manual',
+        message: 'This account already exists',
+      });
+    },
+  });
+
   const onRegister = async (data: IRegisterCompany) => {
-  
+    // ja sam ovdje sve errore napravio unutar input componenti
+    clearErrors();
+    console.log('On register:', data);
+    await trigger(data);
     console.log(data);
     }
 
@@ -31,7 +69,8 @@ export default function HomePage() {
     w: "40%"
   }
 
-  return (
+  return registered ? ( <SuccessWindow /> ) :
+  (
     <Box
     minWidth="800px"
     maxW="1200px"
@@ -55,13 +94,19 @@ export default function HomePage() {
               />
           </FormControl>
 
-          <FormControl isRequired>
+          <FormControl isRequired isInvalid={!!errors.email}>
             <FormLabel>Company email</FormLabel>
             <Input
             {...register("email")}
               type="email"
               placeholder="Enter company email"
             />
+          {errors.email && (
+                <FormErrorMessage color="red">
+                  {errors.email.message}
+                </FormErrorMessage>
+            )
+          }
           </FormControl>
 
           <FormControl isRequired>
@@ -85,20 +130,28 @@ export default function HomePage() {
       
         <VStack spacing="4" w="45%">
           <WorkingHoursForm />
-          <FormControl isRequired>
+          <FormControl isRequired isInvalid={!!errors.password}>
             <FormLabel>Password</FormLabel>
             <Input
-            {...register("password")}
+            {...register("password", {
+              required: "Must enter password",
+              validate: (value: string) =>{
+                if (value.length < 8)
+                  return 'Password must be at least 8 characters';
+                return true;
+              }})
+            }
               type="password"
               placeholder="Enter your password"
             />
+          {errors.password && (<FormErrorMessage color="red">{errors.password.message}</FormErrorMessage>)}
           </FormControl>
 
           <FormControl isRequired isInvalid={!!errors.password_confirm}>
             <FormLabel>Confirm password</FormLabel>
             <Input
             {...register("password_confirm", {
-              required: true,
+              required: "Password confirmation is required",
               validate: (value: string) =>{
                 if (value === getValues('password'))
                   return true;
