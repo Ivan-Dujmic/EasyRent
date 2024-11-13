@@ -19,11 +19,11 @@ class DealershipLogoSerializer(serializers.ModelSerializer):
 class OfferCardSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
-    companyName = serializers.CharField(source='dealerID.companyName')
-    modelName = serializers.CharField(source='modelID.modelName')
-    makeName = serializers.CharField(source='modelID.makeName')
-    noOfSeats = serializers.IntegerField(source='modelID.noOfSeats')
-    automatic = serializers.BooleanField(source='modelID.automatic')
+    companyName = serializers.CharField(source='dealer.companyName')
+    modelName = serializers.CharField(source='model.modelName')
+    makeName = serializers.CharField(source='model.makeName')
+    noOfSeats = serializers.IntegerField(source='model.noOfSeats')
+    automatic = serializers.BooleanField(source='model.automatic')
 
     class Meta:
         model = Offer

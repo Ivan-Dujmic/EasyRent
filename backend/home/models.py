@@ -33,8 +33,8 @@ class Model(models.Model):
 
 # for mapping the offer DB table
 class Offer(models.Model):
-    modelID = models.ForeignKey(Model, on_delete=models.CASCADE)
-    dealerID = models.ForeignKey(Dealership, on_delete=models.CASCADE)
+    model = models.ForeignKey(Model, on_delete=models.CASCADE)
+    dealer = models.ForeignKey(Dealership, on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     rating = models.FloatField(blank=True, default=None, null=True)
     noOfReviews = models.IntegerField(blank=True, default=0)
@@ -42,18 +42,18 @@ class Offer(models.Model):
     image = models.BinaryField(default=b'')
     #unique
     class Meta:
-        unique_together = ('modelID', 'dealerID')
+        unique_together = ('model', 'dealer')
     def __str__(self):
-        return "ModelID: " + self.modelID + " DealerID: " + self.dealerID
+        return "ModelID: " + self.model + " DealerID: " + self.dealer
 
 # for mapping the Vehicle DB table
 class Vehicle(models.Model):
     registration = models.CharField(max_length=20, unique=True)
-    modelID = models.ForeignKey(Model, on_delete=models.SET_NULL, null=True)
-    dealerID = models.ForeignKey(Dealership, on_delete=models.CASCADE)
+    model = models.ForeignKey(Model, on_delete=models.SET_NULL, null=True)
+    dealer = models.ForeignKey(Dealership, on_delete=models.CASCADE)
     insured = models.BooleanField(blank=True, default=None, null=True)
     yearOfCreation = models.IntegerField(blank=True, default=None, null=True)
     timesRented = models.IntegerField(blank=True, default=0)
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, blank=True, default=None, null=True)
     def __str__(self):
-        return "Reg: " + self.registration + " DealerID: " + self.dealerID
+        return "Reg: " + self.registration + " DealerID: " + self.dealer
