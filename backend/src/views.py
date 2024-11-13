@@ -54,7 +54,6 @@ def activateEmail(request, user, toEmail):
 @csrf_exempt
 def registerUser(request):
     if request.method == "POST":
-        print(request, "ovde")
         try:
             data = json.loads(request.body)
             username = "user" + str(User.objects.aggregate(Max("id"))["id__max"] + 1)
@@ -72,31 +71,32 @@ def registerUser(request):
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON"}, status=400)
 
-    else:
-        return 0
-
+@csrf_exempt
 def registerCompany(request):
     if request.method == "POST":
-        registerForm = NewCompanyForm(request.POST)
-        if registerForm.is_valid():
-            user = registerForm.save(commit = False)
-            user.is_active = False
-            user.save()
-            activateEmail(request, user, registerForm.cleaned_data.get("email"))
-            # username = registerForm.cleaned_data.get("username")
-            # login(request, user, backend="django.contrib.auth.backends.ModelBackend")
-            return redirect("src:home")
-
-        else:
-            return redirect("src:registerUser")
+        try:
+            data = json.loads(request.body)
+            username = "company" + str(User.objects.aggregate(Max("id"))["id__max"] + 1)
+            email = data.get("email")
+            password = data.get("password")
+            if  not email or not password:
+            	return JsonResponse({"error": "All fields (username, email, password) are required."}, status=400)
+            if User.objects.filter(email=email).exists():
+		        return JsonResponse({"error": "Email already registered."}, status=400)
+			user = User.objects.create_user(username=username, email=email, password=password)
+			user.is_active = False
+			user.save()
+			if (activateEmail(request, user, email)):
+		        return JsonResponse({"success": 1},status=200)
+	    except json.JSONDecodeError:
+		    return JsonResponse({"error": "Invalid JSON"}, status=400)
 
 def logoutUser(request):
     logout(request)
     return JsonResponse({"success": 1}, status=200)
 
-
+@csrf_exempt
 def loginUser(request):
-
     if request.method == "POST":
         data = json.loads(request.body)
         email = data.get("email")
