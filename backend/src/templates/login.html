@@ -2,56 +2,55 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Form</title>
+    <title>Register User</title>
 </head>
 <body>
-    <h2>Login</h2>
 
-    <form id="loginForm">
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required><br><br>
+<h1>Login User</h1>
+<button onclick="registerUser()">Login</button>
 
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required><br><br>
+<script>
+    function registerUser() {
+        // Example JSON data for registration
+        const data = {
+            email: "ivan.dzanija222@gmail.com",
+            password: "password123"
+        };
 
-        <button type="submit">Login</button>
-    </form>
-
-    <p id="responseMessage"></p>
-
-    <script>
-        // Attach a submit event handler to the form
-        document.getElementById('loginForm').addEventListener('submit', function (event) {
-            event.preventDefault();  // Prevent the form from submitting the traditional way
-
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            // Send a POST request to the backend
-            fetch('http://localhost:8000/api/login_with_email/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email: email,
-                    password: password
-                }),
-                credentials: 'include'  // This will include cookies (for session management)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message === 'Login successful') {
-                    document.getElementById('responseMessage').textContent = 'Login successful!';
-                } else {
-                    document.getElementById('responseMessage').textContent = 'Login failed: ' + data.message;
-                }
-            })
-            .catch(error => {
-                document.getElementById('responseMessage').textContent = 'An error occurred: ' + error;
-            });
+        fetch('/loginUser/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')  // Include CSRF token if CSRF is enabled
+            },
+            body: JSON.stringify(data)  // Convert data to JSON format
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+            alert('Response: ' + JSON.stringify(data));
+        })
+        .catch((error) => {
+            console.error('Error:', error);
         });
-    </script>
+    }
+
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+
 </body>
 </html>

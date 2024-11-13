@@ -90,6 +90,7 @@ def logoutUser(request):
 
 
 def loginUser(request):
+
     if request.method == "POST":
         data = json.loads(request.body)
         email = data.get("email")
@@ -110,6 +111,7 @@ def loginUser(request):
                 return JsonResponse({'success': 0}, status=400)
         except User.DoesNotExist:
             return JsonResponse({'message': 'Invalid credentials'}, status=400)
+
 
 
 def userProfile():
