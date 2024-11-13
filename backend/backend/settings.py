@@ -33,7 +33,7 @@ ALLOWED_HOSTS = ['http://localhost:3000','127.0.0.1' ]
 
 
 # Application definition
-SITE_ID = 3
+SITE_ID = 1
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -107,7 +107,7 @@ DATABASES = {
         "USER": "postgres",
         "PASSWORD": "postgres",
         "HOST": "localhost",
-        "PORT": "5433",
+        "PORT": "5432",
     }
 }
 
