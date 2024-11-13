@@ -1,33 +1,46 @@
 'use client';
 
-import {chakra, Box, Button, FormControl, FormLabel, Input, Heading, VStack, Flex, Spacer, FormErrorMessage} from '@chakra-ui/react';
-import {SubmitHandler, useForm} from 'react-hook-form';
+import {
+  chakra,
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  Heading,
+  VStack,
+  Flex,
+  Spacer,
+  FormErrorMessage,
+} from '@chakra-ui/react';
+import { SubmitHandler, useForm } from 'react-hook-form';
 
 type FormFields = {
-  email:string,
-  password: string
-}
+  email: string;
+  password: string;
+};
 
 export default function HomePage() {
   const {
     register,
     handleSubmit,
     setError,
-    formState: {errors, isSubmitting}
+    formState: { errors, isSubmitting },
   } = useForm<FormFields>();
 
   const onSubmit: SubmitHandler<FormFields> = async (data) => {
-    console.log(data)
+    console.log(data);
     await new Promise((resolve) => {
-      try{ // tu saljem pudatke backendu
+      try {
+        // tu saljem pudatke backendu
         setTimeout(resolve, 1000);
+      } catch (error) {
+        // tu hvatam error-e okje mi backend posalje
+        setError('root', {
+          message: 'This email is not registered.',
+        });
       }
-      catch (error){ // tu hvatam error-e okje mi backend posalje
-        setError("root", {
-          message: "This email is not registered."
-        })
-      }
-    })
+    });
   };
 
   const suppButtons = {
@@ -84,21 +97,28 @@ export default function HomePage() {
   
             <Flex direction={'row'} justifyContent={'space-evenly'} alignItems={'center'}
             w={'full'}
+          >
+            <Button
+              type="submit"
+              p={5}
+              borderRadius="md"
+              bg="brandblue"
+              m="5"
+              color={'brandwhite'}
+              disabled={isSubmitting}
             >
-                <Button  type="submit" p={5} borderRadius="md"
-                bg="brandblue" m="5" color={'brandwhite'} disabled={isSubmitting}>
-                {isSubmitting ? "Logging in..." : "Login"}
-                </Button>
-                <Spacer />
-                <Button as="a" href='/register/user' sx={suppButtons}>
-                Register
-                </Button>
-                <Button  as="a" href='/' sx={suppButtons}>
-                Continue as guest
-                </Button>
-            </Flex>
-          </VStack>
-        </chakra.form>
-      </Box>
+              {isSubmitting ? 'Logging in...' : 'Login'}
+            </Button>
+            <Spacer />
+            <Button as="a" href="/register/user" sx={suppButtons}>
+              Register
+            </Button>
+            <Button as="a" href="/home" sx={suppButtons}>
+              Continue as guest
+            </Button>
+          </Flex>
+        </VStack>
+      </chakra.form>
+    </Box>
   );
 }

@@ -24,8 +24,8 @@ export default function HomePage() {
     bg: "brandlightgray",
     p: 5,
     m: 5,
-    BorderRadius: "md"
-}
+    BorderRadius: 'md',
+  };
 
   const inputText = {
     w: "40%"
