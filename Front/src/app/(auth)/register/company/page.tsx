@@ -1,21 +1,61 @@
 'use client';
 
 import {
+  FormErrorMessage,
+  chakra,
   Box,
   Button,
   FormControl,
   FormLabel,
   Input,
-  Heading,
   VStack,
   Flex,
   Spacer,
 } from '@chakra-ui/react';
+import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import WorkingHoursForm from '@/components/shared/auth/WorkingHoursForm';
+import { IRegisterCompany } from '@/typings/company/companyRegister.type';
+import useSWRMutation from 'swr/mutation';
+
+//ovo sam ja napravio novo za company
+import { registerCompany } from '@/mutation/authCompany';
+//nezz dali su ovo dobri inportovi ili napravit nove fileove za company register
+import { swrKeys } from '@/fetchers/swrKeys';
+import SuccessWindow from '@/components/shared/SuccessWidnow/SuccessWidnow';
 
 export default function HomePage() {
+  const [registered, setRegistered] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { isSubmitting, errors },
+    setError,
+    clearErrors,
+    getValues,
+  } = useForm<IRegisterCompany>();
+
+  const { trigger } = useSWRMutation(swrKeys.registerCompany, registerCompany, {
+    onSuccess: () => {
+      setRegistered(true);
+    },
+    onError: () => {
+      setError('email', {
+        type: 'manual',
+        message: 'This Company is already registered',
+      });
+    },
+  });
+
+  const onRegister = async (data: IRegisterCompany) => {
+    // ja sam ovdje sve errore napravio unutar input componenti
+    clearErrors();
+    console.log('On register:', data);
+    await trigger(data);
+  };
+
   const suppButtons = {
-    bg: 'lightgray',
+    bg: 'brandlightgray',
     p: 5,
     m: 5,
     BorderRadius: 'md',
@@ -25,7 +65,9 @@ export default function HomePage() {
     w: '40%',
   };
 
-  return (
+  return registered ? (
+    <SuccessWindow />
+  ) : (
     <Box
       minWidth="800px"
       maxW="1200px"
@@ -35,30 +77,39 @@ export default function HomePage() {
       p="6"
       boxShadow="lg"
       borderRadius="md"
-      bg="white"
+      bg="brandwhite"
     >
-      <form>
+      <chakra.form onSubmit={handleSubmit(onRegister)}>
         <Flex justifyContent="space-between">
           <VStack spacing="4" w="45%">
             <FormControl isRequired>
               <FormLabel>Company name</FormLabel>
-              <Input type="text" name="name" placeholder="Enter company name" />
+              <Input
+                {...register('name')}
+                type="text"
+                placeholder="Enter company name"
+              />
             </FormControl>
 
-            <FormControl isRequired>
+            <FormControl isRequired isInvalid={!!errors.email}>
               <FormLabel>Company email</FormLabel>
               <Input
+                {...register('email')}
                 type="email"
-                name="email"
                 placeholder="Enter company email"
               />
+              {errors.email && (
+                <FormErrorMessage color="red">
+                  {errors.email.message}
+                </FormErrorMessage>
+              )}
             </FormControl>
 
             <FormControl isRequired>
               <FormLabel>Phone number</FormLabel>
               <Input
+                {...register('phone')}
                 type="tel"
-                name="tel"
                 placeholder="Enter company phone number"
               />
             </FormControl>
@@ -66,31 +117,63 @@ export default function HomePage() {
             <FormControl isRequired>
               <FormLabel>HQ address</FormLabel>
               <Input
+                {...register('HQaddress')}
                 type="text"
-                name="address"
                 placeholder="Enter company address"
+              />
+            </FormControl>
+
+            <FormControl isRequired>
+              <FormLabel>TIN</FormLabel>
+              <Input
+                {...register('TIN')}
+                type="text"
+                placeholder="Enter company TIN"
               />
             </FormControl>
           </VStack>
 
           <VStack spacing="4" w="45%">
             <WorkingHoursForm />
-            <FormControl isRequired>
+            <FormControl isRequired isInvalid={!!errors.password}>
               <FormLabel>Password</FormLabel>
               <Input
+                {...register('password', {
+                  required: 'Must enter password',
+                  validate: (value: string) => {
+                    if (value.length < 8)
+                      return 'Password must be at least 8 characters';
+                    return true;
+                  },
+                })}
                 type="password"
-                name="password"
                 placeholder="Enter your password"
               />
+              {errors.password && (
+                <FormErrorMessage color="red">
+                  {errors.password.message}
+                </FormErrorMessage>
+              )}
             </FormControl>
 
-            <FormControl isRequired>
+            <FormControl isRequired isInvalid={!!errors.password_confirm}>
               <FormLabel>Confirm password</FormLabel>
               <Input
+                {...register('password_confirm', {
+                  required: 'Password confirmation is required',
+                  validate: (value: string) => {
+                    if (value === getValues('password')) return true;
+                    return 'Passwords do not match';
+                  },
+                })}
                 type="password"
-                name="password"
                 placeholder="Repeat your password"
               />
+              {errors.password_confirm && (
+                <FormErrorMessage color="red">
+                  {errors.password_confirm.message}
+                </FormErrorMessage>
+              )}
             </FormControl>
           </VStack>
         </Flex>
@@ -102,7 +185,7 @@ export default function HomePage() {
           w={'full'}
           mt={5}
         >
-          <Button as="a" href="/home" sx={suppButtons}>
+          <Button as="a" href="/" sx={suppButtons}>
             Continue as guest
           </Button>
           <Button
@@ -111,7 +194,7 @@ export default function HomePage() {
             p={5}
             borderRadius="md"
             sx={suppButtons}
-            bg="blue"
+            bg="brandblue"
             m="5"
           >
             Login
@@ -121,15 +204,15 @@ export default function HomePage() {
             type="submit"
             p={5}
             borderRadius="md"
-            bg="blue"
+            bg="brandblue"
             m="5"
-            color={'white'}
+            color={'brandwhite'}
             mr="30%"
           >
             Register
           </Button>
         </Flex>
-      </form>
+      </chakra.form>
     </Box>
   );
 }

@@ -14,71 +14,81 @@ import {
   FormErrorMessage,
 } from '@chakra-ui/react';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { useState } from 'react';
+import { ILogIn } from '@/typings/logIn/logIn.type';
 
-type FormFields = {
-  email: string;
-  password: string;
-};
+import useSWRMutation from 'swr/mutation';
+import { swrKeys } from '@/fetchers/swrKeys';
+import SuccessWindow from '@/components/shared/SuccessWidnow/SuccessWidnow';
+import { logIn } from '@/mutation/login';
+import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
+  const [loggedIn, setLoggedIn] = useState(false);
   const {
     register,
     handleSubmit,
+    formState: { isSubmitting, errors },
     setError,
-    formState: { errors, isSubmitting },
-  } = useForm<FormFields>();
+    clearErrors,
+    getValues,
+  } = useForm<ILogIn>();
+  const router = useRouter();
 
-  const onSubmit: SubmitHandler<FormFields> = async (data) => {
+  const { trigger } = useSWRMutation(swrKeys.logIn, logIn, {
+    onSuccess: () => {
+      setLoggedIn(true);
+      router.push('/YourHomePage'); //morat cu prilagodit da razlikuje za korisnika i firme
+    },
+    onError: () => {
+      setError('email', {
+        type: 'manual',
+        message: 'This email is not registered',
+      });
+    },
+  });
+
+  const onLogIn = async (data: ILogIn) => {
+    clearErrors();
+    console.log('On register:', data);
+    await trigger(data);
     console.log(data);
-    await new Promise((resolve) => {
-      try {
-        // tu saljem pudatke backendu
-        setTimeout(resolve, 1000);
-      } catch (error) {
-        // tu hvatam error-e okje mi backend posalje
-        setError('root', {
-          message: 'This email is not registered.',
-        });
-      }
-    });
   };
 
   const suppButtons = {
-    bg: 'lightgray',
+    bg: 'brandlightgray',
     p: 5,
     m: 5,
     BorderRadius: 'md',
   };
 
-  return (
+  return loggedIn ? (
+    <SuccessWindow />
+  ) : (
     <Box
       minWidth="400px"
       maxW="800px"
       w="80vw"
-      margin="auto auto"
+      margin="0 auto"
+      mt="10"
       p="6"
       boxShadow="lg"
       borderRadius="md"
-      bg="white"
+      bg="brandwhite"
     >
       <Heading as="h2" size="lg" mb="6">
         Login
       </Heading>
 
-      <chakra.form onSubmit={handleSubmit(onSubmit)}>
+      <chakra.form onSubmit={handleSubmit(onLogIn)}>
         <VStack spacing="4">
-          <FormControl isRequired>
+          <FormControl isRequired isInvalid={!!errors.email}>
             <FormLabel>Email</FormLabel>
             <Input
               {...register('email', {
                 required: 'Email is required',
-                validate: (value: string) => {
-                  value.includes('@');
-                  return 'Email must include @';
-                },
               })}
               type="email"
-              name="email"
               placeholder="Enter your email"
             />
             {errors.email && (
@@ -87,17 +97,21 @@ export default function HomePage() {
               </FormErrorMessage>
             )}
           </FormControl>
-
-          <FormControl isRequired>
+          <FormControl isRequired isInvalid={!!errors.password}>
             <FormLabel>Password</FormLabel>
             <Input
-              {...register('email')}
+              {...register('password', {
+                required: 'Must enter password',
+              })}
               type="password"
-              name="password"
               placeholder="Enter your password"
             />
+            {errors.password && (
+              <FormErrorMessage color={'red'}>
+                {errors.password.message}
+              </FormErrorMessage>
+            )}
           </FormControl>
-
           <Flex
             direction={'row'}
             justifyContent={'space-evenly'}
@@ -108,9 +122,9 @@ export default function HomePage() {
               type="submit"
               p={5}
               borderRadius="md"
-              bg="blue"
+              bg="brandblue"
               m="5"
-              color={'white'}
+              color={'brandwhite'}
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Logging in...' : 'Login'}

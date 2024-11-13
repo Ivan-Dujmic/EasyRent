@@ -46,7 +46,7 @@ export default function HomePage() {
   });
 
   const suppButtons = {
-    bg: 'lightgray',
+    bg: 'brandlightgray',
     p: 5,
     m: 5,
     BorderRadius: 'md',
@@ -75,7 +75,6 @@ export default function HomePage() {
     clearErrors();
     console.log('On register:', data);
     await trigger(data);
-    console.log(data);
   };
 
   return registered ? (
@@ -90,7 +89,7 @@ export default function HomePage() {
       p="6"
       boxShadow="lg"
       borderRadius="md"
-      bg="white"
+      bg="brandwhite"
     >
       <chakra.form onSubmit={handleSubmit(onRegister)}>
         <Flex justifyContent="space-between">
@@ -204,7 +203,7 @@ export default function HomePage() {
             p={5}
             borderRadius="md"
             sx={suppButtons}
-            bg="blue"
+            bg="brandblue"
             m="5"
           >
             Login
@@ -214,9 +213,9 @@ export default function HomePage() {
             type="submit"
             p={5}
             borderRadius="md"
-            bg="blue"
+            bg="brandblue"
             m="5"
-            color={'white'}
+            color={'brandwhite'}
             mr="30%"
           >
             Register
