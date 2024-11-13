@@ -33,7 +33,7 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-SITE_ID = 1
+SITE_ID = 3
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -102,9 +102,9 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "EasyRentTest",
         "USER": "postgres",
-        "PASSWORD": "postgres",    
+        "PASSWORD": "postgres",
         "HOST": "localhost",
-        "PORT": "5432",
+        "PORT": "5433",
     }
 }
 
@@ -155,6 +155,9 @@ AUTHENTICATION_BACKENDS = (
     "allauth.account.auth_backends.AuthenticationBackend",
 )
 
+SESSION_COOKIE_SECURE = True  # Send only over HTTPS
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access
+SESSION_COOKIE_SAMESITE = 'Lax'
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_HOST_USER = os.getenv("HOST_EMAIL")
