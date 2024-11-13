@@ -46,7 +46,7 @@ export default function HomePage() {
   });
 
   const suppButtons = {
-    bg: "brandlightgray",
+    bg: 'brandlightgray',
     p: 5,
     m: 5,
     BorderRadius: 'md',
@@ -75,7 +75,6 @@ export default function HomePage() {
     clearErrors();
     console.log('On register:', data);
     await trigger(data);
-    console.log(data);
   };
 
   return registered ? (

@@ -21,8 +21,7 @@ import useSWRMutation from 'swr/mutation';
 import { swrKeys } from '@/fetchers/swrKeys';
 import SuccessWindow from '@/components/shared/SuccessWidnow/SuccessWidnow';
 import { logIn } from '@/mutation/login';
-
-
+import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -34,10 +33,12 @@ export default function HomePage() {
     clearErrors,
     getValues,
   } = useForm<ILogIn>();
+  const router = useRouter();
 
   const { trigger } = useSWRMutation(swrKeys.logIn, logIn, {
     onSuccess: () => {
       setLoggedIn(true);
+      router.push('/YourHomePage'); //morat cu prilagodit da razlikuje za korisnika i firme
     },
     onError: () => {
       setError('email', {
@@ -55,11 +56,11 @@ export default function HomePage() {
   };
 
   const suppButtons = {
-          bg: "brandlightgray",
-          p: 5,
-          m: 5,
-          BorderRadius: "md"
-  }
+    bg: 'brandlightgray',
+    p: 5,
+    m: 5,
+    BorderRadius: 'md',
+  };
 
   return loggedIn ? (
     <SuccessWindow />
@@ -84,26 +85,37 @@ export default function HomePage() {
           <FormControl isRequired isInvalid={!!errors.email}>
             <FormLabel>Email</FormLabel>
             <Input
-              {...register("email", {
-                required: "Email is required"
+              {...register('email', {
+                required: 'Email is required',
               })}
               type="email"
               placeholder="Enter your email"
             />
-          {errors.email && <FormErrorMessage color={"red"}>{errors.email.message}</FormErrorMessage>}
+            {errors.email && (
+              <FormErrorMessage color={'red'}>
+                {errors.email.message}
+              </FormErrorMessage>
+            )}
           </FormControl>
           <FormControl isRequired isInvalid={!!errors.password}>
             <FormLabel>Password</FormLabel>
             <Input
-              {...register("password", {
-                required: "Must enter password"
+              {...register('password', {
+                required: 'Must enter password',
               })}
               type="password"
               placeholder="Enter your password"
             />
-          {errors.password && <FormErrorMessage color={"red"}>{errors.password.message}</FormErrorMessage>}
+            {errors.password && (
+              <FormErrorMessage color={'red'}>
+                {errors.password.message}
+              </FormErrorMessage>
+            )}
           </FormControl>
-          <Flex direction={'row'} justifyContent={'space-evenly'} alignItems={'center'}
+          <Flex
+            direction={'row'}
+            justifyContent={'space-evenly'}
+            alignItems={'center'}
             w={'full'}
           >
             <Button
@@ -117,14 +129,14 @@ export default function HomePage() {
             >
               {isSubmitting ? 'Logging in...' : 'Login'}
             </Button>
-          <Spacer />
-          <Button as="a" href="/register/user" sx={suppButtons}>
-            Register
-          </Button>
-          <Button as="a" href="/home" sx={suppButtons}>
-            Continue as guest
-          </Button>
-        </Flex>
+            <Spacer />
+            <Button as="a" href="/register/user" sx={suppButtons}>
+              Register
+            </Button>
+            <Button as="a" href="/home" sx={suppButtons}>
+              Continue as guest
+            </Button>
+          </Flex>
         </VStack>
       </chakra.form>
     </Box>
