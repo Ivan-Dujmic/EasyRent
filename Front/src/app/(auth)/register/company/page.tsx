@@ -83,7 +83,7 @@ export default function HomePage() {
     bg="brandwhite"
   >
     <chakra.form onSubmit={handleSubmit(onRegister)}>
-      <Flex justifyContent="space-between">
+      <Flex justifyContent="space-between" >
         <VStack spacing="4" w="45%">
           <FormControl isRequired>
               <FormLabel>Company name</FormLabel>

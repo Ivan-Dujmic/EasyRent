@@ -11,7 +11,6 @@ import {
 } from '@chakra-ui/react';
 
 export default function WorkingHoursForm() {
-  const margins = { m: 2 };
   return (
     <VStack width={'full'} gap={0} alignItems={'end'}>
       <Flex
@@ -19,11 +18,11 @@ export default function WorkingHoursForm() {
         alignItems={'center'}
         width={'full'}
       >
-        <Text textAlign={'center'} sx={margins}>
+        <Text minWidth={"35px"} textAlign={'center'} m={2}>
           Mon
         </Text>
-        <Input type="time" sx={margins} />
-        <Input type="time" sx={margins} />
+        <Input type="time" m={2} />
+        <Input type="time" m={2} />
       </Flex>
 
       <Flex
@@ -31,11 +30,11 @@ export default function WorkingHoursForm() {
         alignItems={'center'}
         width={'full'}
       >
-        <Text textAlign={'center'} sx={margins}>
+        <Text minWidth={"35px"} textAlign={'center'} m={2}>
           Tue
         </Text>
-        <Input type="time" sx={margins} />
-        <Input type="time" sx={margins} />
+        <Input type="time" m={2} />
+        <Input type="time" m={2} />
       </Flex>
 
       <Flex
@@ -43,11 +42,11 @@ export default function WorkingHoursForm() {
         alignItems={'center'}
         width={'full'}
       >
-        <Text textAlign={'center'} sx={margins}>
+        <Text minWidth={"35px"} textAlign={'center'} m={2}>
           Wed
         </Text>
-        <Input type="time" sx={margins} />
-        <Input type="time" sx={margins} />
+        <Input type="time" m={2} />
+        <Input type="time" m={2} />
       </Flex>
 
       <Flex
@@ -55,11 +54,11 @@ export default function WorkingHoursForm() {
         alignItems={'center'}
         width={'full'}
       >
-        <Text textAlign={'center'} sx={margins}>
+        <Text minWidth={"35px"} textAlign={'center'} m={2}>
           Thu
         </Text>
-        <Input type="time" sx={margins} />
-        <Input type="time" sx={margins} />
+        <Input type="time" m={2} />
+        <Input type="time" m={2} />
       </Flex>
 
       <Flex
@@ -67,11 +66,11 @@ export default function WorkingHoursForm() {
         alignItems={'center'}
         width={'full'}
       >
-        <Text textAlign={'center'} sx={margins}>
+        <Text minWidth={"35px"} textAlign={'center'} m={2}>
           Fri
         </Text>
-        <Input type="time" sx={margins} />
-        <Input type="time" sx={margins} />
+        <Input type="time" m={2} />
+        <Input type="time" m={2} />
       </Flex>
 
       <Flex
@@ -79,11 +78,11 @@ export default function WorkingHoursForm() {
         alignItems={'center'}
         width={'full'}
       >
-        <Text textAlign={'center'} sx={margins}>
+        <Text minWidth={"35px"} textAlign={'center'} m={2}>
           Sat
         </Text>
-        <Input type="time" sx={margins} />
-        <Input type="time" sx={margins} />
+        <Input type="time" m={2} />
+        <Input type="time" m={2} />
       </Flex>
 
       <Flex
@@ -91,11 +90,11 @@ export default function WorkingHoursForm() {
         alignItems={'center'}
         width={'full'}
       >
-        <Text textAlign={'center'} sx={margins}>
+        <Text minWidth={"35px"} textAlign={'center'} m={2}>
           Sun
         </Text>
-        <Input type="time" sx={margins} />
-        <Input type="time" sx={margins} />
+        <Input type="time" m={2} />
+        <Input type="time" m={2} />
       </Flex>
     </VStack>
   );

@@ -85,14 +85,9 @@ export default function HomePage() {
             <FormLabel>Email</FormLabel>
             <Input
               {...register("email", {
-                required: "Email is required",
-                validate: (value: string) => {
-                  value.includes("@");
-                  return "Email must include @";
-                }
+                required: "Email is required"
               })}
               type="email"
-              name="email"
               placeholder="Enter your email"
             />
           {errors.email && <FormErrorMessage color={"red"}>{errors.email.message}</FormErrorMessage>}
@@ -100,11 +95,10 @@ export default function HomePage() {
           <FormControl isRequired isInvalid={!!errors.password}>
             <FormLabel>Password</FormLabel>
             <Input
-              {...register("email", {
+              {...register("password", {
                 required: "Must enter password"
               })}
               type="password"
-              name="password"
               placeholder="Enter your password"
             />
           {errors.password && <FormErrorMessage color={"red"}>{errors.password.message}</FormErrorMessage>}
