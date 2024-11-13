@@ -1,16 +1,50 @@
+'use client';
+
+import SuccessWindow from '@/components/shared/SuccessWidnow/SuccessWidnow';
+import { swrKeys } from '@/fetchers/swrKeys';
+import { registerUser } from '@/mutation/auth';
+import { IRegisterUser } from '@/typings/users/user.type';
 import {
   Box,
   Button,
   FormControl,
   FormLabel,
   Input,
-  Heading,
   VStack,
   Flex,
   Spacer,
+  chakra,
+  FormErrorMessage,
+  Center,
+  Heading,
 } from '@chakra-ui/react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import useSWRMutation from 'swr/mutation';
 
 export default function HomePage() {
+  const [registered, setRegistered] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { isSubmitting, errors },
+    setError,
+    clearErrors,
+    getValues,
+  } = useForm<IRegisterUser>();
+
+  const { trigger } = useSWRMutation(swrKeys.registerUser, registerUser, {
+    onSuccess: () => {
+      setRegistered(true);
+    },
+    onError: () => {
+      setError('email', {
+        type: 'manual',
+        message: 'This account already exists',
+      });
+    },
+  });
+
   const suppButtons = {
     bg: 'lightgray',
     p: 5,
@@ -22,7 +56,30 @@ export default function HomePage() {
     w: '40%',
   };
 
-  return (
+  const onRegister = async (data: IRegisterUser) => {
+    if (data.password.length < 8) {
+      setError('password', {
+        type: 'manual',
+        message: 'Password must be at least 8 characters',
+      });
+      return;
+    }
+    if (data.password !== data.confirmPassword) {
+      setError('confirmPassword', {
+        type: 'manual',
+        message: 'Passwords do not match',
+      });
+      return;
+    }
+    // Clear previous errors if any
+    clearErrors();
+    console.log('On register:', data);
+    await trigger(data);
+  };
+
+  return registered ? (
+    <SuccessWindow />
+  ) : (
     <Box
       minWidth="800px"
       maxW="1200px"
@@ -34,15 +91,15 @@ export default function HomePage() {
       borderRadius="md"
       bg="white"
     >
-      <form>
+      <chakra.form onSubmit={handleSubmit(onRegister)}>
         <Flex justifyContent="space-between">
           <VStack spacing="4" w="45%">
             <FormControl isRequired>
               <FormLabel>First Name</FormLabel>
               <Input
                 type="text"
-                name="name"
                 placeholder="Enter your first name"
+                {...register('firstName')}
               />
             </FormControl>
 
@@ -50,8 +107,8 @@ export default function HomePage() {
               <FormLabel>Last Name</FormLabel>
               <Input
                 type="text"
-                name="surname"
                 placeholder="Enter your last name"
+                {...register('lastName')}
               />
             </FormControl>
 
@@ -59,43 +116,73 @@ export default function HomePage() {
               <FormLabel>Driver's Licence</FormLabel>
               <Input
                 type="number"
-                name="licence"
                 placeholder="Enter your driver's licence id"
+                {...register('driverLicence')}
               />
             </FormControl>
           </VStack>
 
           <VStack spacing="4" w="45%">
-            <FormControl isRequired>
+            <FormControl isRequired isInvalid={!!errors.email}>
               <FormLabel>Email</FormLabel>
-              <Input type="email" name="email" placeholder="Enter your email" />
+              <Input
+                type="email"
+                placeholder="Enter your email"
+                required
+                {...register('email')}
+              />
+              {errors.email && (
+                <FormErrorMessage color="brandblue">
+                  {errors.email?.message}
+                </FormErrorMessage>
+              )}
             </FormControl>
 
             <FormControl isRequired>
               <FormLabel>Phone number</FormLabel>
               <Input
                 type="tel"
-                name="tel"
                 placeholder="Enter your phone number"
+                {...register('phoneNumber')}
               />
             </FormControl>
 
-            <FormControl isRequired>
+            <FormControl isRequired isInvalid={!!errors.password}>
               <FormLabel>Password</FormLabel>
               <Input
                 type="password"
-                name="password"
                 placeholder="Enter your password"
+                {...register('password', {
+                  required: 'Password is required',
+                  minLength: {
+                    value: 8,
+                    message: 'Password must be at least 8 characters',
+                  },
+                })}
               />
+              {errors.password && (
+                <FormErrorMessage color="brandblue">
+                  {errors.password?.message}
+                </FormErrorMessage>
+              )}
             </FormControl>
 
-            <FormControl isRequired>
+            <FormControl isRequired isInvalid={!!errors.confirmPassword}>
               <FormLabel>Confirm password</FormLabel>
               <Input
                 type="password"
-                name="password"
                 placeholder="Repeat your password"
+                {...register('confirmPassword', {
+                  required: 'Password confirmation is required',
+                  validate: (value) =>
+                    value === getValues('password') || 'Passwords do not match',
+                })}
               />
+              {errors.confirmPassword && (
+                <FormErrorMessage color="brandblue">
+                  {errors.confirmPassword?.message}
+                </FormErrorMessage>
+              )}
             </FormControl>
           </VStack>
         </Flex>
@@ -134,7 +221,7 @@ export default function HomePage() {
             Register
           </Button>
         </Flex>
-      </form>
+      </chakra.form>
     </Box>
   );
 }
