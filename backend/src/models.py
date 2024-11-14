@@ -27,26 +27,9 @@ class Dealership(models.Model):
         return self.companyName
 
 
-class Country(models.Model):
-    countryName = models.CharField(max_length=50, unique=True)
-
-    def __str__(self):
-        return self.countryName
-
-
-class City(models.Model):
-    cityName = models.CharField(max_length=50)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE, default="1")
-
-    class Meta:
-        unique_together = ('cityName', 'country')
-
-    def __str__(self):
-        return f"{self.country} {self.cityName}"
-
-
 class Location(models.Model):
-    city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True)
+    countryName = models.CharField(max_length=50, blank=True, default='')
+    cityName = models.CharField(max_length=50, blank=True, default='')
     streetName = models.CharField(max_length=100)
     streetNo = models.CharField(max_length=10)
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
@@ -56,7 +39,7 @@ class Location(models.Model):
 
     class Meta:
         unique_together = (
-            ("city", "streetName", "streetNo"),
+            ("countryName", "cityName", "streetName", "streetNo"),
             ("latitude", "longitude"),
         )
         constraints = [
@@ -68,7 +51,7 @@ class Location(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.city} {self.streetName} {self.streetNo}"
+        return f"{self.countryName} {self.cityName} {self.streetName} {self.streetNo}"
 
 
 class WorkingHours(models.Model):
@@ -78,13 +61,13 @@ class WorkingHours(models.Model):
             (i, day)
             for i, day in enumerate(
                 [
-                    "Monday",
-                    "Tuesday",
-                    "Wednesday",
-                    "Thursday",
-                    "Friday",
-                    "Saturday",
-                    "Sunday",
+                    "Mon",
+                    "Tue",
+                    "Wed",
+                    "Thu",
+                    "Fri",
+                    "Sat",
+                    "Sun",
                 ]
             )
         ]
