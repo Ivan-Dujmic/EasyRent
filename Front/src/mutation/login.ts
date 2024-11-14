@@ -10,7 +10,12 @@ export async function logIn(url: string, { arg }: { arg: ILogIn }) {
     method: 'POST',
     body: JSON.stringify(arg),
   });
-  /*  localStorage.setItem('user-id', (data as IUser).user.id); */
+
+  if (data?.success) {
+    // Pretpostavljam da data sadrži korisničke podatke
+    localStorage.setItem('userData', JSON.stringify(data));
+  }
+
   console.log('podaci sa servera za login: ', data);
   return data;
 }
