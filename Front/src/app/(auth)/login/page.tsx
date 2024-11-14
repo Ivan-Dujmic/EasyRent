@@ -13,15 +13,15 @@ import {
   Spacer,
   FormErrorMessage,
 } from '@chakra-ui/react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { ILogIn } from '@/typings/logIn/logIn.type';
 
 import useSWRMutation from 'swr/mutation';
 import { swrKeys } from '@/fetchers/swrKeys';
-import SuccessWindow from '@/components/shared/SuccessWidnow/SuccessWidnow';
 import { logIn } from '@/mutation/login';
 import { useRouter } from 'next/navigation';
+import SucessLoginWindow from '@/components/shared/SuccessWidnow/SucessLoginWindow';
 
 export default function HomePage() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -36,9 +36,10 @@ export default function HomePage() {
   const router = useRouter();
 
   const { trigger } = useSWRMutation(swrKeys.logIn, logIn, {
-    onSuccess: () => {
+    onSuccess: (data) => {
       setLoggedIn(true);
-      router.push('/YourHomePage'); //morat cu prilagodit da razlikuje za korisnika i firme
+      if (data?.role == 'user') router.push('/YourHomePage');
+      else if (data?.role == 'company') router.push('/CompanyHomePage');
     },
     onError: () => {
       setError('email', {
@@ -63,7 +64,7 @@ export default function HomePage() {
   };
 
   return loggedIn ? (
-    <SuccessWindow />
+    <SucessLoginWindow />
   ) : (
     <Box
       minWidth="400px"
