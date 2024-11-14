@@ -20,7 +20,7 @@ export const AnimatedSignUp = () => {
       >
         <Text
           as={NextLink}
-          href="/register"
+          href="/register/user"
           color={'brandblue'}
           fontWeight={'semibold'}
         >

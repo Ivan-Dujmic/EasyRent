@@ -3,44 +3,25 @@ from django.forms import ValidationError
 from django.contrib.auth.models import AbstractUser, User
 
 
-class AppUser(models.Model):
-    email = models.CharField(max_length=254, unique=True)
-    UID = models.CharField(max_length=18)
-    phoneNumber = models.CharField(max_length=20, null=True, blank=True)
-    passwordHash = models.CharField(max_length=255)
-    isActivated = models.BooleanField(default=False, blank=True)
-
-    def __str__(self):
-        return self.email
-
-
-class RegistrationRequest(models.Model):
-    appUserID = models.ForeignKey(AppUser, on_delete=models.CASCADE)
-    token = models.CharField(max_length=255, unique=True)
-    generationTimestamp = models.DateTimeField(auto_now_add=True)
-    isComplete = models.BooleanField(default=False, blank=True)
-
-    def __str__(self):
-        return f"{self.appUserID} {self.token}"
-
-
 class Rentoid(models.Model):
-    appUserID = models.ForeignKey(AppUser, on_delete=models.CASCADE)
-    firstName = models.CharField(max_length=50)
-    lastName = models.CharField(max_length=50)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
+    phoneNumber = models.CharField(max_length=20, default=None)
+    driversLicenseNumber = models.CharField(max_length=16, default=None)
     balance = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.00, blank=True
     )
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.firstName} {self.lastName}"
 
 
 class Dealership(models.Model):
-    appUserID = models.ForeignKey(User, on_delete=models.CASCADE)
-    companyName = models.CharField(max_length=50, unique=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
+    phoneNumber = models.CharField(max_length=20, default=None)
+    TIN = models.CharField(max_length=16, default=None)
     description = models.TextField(blank=True, default="")
     image = models.BinaryField(default=b'')
+    isAccepted = models.BooleanField(blank=True, null=True, default=None)
 
     def __str__(self):
         return self.companyName
@@ -49,46 +30,49 @@ class Dealership(models.Model):
 class Country(models.Model):
     countryName = models.CharField(max_length=50, unique=True)
 
+    def __str__(self):
+        return self.countryName
+
 
 class City(models.Model):
     cityName = models.CharField(max_length=50)
-    countryID = models.ForeignKey(Country, on_delete=models.CASCADE, default="1")
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, default="1")
 
     class Meta:
-        unique_together = ('cityName', 'countryID')
+        unique_together = ('cityName', 'country')
 
     def __str__(self):
-        return self.cityName
+        return f"{self.country} {self.cityName}"
 
 
 class Location(models.Model):
-    cityID = models.ForeignKey(City, on_delete=models.SET_NULL, null=True)
+    city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True)
     streetName = models.CharField(max_length=100)
     streetNo = models.CharField(max_length=10)
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
-    dealershipID = models.ForeignKey(Dealership, on_delete=models.CASCADE)
+    dealership = models.ForeignKey(Dealership, on_delete=models.CASCADE)
     isHQ = models.BooleanField(default=False, blank=True)
 
     class Meta:
         unique_together = (
-            ("cityID", "streetName", "streetNo"),
+            ("city", "streetName", "streetNo"),
             ("latitude", "longitude"),
         )
         constraints = [
             models.UniqueConstraint(
-                fields=["dealershipID", "isHQ"],
+                fields=["dealership", "isHQ"],
                 condition=models.Q(isHQ=True),
                 name="unique_hq_per_dealership",
             )
         ]
 
     def __str__(self):
-        return f"{self.cityID} {self.streetName} {self.streetNo}"
+        return f"{self.city} {self.streetName} {self.streetNo}"
 
 
 class WorkingHours(models.Model):
-    locationID = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True)
+    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True)
     dayOfTheWeek = models.IntegerField(
         choices=[
             (i, day)
@@ -109,7 +93,7 @@ class WorkingHours(models.Model):
     endTime = models.TimeField()
 
     class Meta:
-        unique_together = ("locationID", "dayOfTheWeek")
+        unique_together = ("location", "dayOfTheWeek")
 
     def clean(self):
         if self.startTime >= self.endTime:
@@ -117,5 +101,5 @@ class WorkingHours(models.Model):
 
     def __str__(self):
         return (
-            f"Working hours for {self.locationID} on {self.get_dayOfTheWeek_display()}"
+            f"Working hours for {self.location} on {self.get_dayOfTheWeek_display()}"
         )
