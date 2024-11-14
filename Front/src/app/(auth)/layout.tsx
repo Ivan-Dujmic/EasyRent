@@ -1,7 +1,6 @@
 import HeaderAuth from '@/components/shared/Header/HeaderAuth';
 import { Flex } from '@chakra-ui/react';
 
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -9,10 +8,10 @@ export default function RootLayout({
 }>) {
   return (
     <>
-    <Flex direction="column" grow={1}>
-      <HeaderAuth />
-      {children}
-    </Flex>
+      <Flex direction="column" grow={1} bg={'brandlightgray'}>
+        <HeaderAuth />
+        {children}
+      </Flex>
     </>
   );
 }

@@ -72,7 +72,7 @@ export default function HomePage() {
       margin="0 auto"
       mt="10"
       p="6"
-      boxShadow="lg"
+      boxShadow="0 0 15px rgba(0, 0, 0, 0.2)"
       borderRadius="md"
       bg="brandwhite"
     >
@@ -126,6 +126,14 @@ export default function HomePage() {
               m="5"
               color={'brandwhite'}
               disabled={isSubmitting}
+              border="2px solid"
+              borderColor={'brandwhite'}
+              _hover={{
+                bg: 'brandmiddlegray',
+                color: 'brandblack',
+                borderColor: 'brandblue',
+                transition: 'all 0.3s ease', // Animacija prijelaza
+              }}
             >
               {isSubmitting ? 'Logging in...' : 'Login'}
             </Button>
