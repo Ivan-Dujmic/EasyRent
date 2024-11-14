@@ -113,11 +113,11 @@ export default function HomePage() {
             </FormControl>
 
             <FormControl isRequired>
-              <FormLabel>Driver's Licence</FormLabel>
+              <FormLabel>Driver's License</FormLabel>
               <Input
                 type="number"
-                placeholder="Enter your driver's licence id"
-                {...register('driverLicence')}
+                placeholder="Enter your driver's license id"
+                {...register('driversLicense')}
               />
             </FormControl>
           </VStack>

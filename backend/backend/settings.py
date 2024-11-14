@@ -103,7 +103,7 @@ WSGI_APPLICATION = "backend.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "EasyRentAnother",
+        "NAME": "EasyRentTest",
         "USER": "postgres",
         "PASSWORD": "postgres",
         "HOST": "localhost",

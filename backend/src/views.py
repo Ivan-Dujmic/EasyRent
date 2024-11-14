@@ -60,12 +60,12 @@ def registerUser(request):
             username = "user_" + email
             firstName = data.get("firstName")
             lastName = data.get("lastName")
-            driverLicence = data.get("driverLicence")
+            driversLicense = data.get("driversLicense")
             phoneNumber = data.get("phoneNumber")
             password = data.get("password")
             confirmPassword = data.get("confirmPassword")
             
-            if not email or not firstName or not lastName or not phoneNumber or not password or not confirmPassword or not driverLicence:
+            if not email or not firstName or not lastName or not phoneNumber or not password or not confirmPassword or not driversLicense:
                 return JsonResponse({"error": "All fields are required."}, status=400)
             if User.objects.filter(email=email).exists():
                 return JsonResponse({"error": "Email already registered."}, status=400)
@@ -74,9 +74,9 @@ def registerUser(request):
             user = User.objects.create_user(username=username, email=email, password=password, first_name=firstName, last_name=lastName)
             user.is_active = False
             user.save()
-            rentoid = Rentoid.objects.create(user=user, phoneNumber=phoneNumber, driversLicenseNumber=driverLicence)
-            #if (activateEmail(request, user, email)):
-            return JsonResponse({"success": 1},status=200)
+            rentoid = Rentoid.objects.create(user=user, phoneNumber=phoneNumber, driversLicenseNumber=driversLicense)
+            if (activateEmail(request, user, email)):
+                return JsonResponse({"success": 1},status=200)
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON"}, status=400)
 
@@ -89,11 +89,11 @@ def registerCompany(request):
             username = "company_" + email
             companyName = data.get("name")
             tin = data.get("TIN")
-            phoneNumber = data.get("phone")
+            phoneNumber = data.get("phoneNumber")
             password = data.get("password")
             address = data.get("HQaddress")
             workingHours = data.get("workingHours")
-            confirmPassword = data.get("password_confirm")
+            confirmPassword = data.get("confirmPassword")
             if not email or not companyName or not tin or not phoneNumber or not password or not confirmPassword:
                 return JsonResponse({"error": "All fields are required."}, status=400)
             if User.objects.filter(email=email).exists():
@@ -104,8 +104,8 @@ def registerCompany(request):
             user.is_active = False
             user.save()
             dealership = Dealership.objects.create(user=user, phoneNumber=phoneNumber, TIN=tin)
-            #if (activateEmail(request, user, email)):
-            return JsonResponse({"success": 1},status=200)
+            if (activateEmail(request, user, email)):
+                return JsonResponse({"success": 1},status=200)
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON"}, status=400)
 
@@ -123,6 +123,8 @@ def loginUser(request):
             return JsonResponse({"error": "All fields are required."}, status=400)
         try:
             user = User.objects.get(email=email)
+            if not user.is_active:
+                return JsonResponse({"error:": "Awaiting email confirmation"}, status=403)
             username = user.username
             user = authenticate(request, username=username, password=password)
             if user is not None:
@@ -141,7 +143,7 @@ def loginUser(request):
                         role = 'company'
                     except Dealership.DoesNotExist:
                         # If neither exists return none
-                        return None
+                        return JsonResponse({'message': 'Something has gone horribly wrong on our side!'}, status=500)
                 return JsonResponse({
                                 'success': 1,
                                 'role': role,

@@ -108,7 +108,7 @@ export default function HomePage() {
             <FormControl isRequired>
               <FormLabel>Phone number</FormLabel>
               <Input
-                {...register('phone')}
+                {...register('phoneNumber')}
                 type="tel"
                 placeholder="Enter company phone number"
               />
@@ -156,10 +156,10 @@ export default function HomePage() {
               )}
             </FormControl>
 
-            <FormControl isRequired isInvalid={!!errors.password_confirm}>
+            <FormControl isRequired isInvalid={!!errors.confirmPassword}>
               <FormLabel>Confirm password</FormLabel>
               <Input
-                {...register('password_confirm', {
+                {...register('confirmPassword', {
                   required: 'Password confirmation is required',
                   validate: (value: string) => {
                     if (value === getValues('password')) return true;
@@ -169,9 +169,9 @@ export default function HomePage() {
                 type="password"
                 placeholder="Repeat your password"
               />
-              {errors.password_confirm && (
+              {errors.confirmPassword && (
                 <FormErrorMessage color="red">
-                  {errors.password_confirm.message}
+                  {errors.confirmPassword.message}
                 </FormErrorMessage>
               )}
             </FormControl>

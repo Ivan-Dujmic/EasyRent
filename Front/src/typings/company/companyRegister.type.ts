@@ -1,7 +1,7 @@
 export interface IRegisterCompany {
   name: string; // ime kompanije
   email: string; // email kompanije
-  phone: string; // broj telefona kompanije
+  phoneNumber: string; // broj telefona kompanije
   HQaddress: string; // HQ adresa
   TIN: string; // Tax identification number
   workingHours: {
@@ -15,5 +15,5 @@ export interface IRegisterCompany {
     sun: { from: number; to: number };
   };
   password: string; // lozinka kompanije
-  password_confirm: string; // potvrda lozinke
+  confirmPassword: string; // potvrda lozinke
 }
