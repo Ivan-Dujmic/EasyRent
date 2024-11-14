@@ -31,10 +31,3 @@ def get_showcased(request):
     }
     
     return Response(response_data)
-
-
-@api_view(['GET'])
-def get_countries_cities(request):
-    countries = Country.objects.all()
-    countriesCities = CountryCitySerializer(countries, many=True)
-    return Response(countriesCities.data)
