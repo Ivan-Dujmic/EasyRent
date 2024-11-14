@@ -60,12 +60,12 @@ def registerUser(request):
             username = "user_" + email
             firstName = data.get("firstName")
             lastName = data.get("lastName")
-            driverLicense = data.get("driverLicense")
+            driverLicence = data.get("driverLicence")
             phoneNumber = data.get("phoneNumber")
             password = data.get("password")
             confirmPassword = data.get("confirmPassword")
             
-            if not email or not firstName or not lastName or not phoneNumber or not password or not confirmPassword or not driverLicense:
+            if not email or not firstName or not lastName or not phoneNumber or not password or not confirmPassword or not driverLicence:
                 return JsonResponse({"error": "All fields are required."}, status=400)
             if User.objects.filter(email=email).exists():
                 return JsonResponse({"error": "Email already registered."}, status=400)
@@ -74,9 +74,9 @@ def registerUser(request):
             user = User.objects.create_user(username=username, email=email, password=password, first_name=firstName, last_name=lastName)
             user.is_active = False
             user.save()
-            rentoid = Rentoid.objects.create(user=user.id, phoneNumber=phoneNumber, driverLicenseNumber=driverLicense)
-            if (activateEmail(request, user, email)):
-                return JsonResponse({"success": 1},status=200)
+            rentoid = Rentoid.objects.create(user=user, phoneNumber=phoneNumber, driversLicenseNumber=driverLicence)
+            #if (activateEmail(request, user, email)):
+            return JsonResponse({"success": 1},status=200)
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON"}, status=400)
 
@@ -93,7 +93,7 @@ def registerCompany(request):
             password = data.get("password")
             address = data.get("HQaddress")
             workingHours = data.get("workingHours")
-            confirmPassword = data.get("confirm_password")
+            confirmPassword = data.get("password_confirm")
             if not email or not companyName or not tin or not phoneNumber or not password or not confirmPassword:
                 return JsonResponse({"error": "All fields are required."}, status=400)
             if User.objects.filter(email=email).exists():
@@ -103,9 +103,9 @@ def registerCompany(request):
             user = User.objects.create_user(username=username, email=email, password=password, first_name=companyName, last_name='')
             user.is_active = False
             user.save()
-            dealership = Dealership.objects.create(user=user.id, phoneNumber=phoneNumber, TIN=tin)
-            if (activateEmail(request, user, email)):
-                return JsonResponse({"success": 1},status=200)
+            dealership = Dealership.objects.create(user=user, phoneNumber=phoneNumber, TIN=tin)
+            #if (activateEmail(request, user, email)):
+            return JsonResponse({"success": 1},status=200)
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON"}, status=400)
 
