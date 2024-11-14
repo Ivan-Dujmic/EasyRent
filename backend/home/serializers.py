@@ -6,20 +6,20 @@ import base64
 
 class DealershipLogoSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
-
+    companyName = serializers.CharField(source='user.first_name')
     class Meta:
         model = Dealership
         fields = ['companyName', 'image']
 
     def get_image(self, obj):
         if obj.image:
-            return base64.b64decode(obj.image).decode('utf-8')
+            return base64.b64encode(obj.image)
 
 
 class OfferCardSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
-    companyName = serializers.CharField(source='dealer.companyName')
+    companyName = serializers.CharField(source='dealer.user.first_name')
     modelName = serializers.CharField(source='model.modelName')
     makeName = serializers.CharField(source='model.makeName')
     noOfSeats = serializers.IntegerField(source='model.noOfSeats')
@@ -31,7 +31,7 @@ class OfferCardSerializer(serializers.ModelSerializer):
 
     def get_image(self, obj):
         if obj.image:
-            return base64.b64decode(obj.image).decode('utf-8')
+            return base64.b64encode(obj.image)
 
 
 class CitySerializer(serializers.ModelSerializer):

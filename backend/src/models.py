@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractUser, User
 
 class Rentoid(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
-    phoneNumber = models.CharField(max_length=20, default=None)
+    phoneNumber = models.CharField(max_length=20, null=True, blank=True)
     driversLicenseNumber = models.CharField(max_length=16, default=None)
     balance = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.00, blank=True
@@ -17,14 +17,14 @@ class Rentoid(models.Model):
 
 class Dealership(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
-    phoneNumber = models.CharField(max_length=20, default=None)
+    phoneNumber = models.CharField(max_length=20, null=True, blank=True)
     TIN = models.CharField(max_length=16, default=None)
     description = models.TextField(blank=True, default="")
     image = models.BinaryField(default=b'')
     isAccepted = models.BooleanField(blank=True, null=True, default=None)
 
     def __str__(self):
-        return self.companyName
+        return self.TIN
 
 
 class Country(models.Model):
