@@ -66,11 +66,11 @@ def registerUser(request):
             confirmPassword = data.get("confirmPassword")
             
             if not email or not firstName or not lastName or not phoneNumber or not password or not confirmPassword or not driversLicense:
-                return JsonResponse({"error": "All fields are required."}, status=400)
+                return JsonResponse({"message": "All fields are required."}, status=400)
             if User.objects.filter(email=email).exists():
-                return JsonResponse({"error": "Email already registered."}, status=400)
+                return JsonResponse({"message": "Email already registered."}, status=400)
             if password != confirmPassword:
-                return JsonResponse({"error: Passwords do not match."}, status=400)
+                return JsonResponse({"message: Passwords do not match."}, status=400)
             user = User.objects.create_user(username=username, email=email, password=password, first_name=firstName, last_name=lastName)
             user.is_active = False
             user.save()
@@ -78,7 +78,7 @@ def registerUser(request):
             if (activateEmail(request, user, email)):
                 return JsonResponse({"success": 1},status=200)
         except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON"}, status=400)
+            return JsonResponse({"message": "Invalid JSON"}, status=400)
 
 @csrf_exempt
 def registerCompany(request):
@@ -95,11 +95,11 @@ def registerCompany(request):
             workingHours = data.get("workingHours")
             confirmPassword = data.get("confirmPassword")
             if not email or not companyName or not tin or not phoneNumber or not password or not confirmPassword:
-                return JsonResponse({"error": "All fields are required."}, status=400)
+                return JsonResponse({"message": "All fields are required."}, status=400)
             if User.objects.filter(email=email).exists():
-                return JsonResponse({"error": "Email already registered."}, status=400)
+                return JsonResponse({"message": "Email already registered."}, status=400)
             if password != confirmPassword:
-                return JsonResponse({"error: Passwords do not match."}, status=400)
+                return JsonResponse({"message: Passwords do not match."}, status=400)
             user = User.objects.create_user(username=username, email=email, password=password, first_name=companyName, last_name='')
             user.is_active = False
             user.save()
@@ -107,7 +107,7 @@ def registerCompany(request):
             if (activateEmail(request, user, email)):
                 return JsonResponse({"success": 1},status=200)
         except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON"}, status=400)
+            return JsonResponse({"message": "Invalid JSON"}, status=400)
 
 def logoutUser(request):
     logout(request)
@@ -120,11 +120,11 @@ def loginUser(request):
         email = data.get("email")
         password = data.get("password")
         if not email or not password:
-            return JsonResponse({"error": "All fields are required."}, status=400)
+            return JsonResponse({"message": "All fields are required."}, status=400)
         try:
             user = User.objects.get(email=email)
             if not user.is_active:
-                return JsonResponse({"error:": "Awaiting email confirmation"}, status=403)
+                return JsonResponse({"message:": "Awaiting email confirmation"}, status=403)
             username = user.username
             user = authenticate(request, username=username, password=password)
             if user is not None:
