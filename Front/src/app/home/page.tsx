@@ -28,13 +28,13 @@ export default function HomePage() {
     lg: 'lg', // Larger heading for desktop
   });
 
-  if (isLoading) {
+  /*   if (isLoading) {
     return <div>Loading...</div>;
   }
 
   if (error) {
     return <div>Error: {error.message}</div>;
-  }
+  } */
 
   return (
     <>

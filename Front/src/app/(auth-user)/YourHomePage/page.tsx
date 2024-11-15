@@ -7,14 +7,17 @@ import { Flex, Heading, useBreakpointValue } from '@chakra-ui/react';
 import { mockVehicles } from '@/mockData/mockVehicles';
 import VehicleList from '@/components/shared/cars/VechileList/VechileList';
 import { companies } from '@/mockData/mockCompanies';
-import AuthHeader from '@/components/shared/Header/AuthUserHeader/AuthHeader';
 import { AuthRedirect } from '@/components/shared/auth/AuthRedirect/AuthRedirect';
 import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { getShowCaseds, IShowcased } from '@/fetchers/homeData';
+import AuthHeader from '@/components/shared/Header/AuthUserHeader/AuthHeader';
+import { useEffect, useState } from 'react';
+import { ILoginData } from '@/mutation/login';
 
 export default function UserHomePage() {
   const { data, error, isLoading } = useSWR(swrKeys.showcased, getShowCaseds);
+  const [userData, setUserData] = useState<ILoginData>(); // State za podatke iz localStorage
 
   const gapSize = useBreakpointValue({
     base: 8, // Small gap for small screens (mobile)
@@ -27,6 +30,18 @@ export default function UserHomePage() {
     md: 'sm', // Default heading size for laptop/tablet
     lg: 'lg', // Larger heading for desktop
   });
+
+  useEffect(() => {
+    // Dohvaćanje podataka iz localStorage
+    const storedUserData = localStorage.getItem('userData');
+    if (storedUserData) {
+      try {
+        setUserData(JSON.parse(storedUserData)); // Parsiranje podataka
+      } catch (error) {
+        console.error('Error parsing userData:', error);
+      }
+    }
+  }, []);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -42,7 +57,7 @@ export default function UserHomePage() {
       <AuthRedirect to={''} condition={'isLoggedIn'} RedIfRole={'company'} />
       <Flex direction="column" grow={1}>
         {/* <AuthRedirect to="/login" condition="isLoggedOut" /> */}
-        <AuthHeader />
+        <AuthHeader UserData={userData} />
         {/* Drugi dio stranice */}
         <Flex
           bg="brandlightgray"
