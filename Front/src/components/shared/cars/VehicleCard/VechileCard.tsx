@@ -65,7 +65,7 @@ export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
             </Flex>
 
             <Flex align="flex-start">
-              {vehicle.automatic === '0' ? (
+              {!vehicle.automatic ? (
                 <>
                   <TbManualGearboxFilled />
                   <Box fontSize="xs" ml="1">

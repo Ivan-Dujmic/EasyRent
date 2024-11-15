@@ -5,8 +5,6 @@ import { AnimatedMyProfile } from '../../user/AnimatedMyProfile/AnimatedMyProfil
 import { useRouter } from 'next/navigation';
 import { ILoginData } from '@/mutation/login';
 
-const mockBalance = 31.42;
-
 export default function Header({ UserData }: { UserData?: ILoginData }) {
   const router = useRouter();
   const headerTextSize = useBreakpointValue({

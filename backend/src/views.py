@@ -160,20 +160,5 @@ def loginUser(request):
             return JsonResponse({'message': 'Invalid credentials'}, status=400)
 
 
-
-def userProfile(request):
-    return
-
 def redirectHome(request):
 	return redirect("http://localhost:3000/home")
-
-
-def companyProfile(request):
-    return
-
-
-def profile(request):
-    # based on content of request redirect to user/company
-    userProfile(request)
-    companyProfile(request)
-    return

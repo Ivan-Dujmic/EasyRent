@@ -2,9 +2,12 @@
 
 import MovingCars from '@/animations/MovingCars/MovingCars';
 import { AuthRedirect } from '@/components/shared/auth/AuthRedirect/AuthRedirect';
-import { Flex, Heading, Text, Image } from '@chakra-ui/react';
+import { Flex, Heading, Text, Image, Button } from '@chakra-ui/react';
+import { useRouter } from 'next/navigation';
+
 
 export default function CompanyHomePage() {
+  const router = useRouter();
   return (
     <>
       <AuthRedirect to={'/login'} condition={'isLoggedOut'} />
@@ -23,6 +26,26 @@ export default function CompanyHomePage() {
         <Text color={'brandyellow'} fontSize={'1rem'}>
           Our website is under construction
         </Text>
+        <Button
+            bg={'brandmiddlegray'}
+            color={'brandblack'}
+            fontWeight={'semibold'}
+            fontSize="sm"
+            size="sm"
+            borderWidth="2px"
+            borderColor="brandwhite"
+            _hover={{
+              borderColor: 'brandblack',
+              transform: 'translateY(-2px)',
+              transition: 'transform 0.2s ease, box-shadow 0.3s ease',
+            }}
+            onClick={() => {
+              localStorage.removeItem('userData');
+              router.push('/home');
+            }}
+          >
+            Log out
+          </Button>
         <MovingCars />
       </Flex>
     </>
