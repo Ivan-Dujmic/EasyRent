@@ -109,7 +109,7 @@ export default function HomePage() {
             <FormControl isRequired>
               <FormLabel>Phone number</FormLabel>
               <Input
-                {...register('phoneNumber')}
+                {...register('phoneNo')}
                 type="tel"
                 placeholder="Enter company phone number"
               />

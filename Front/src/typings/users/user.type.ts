@@ -3,7 +3,7 @@ export interface IRegisterUser {
   lastName: string; // Prezime korisnika
   driversLicense: string; // Broj vozačke dozvole
   email: string; // Email korisnika
-  phoneNumber: string; // Broj telefona korisnika
+  phoneNo: string; // Broj telefona korisnika
   password: string; // Lozinka korisnika
   confirmPassword: string; // Potvrda lozinke
 }

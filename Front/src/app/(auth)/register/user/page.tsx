@@ -143,7 +143,7 @@ export default function HomePage() {
               <Input
                 type="tel"
                 placeholder="Enter your phone number"
-                {...register('phoneNumber')}
+                {...register('phoneNo')}
               />
             </FormControl>
 
