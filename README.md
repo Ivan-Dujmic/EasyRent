@@ -44,7 +44,7 @@ By addressing these challenges, EasyRent enhances both the customer and car owne
 - **Vehicle Recommendation System**: Based on user reviews, the system suggests the most popular or highly-rated cars.
 - **Negotiation System**: Customers and car owners can negotiate rental conditions 
 
-# Lokalno pokretanje
+## Lokalno pokretanje
 
 Za svaku poteškoću pri pokretanju predlažemo ispitivanje ChatGPT-a ili drugog AI modela za pomoć jer daju vrlo dobra uputstva.
 
