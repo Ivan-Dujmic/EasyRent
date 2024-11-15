@@ -8,6 +8,7 @@ import { mockVehicles } from '@/mockData/mockVehicles';
 import VehicleList from '@/components/shared/cars/VechileList/VechileList';
 import { companies } from '@/mockData/mockCompanies';
 import AuthHeader from '@/components/shared/Header/AuthUserHeader/AuthHeader';
+import { AuthRedirect } from '@/components/shared/auth/AuthRedirect/AuthRedirect';
 
 export default function UserHomePage() {
   const gapSize = useBreakpointValue({
@@ -23,49 +24,53 @@ export default function UserHomePage() {
   });
 
   return (
-    <Flex direction="column" grow={1}>
-      {/* <AuthRedirect to="/login" condition="isLoggedOut" /> */}
-      <AuthHeader />
-      {/* Drugi dio stranice */}
-      <Flex
-        bg="brandlightgray"
-        minHeight="300px"
-        color="brandblue"
-        direction={'column'}
-        align={'center'}
-        justify={'flex-start'}
-        py={gapSize}
-        gap={gapSize}
-      >
-        <EasyRentMoto />
-        <MainFilter />
-        <Flex gap={gapSize} align={'center'} px={5}>
-          <Heading size={headingSize} color={'brandblue'}>
-            Trusted by the Best:
-          </Heading>
-          <CompanyList companies={companies} />
+    <>
+      <AuthRedirect to={'/login'} condition={'isLoggedOut'} />
+      <AuthRedirect to={''} condition={'isLoggedIn'} RedIfRole={'company'} />
+      <Flex direction="column" grow={1}>
+        {/* <AuthRedirect to="/login" condition="isLoggedOut" /> */}
+        <AuthHeader />
+        {/* Drugi dio stranice */}
+        <Flex
+          bg="brandlightgray"
+          minHeight="300px"
+          color="brandblue"
+          direction={'column'}
+          align={'center'}
+          justify={'flex-start'}
+          py={gapSize}
+          gap={gapSize}
+        >
+          <EasyRentMoto />
+          <MainFilter />
+          <Flex gap={gapSize} align={'center'} px={5}>
+            <Heading size={headingSize} color={'brandblue'}>
+              Trusted by the Best:
+            </Heading>
+            <CompanyList companies={companies} />
+          </Flex>
+        </Flex>
+
+        {/* Dio stranice sa Listom automobila */}
+        <Flex
+          justify={'center'}
+          align={'center'}
+          direction={'column'}
+          py={8}
+          gap={2}
+        >
+          <VehicleList
+            vehicles={mockVehicles}
+            description={'Most popular:'}
+            useDescription={true}
+          />
+          <VehicleList
+            vehicles={mockVehicles}
+            description={'Best value:'}
+            useDescription={true}
+          />
         </Flex>
       </Flex>
-
-      {/* Dio stranice sa Listom automobila */}
-      <Flex
-        justify={'center'}
-        align={'center'}
-        direction={'column'}
-        py={8}
-        gap={2}
-      >
-        <VehicleList
-          vehicles={mockVehicles}
-          description={'Most popular:'}
-          useDescription={true}
-        />
-        <VehicleList
-          vehicles={mockVehicles}
-          description={'Best value:'}
-          useDescription={true}
-        />
-      </Flex>
-    </Flex>
+    </>
   );
 }

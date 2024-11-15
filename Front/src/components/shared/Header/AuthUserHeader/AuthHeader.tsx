@@ -2,10 +2,12 @@ import { Box, Button, Flex, Text, useBreakpointValue } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import EasyRentLogo from '@/components/core/EasyRentLogo/EasyRentLogo';
 import { AnimatedMyProfile } from '../../user/AnimatedMyProfile/AnimatedMyProfile';
+import { useRouter } from 'next/navigation';
 
 const mockBalance = 31.42;
 
 export default function Header() {
+  const router = useRouter();
   const headerTextSize = useBreakpointValue({
     md: 'xs',
     lg: 'sm',
@@ -55,6 +57,10 @@ export default function Header() {
               borderColor: 'brandblack',
               transform: 'translateY(-2px)',
               transition: 'transform 0.2s ease, box-shadow 0.3s ease',
+            }}
+            onClick={() => {
+              localStorage.removeItem('userData');
+              router.push('/home');
             }}
           >
             Log out

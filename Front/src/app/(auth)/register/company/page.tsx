@@ -22,7 +22,7 @@ import useSWRMutation from 'swr/mutation';
 import { registerCompany } from '@/mutation/authCompany';
 //nezz dali su ovo dobri inportovi ili napravit nove fileove za company register
 import { swrKeys } from '@/fetchers/swrKeys';
-import SuccessWindow from '@/components/shared/SuccessWidnow/SuccessWidnow';
+import SuccessWindowComapny from '@/components/shared/SuccessWidnow/SuccessWinodwCompany';
 
 export default function HomePage() {
   const [registered, setRegistered] = useState(false);
@@ -66,18 +66,19 @@ export default function HomePage() {
   };
 
   return registered ? (
-    <SuccessWindow />
+    <SuccessWindowComapny />
   ) : (
     <Box
       minWidth="800px"
       maxW="1200px"
       w="80vw"
       margin="0 auto"
-      mt="10"
+      mt="8"
       p="6"
-      boxShadow="lg"
+      boxShadow="0 0 15px rgba(0, 0, 0, 0.2)"
       borderRadius="md"
       bg="brandwhite"
+      mb={12}
     >
       <chakra.form onSubmit={handleSubmit(onRegister)}>
         <Flex justifyContent="space-between">
@@ -208,6 +209,14 @@ export default function HomePage() {
             m="5"
             color={'brandwhite'}
             mr="30%"
+            border="2px solid"
+            borderColor={'brandwhite'}
+            _hover={{
+              bg: 'brandmiddlegray',
+              color: 'brandblack',
+              borderColor: 'brandblue',
+              transition: 'all 0.3s ease', // Animacija prijelaza
+            }}
           >
             Register
           </Button>

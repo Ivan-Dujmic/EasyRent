@@ -13,6 +13,7 @@ export async function registerUser(
     method: 'POST',
     body: JSON.stringify(arg),
   });
-  /*  localStorage.setItem('user-id', (data as IUser).user.id); */
+
+  console.log('podaci sa servera za register korisnika: ', data);
   return data;
 }
