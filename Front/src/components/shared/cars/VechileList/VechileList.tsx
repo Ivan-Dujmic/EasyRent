@@ -1,12 +1,12 @@
 import { Flex, Heading, IconButton } from '@chakra-ui/react';
 import { FaChevronRight, FaChevronLeft } from 'react-icons/fa';
-import { Vehicle } from '@/typings/vehicles/vehicles';
 import React, { useState } from 'react';
 import VehicleCard from '../VehicleCard/VechileCard';
 import { useBreakpointValue } from '@chakra-ui/react';
+import { ICar } from '@/fetchers/homeData';
 
 interface VehicleListProps {
-  vehicles: Vehicle[];
+  vehicles: Array<ICar> | undefined;
   description: string;
   useDescription: Boolean;
 }
@@ -20,8 +20,8 @@ export default function VehicleList({
   const sliceSize = useBreakpointValue({ base: 4, xl: 5 });
 
   const handleScroll = (direction: 'left' | 'right') => {
-    const totalVehicles = vehicles.length;
-    const maxIndex = totalVehicles - 5; // Maksimalni početni indeks za prikaz 5 vozila
+    const totalVehicles = vehicles?.length;
+    const maxIndex = totalVehicles ? totalVehicles - 5 : 5; // Maksimalni početni indeks za prikaz 5 vozila; !!! nes sam bezvze dodo projmejnit ako treba
     if (direction === 'right') {
       setStartIndex((prevIndex) =>
         prevIndex + 2 <= maxIndex ? prevIndex + 2 : maxIndex
@@ -47,9 +47,9 @@ export default function VehicleList({
         />
         <Flex overflow="hidden" gap={3} maxWidth="100%" px={2} py={3}>
           {vehicles
-            .slice(startIndex, startIndex + (sliceSize || 4))
-            .map((vehicle) => (
-              <VehicleCard key={vehicle.id} vehicle={vehicle} />
+            ?.slice(startIndex, startIndex + (sliceSize || 4))
+            .map((vehicle, index) => (
+              <VehicleCard key={index} vehicle={vehicle} />
             ))}
         </Flex>
         <IconButton
