@@ -3,10 +3,11 @@ import NextLink from 'next/link';
 import EasyRentLogo from '@/components/core/EasyRentLogo/EasyRentLogo';
 import { AnimatedMyProfile } from '../../user/AnimatedMyProfile/AnimatedMyProfile';
 import { useRouter } from 'next/navigation';
+import { ILoginData } from '@/mutation/login';
 
 const mockBalance = 31.42;
 
-export default function Header() {
+export default function Header({ UserData }: { UserData?: ILoginData }) {
   const router = useRouter();
   const headerTextSize = useBreakpointValue({
     md: 'xs',
@@ -36,7 +37,7 @@ export default function Header() {
               fontWeight={'semibold'}
               fontSize={headerTextSize}
             >
-              Balance: €{mockBalance.toFixed(2)}
+              {UserData?.firstName}
             </Text>
 
             {/* Small vertical line */}
