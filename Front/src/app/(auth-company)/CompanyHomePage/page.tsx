@@ -5,13 +5,12 @@ import { AuthRedirect } from '@/components/shared/auth/AuthRedirect/AuthRedirect
 import { Flex, Heading, Text, Image, Button } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 
-
 export default function CompanyHomePage() {
   const router = useRouter();
   return (
     <>
-      <AuthRedirect to={'/login'} condition={'isLoggedOut'} />
-      <AuthRedirect to={''} condition={'isLoggedIn'} RedIfRole={'user'} />
+      {/*       <AuthRedirect to={'/login'} condition={'isLoggedOut'} />
+      <AuthRedirect to={''} condition={'isLoggedIn'} RedIfRole={'user'} /> */}
       <Flex
         justify={'center'}
         align={'center'}
@@ -27,25 +26,22 @@ export default function CompanyHomePage() {
           Our website is under construction
         </Text>
         <Button
-            bg={'brandmiddlegray'}
-            color={'brandblack'}
-            fontWeight={'semibold'}
-            fontSize="sm"
-            size="sm"
-            borderWidth="2px"
-            borderColor="brandwhite"
-            _hover={{
-              borderColor: 'brandblack',
-              transform: 'translateY(-2px)',
-              transition: 'transform 0.2s ease, box-shadow 0.3s ease',
-            }}
-            onClick={() => {
-              localStorage.removeItem('userData');
-              router.push('/home');
-            }}
-          >
-            Log out
-          </Button>
+          bg={'brandblue'}
+          color={'brandwhite'}
+          fontWeight={'semibold'}
+          fontSize="lg"
+          size="lg"
+          _hover={{
+            transform: 'translateY(-2px)',
+            transition: 'transform 0.2s ease, box-shadow 0.3s ease',
+          }}
+          onClick={() => {
+            localStorage.removeItem('userData');
+            router.push('/home');
+          }}
+        >
+          Log out
+        </Button>
         <MovingCars />
       </Flex>
     </>
