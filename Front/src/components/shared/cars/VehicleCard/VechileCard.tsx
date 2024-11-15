@@ -36,7 +36,7 @@ export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
       }}
     >
       <Image
-        src={vehicle.imageInBase64} // mozda dodat onaj neki nastavak prije
+        src={`data:image/png;base64,${vehicle.imageInBase64}`} // mozda dodat onaj neki nastavak prije
         alt={`${vehicle.modelName} car`}
         objectFit="cover"
         width="100%"
