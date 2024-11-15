@@ -15,12 +15,13 @@ import { IoPersonSharp } from 'react-icons/io5';
 import { TbManualGearboxFilled } from 'react-icons/tb';
 import { TbAutomaticGearbox } from 'react-icons/tb';
 import NextLink from 'next/link';
+import { ICar } from '@/fetchers/homeData';
 
-export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
+export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
   return (
     <Card
       as={NextLink}
-      href={`/vehicles/${vehicle.id}`}
+      href={`/vehicles/${vehicle.modelName}`}
       maxW="210px"
       minW="180px"
       borderWidth="2px"
@@ -35,8 +36,8 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
       }}
     >
       <Image
-        src={vehicle.image}
-        alt={`${vehicle.brand} car`}
+        src={vehicle.imageInBase64} // mozda dodat onaj neki nastavak prije
+        alt={`${vehicle.modelName} car`}
         objectFit="cover"
         width="100%"
         height="110px" // Set a fixed height to make all images uniform
@@ -46,23 +47,26 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
         <Stack spacing={2} height={'100%'} justify={'space-between'}>
           <Flex direction={'column'}>
             <Flex gap={1} align={'baseline'} justify={'space-between'}>
-              <Heading size="xs">{vehicle.brand}</Heading>
-              <Text fontSize="xs">€{vehicle.pricePerDay}/day</Text>
+              <Heading size="xs">
+                {vehicle.makeName}
+                {vehicle.modelName}
+              </Heading>
+              <Text fontSize="xs">€{vehicle.price}/day</Text>
             </Flex>
 
             {/* Kompanija koja nudi vozilo */}
             <Text color="brandgray" fontSize="xs">
-              {vehicle.company}
+              {vehicle.companyName}
             </Text>
           </Flex>
           <Flex gap={2} wrap={'wrap'} justify={'flex-start'}>
             <Flex align="flex-start">
               <IoPersonSharp />
-              <Box fontSize="xs">{vehicle.seats}</Box>
+              <Box fontSize="xs">{vehicle.noOfSeats}</Box>
             </Flex>
 
             <Flex align="flex-start">
-              {vehicle.transmission === 'manual' ? (
+              {vehicle.automatic === '0' ? (
                 <>
                   <TbManualGearboxFilled />
                   <Box fontSize="xs" ml="1">
@@ -83,12 +87,12 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
               gap={'1px'}
               fontSize="xs"
               align="baseline"
-              ml={vehicle.reviews > 99 ? 0 : 'auto'}
+              ml={Number(vehicle.noOfReviews) > 99 ? 0 : 'auto'}
             >
               <StarIcon boxSize="3" />{' '}
               {/* Adjusts the star icon to be slightly smaller */}
               <Box>{vehicle.rating}</Box>
-              <Text as="span">({vehicle.reviews} reviews)</Text>
+              <Text as="span">({vehicle.noOfReviews} reviews)</Text>
             </Flex>
           </Flex>
         </Stack>

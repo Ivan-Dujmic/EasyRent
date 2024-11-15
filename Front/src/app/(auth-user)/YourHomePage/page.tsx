@@ -9,8 +9,13 @@ import VehicleList from '@/components/shared/cars/VechileList/VechileList';
 import { companies } from '@/mockData/mockCompanies';
 import AuthHeader from '@/components/shared/Header/AuthUserHeader/AuthHeader';
 import { AuthRedirect } from '@/components/shared/auth/AuthRedirect/AuthRedirect';
+import useSWR from 'swr';
+import { swrKeys } from '@/fetchers/swrKeys';
+import { getShowCaseds, IShowcased } from '@/fetchers/homeData';
 
 export default function UserHomePage() {
+  const { data, error, isLoading } = useSWR(swrKeys.showcased, getShowCaseds);
+
   const gapSize = useBreakpointValue({
     base: 8, // Small gap for small screens (mobile)
     md: 10, // Slightly larger gap for medium screens (laptop/tablet)
@@ -22,6 +27,14 @@ export default function UserHomePage() {
     md: 'sm', // Default heading size for laptop/tablet
     lg: 'lg', // Larger heading for desktop
   });
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
 
   return (
     <>
@@ -60,12 +73,12 @@ export default function UserHomePage() {
           gap={2}
         >
           <VehicleList
-            vehicles={mockVehicles}
+            vehicles={data?.most_popular}
             description={'Most popular:'}
             useDescription={true}
           />
           <VehicleList
-            vehicles={mockVehicles}
+            vehicles={data?.best_value}
             description={'Best value:'}
             useDescription={true}
           />
