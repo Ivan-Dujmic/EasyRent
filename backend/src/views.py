@@ -32,8 +32,8 @@ def activate(request, uidb64, token):
 	if user is not None and account_activation_token.check_token(user, token):
 		user.is_active = True
 		user.save()
-		return render("Email confirmed!")
-	return render("Email confirmation failed!")
+		return HttpResponse("Email confirmed!")
+	return HttpResponse("Email confirmation failed!")
 
 def activateEmail(request, user, toEmail):
     subject = "Activate EasyRent account"
@@ -66,7 +66,7 @@ def registerUser(request):
             phoneNo = data.get("phoneNo")
             password = data.get("password")
             confirmPassword = data.get("confirmPassword")
-            
+
             if not email or not firstName or not lastName or not phoneNo or not password or not confirmPassword or not driversLicense:
                 return JsonResponse({"message": "All fields are required."}, status=400)
             if User.objects.filter(email=email).exists():
@@ -160,6 +160,9 @@ def loginUser(request):
 
 def userProfile(request):
     return
+
+def redirectHome(request):
+	return redirect("http://localhost:3000/home")
 
 
 def companyProfile(request):

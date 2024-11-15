@@ -12,4 +12,5 @@ urlpatterns = [
     path("api/auth/loginUser/", csrf_exempt(views.loginUser), name="loginUser"),
     path('activate/<uidb64>/<token>/', views.activate, name="activateUser"),
     path("api/auth/profile/", views.profile, name="profile"),
+    path("", views.redirectHome, name="redirectHome")
 ]
