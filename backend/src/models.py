@@ -18,7 +18,7 @@ class Rentoid(models.Model):
 class Dealership(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
     phoneNumber = models.CharField(max_length=20, null=True, blank=True)
-    TIN = models.CharField(max_length=16, default=None)
+    TIN = models.CharField(max_length=16, default=None, unique=True)
     description = models.TextField(blank=True, default="")
     image = models.BinaryField(default=b'')
     isAccepted = models.BooleanField(blank=True, null=True, default=None)
