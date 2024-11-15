@@ -149,7 +149,7 @@ export default function HomePage() {
             </Button>
             <Button
               as="a"
-              href="https://accounts.google.com/o/oauth2/v2/auth/oauthchooseaccount?client_id=46779697704-6adjgimqe4r002oadcr0qa9473k1l573.apps.googleusercontent.com&redirect_uri=http%3A%2F%2F127.0.0.1%3A8000%2Faccounts%2Fgoogle%2Flogin%2Fcallback%2F&scope=email%20profile&response_type=code&state=Gv1o9aCPb0mBm0gl&access_type=online&service=lso&o2v=2&ddm=1&flowName=GeneralOAuthFlow"
+              href="http://127.0.0.1:8000/accounts/google/login/?next=/"
               sx={suppButtons}
             >
               <Flex justify={'space-between'} align={'center'} gap={2}>

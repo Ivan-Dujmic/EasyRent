@@ -2,11 +2,11 @@ import { fetcher } from './fetcher';
 
 export interface IDealership {
   companyName: string;
-  imageInBase64: string;
+  image: string;
 }
 
 export interface ICar {
-  imageInBase64: string;
+  image: string;
   companyName: string;
   modelName: string;
   makeName: string;

@@ -53,6 +53,7 @@ export default function UserHomePage() {
 
   return (
     <>
+    {console.log(userData)}
       <AuthRedirect to={'/login'} condition={'isLoggedOut'} />
       <AuthRedirect to={''} condition={'isLoggedIn'} RedIfRole={'company'} />
       <Flex direction="column" grow={1}>
@@ -75,7 +76,7 @@ export default function UserHomePage() {
             <Heading size={headingSize} color={'brandblue'}>
               Trusted by the Best:
             </Heading>
-            <CompanyList companies={companies} />
+            <CompanyList companies={data?.showcased_dealerships} />
           </Flex>
         </Flex>
 

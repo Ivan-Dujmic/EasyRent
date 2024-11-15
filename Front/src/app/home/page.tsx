@@ -58,7 +58,7 @@ export default function HomePage() {
             <Heading size={headingSize} color={'brandblue'}>
               Trusted by the Best:
             </Heading>
-            <CompanyList companies={companies} />
+            <CompanyList companies={data?.showcased_dealerships} />
           </Flex>
         </Flex>
 

@@ -36,7 +36,7 @@ export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
       }}
     >
       <Image
-        src={`data:image/png;base64,${vehicle.imageInBase64}`} // mozda dodat onaj neki nastavak prije
+        src={`data:image/png;base64,${vehicle.image}`} // mozda dodat onaj neki nastavak prije
         alt={`${vehicle.modelName} car`}
         objectFit="cover"
         width="100%"
@@ -48,8 +48,7 @@ export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
           <Flex direction={'column'}>
             <Flex gap={1} align={'baseline'} justify={'space-between'}>
               <Heading size="xs">
-                {vehicle.makeName}
-                {vehicle.modelName}
+                {vehicle.makeName} {vehicle.modelName}
               </Heading>
               <Text fontSize="xs">€{vehicle.price}/day</Text>
             </Flex>

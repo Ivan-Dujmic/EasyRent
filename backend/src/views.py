@@ -133,11 +133,13 @@ def loginUser(request):
                 login(request, user)
                 role = None
                 balance = None
+                firstName = None
                 try:
                     # Try to find rentoid
                     rentoid = Rentoid.objects.get(user=user.id)
                     role = 'user'
                     balance = rentoid.balance
+                    firstName = user.first_name
                 except Rentoid.DoesNotExist:
                     # If Rentoid does not exist, try to find the Dealership
                     try:
@@ -149,6 +151,7 @@ def loginUser(request):
                 return JsonResponse({
                                 'success': 1,
                                 'role': role,
+                                'firstName': firstName,
                                 'balance': balance
                             }, status=200)
             else:
