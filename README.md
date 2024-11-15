@@ -43,3 +43,49 @@ By addressing these challenges, EasyRent enhances both the customer and car owne
 ### Additional Features
 - **Vehicle Recommendation System**: Based on user reviews, the system suggests the most popular or highly-rated cars.
 - **Negotiation System**: Customers and car owners can negotiate rental conditions 
+
+# Lokalno pokretanje
+
+Za svaku poteškoću pri pokretanju predlažemo ispitivanje ChatGPT-a ili drugog AI modela za pomoć jer daju vrlo dobra uputstva.
+
+Instalirati aktualne verzije sljedećih programa:
+https://nodejs.org/en
+https://www.python.org/downloads/
+https://www.postgresql.org/download/
+https://git-scm.com/
+
+Klonirati repozitorij koristeći git
+
+U mapi projekta izvesti:
+python -m venv venv
+
+Zatim pokrenuti:
+Windows: venv\Scripts\activate
+macOS/Linux: venv/bin/activate
+
+Instalirati Django i potrebne pakete u backend direktoriju projekta:
+pip install -r requirements.txt
+Ako se pri pokretanju backenda jave greške za nepoznate module, instalirati ih koristeći pip install
+
+Izraditi PostgreSQL bazu i u backendu urediti settings.py objekt DATABASES = {}
+
+U backend folderu izvesti:
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+
+Backend bi trebao biti dostupan na 
+http://127.0.0.1:8000
+http://127.0.0.1:8000/admin
+
+Otvoriti još jedan terminal
+
+U frontend folderu pokrenuti
+npm install
+npm run dev
+
+Frontend bi trebao biti dostupan na
+http://localhost:3000
+
+U slučaju grešaka povezivanja frontenda i backenda, na mjestima prijavljene greške potrebno je urediti adrese na prethodno navedene 127.0.0.1:8000 ili localhost:3000
