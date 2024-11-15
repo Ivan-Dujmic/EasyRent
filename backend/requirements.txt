@@ -1,12 +1,7 @@
-asgiref
-cachetools
-certifi
-cffi
-charset-normalizer
 cryptography
 csrf
-dacktool
-dbstream
+
+
 dj-database-url
 Django
 django-allauth
@@ -25,7 +20,7 @@ grpcio
 grpcio-status
 gunicorn
 httplib2
-idna
+
 libcst
 oauthlib
 packaging
@@ -46,7 +41,5 @@ rsa
 setuptools
 six
 sqlparse
-typing_extensions
 uritemplate
 urllib3
-wheel
