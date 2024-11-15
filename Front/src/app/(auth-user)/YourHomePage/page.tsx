@@ -6,7 +6,6 @@ import CompanyList from '@/components/shared/company/CompanyList/CompanyList';
 import { Flex, Heading, useBreakpointValue } from '@chakra-ui/react';
 import { mockVehicles } from '@/mockData/mockVehicles';
 import VehicleList from '@/components/shared/cars/VechileList/VechileList';
-import { companies } from '@/mockData/mockCompanies';
 import { AuthRedirect } from '@/components/shared/auth/AuthRedirect/AuthRedirect';
 import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
@@ -53,7 +52,7 @@ export default function UserHomePage() {
 
   return (
     <>
-    {console.log(userData)}
+      {console.log(userData)}
       <AuthRedirect to={'/login'} condition={'isLoggedOut'} />
       <AuthRedirect to={''} condition={'isLoggedIn'} RedIfRole={'company'} />
       <Flex direction="column" grow={1}>
