@@ -12,16 +12,18 @@ import {
   Flex,
   Spacer,
   FormErrorMessage,
+  Text,
 } from '@chakra-ui/react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { ILogIn } from '@/typings/logIn/logIn.type';
 
 import useSWRMutation from 'swr/mutation';
 import { swrKeys } from '@/fetchers/swrKeys';
-import SuccessWindow from '@/components/shared/SuccessWidnow/SuccessWidnow';
 import { logIn } from '@/mutation/login';
 import { useRouter } from 'next/navigation';
+import SucessLoginWindow from '@/components/shared/SuccessWidnow/SucessLoginWindow';
+import { FcGoogle } from 'react-icons/fc';
 
 export default function HomePage() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -36,9 +38,10 @@ export default function HomePage() {
   const router = useRouter();
 
   const { trigger } = useSWRMutation(swrKeys.logIn, logIn, {
-    onSuccess: () => {
+    onSuccess: (data) => {
       setLoggedIn(true);
-      router.push('/YourHomePage'); //morat cu prilagodit da razlikuje za korisnika i firme
+      if (data?.role == 'user') router.push('/YourHomePage');
+      else if (data?.role == 'company') router.push('/CompanyHomePage');
     },
     onError: () => {
       setError('email', {
@@ -63,7 +66,7 @@ export default function HomePage() {
   };
 
   return loggedIn ? (
-    <SuccessWindow />
+    <SucessLoginWindow />
   ) : (
     <Box
       minWidth="400px"
@@ -72,7 +75,7 @@ export default function HomePage() {
       margin="0 auto"
       mt="10"
       p="6"
-      boxShadow="lg"
+      boxShadow="0 0 15px rgba(0, 0, 0, 0.2)"
       borderRadius="md"
       bg="brandwhite"
     >
@@ -126,6 +129,14 @@ export default function HomePage() {
               m="5"
               color={'brandwhite'}
               disabled={isSubmitting}
+              border="2px solid"
+              borderColor={'brandwhite'}
+              _hover={{
+                bg: 'brandmiddlegray',
+                color: 'brandblack',
+                borderColor: 'brandblue',
+                transition: 'all 0.3s ease', // Animacija prijelaza
+              }}
             >
               {isSubmitting ? 'Logging in...' : 'Login'}
             </Button>
@@ -135,6 +146,16 @@ export default function HomePage() {
             </Button>
             <Button as="a" href="/home" sx={suppButtons}>
               Continue as guest
+            </Button>
+            <Button
+              as="a"
+              href="http://127.0.0.1:8000/accounts/google/login/?next=/"
+              sx={suppButtons}
+            >
+              <Flex justify={'space-between'} align={'center'} gap={2}>
+                <FcGoogle />
+                <Text>Sign in with Google</Text>
+              </Flex>
             </Button>
           </Flex>
         </VStack>

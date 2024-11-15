@@ -85,9 +85,9 @@ export default function HomePage() {
       maxW="1200px"
       w="80vw"
       margin="0 auto"
-      mt="10"
+      mt={'10'}
       p="6"
-      boxShadow="lg"
+      boxShadow="0 0 15px rgba(0, 0, 0, 0.2)"
       borderRadius="md"
       bg="brandwhite"
     >
@@ -143,7 +143,7 @@ export default function HomePage() {
               <Input
                 type="tel"
                 placeholder="Enter your phone number"
-                {...register('phoneNumber')}
+                {...register('phoneNo')}
               />
             </FormControl>
 
@@ -217,6 +217,14 @@ export default function HomePage() {
             m="5"
             color={'brandwhite'}
             mr="30%"
+            border="2px solid"
+            borderColor={'brandwhite'}
+            _hover={{
+              bg: 'brandgray',
+              color: 'brandblack',
+              borderColor: 'brandblue',
+              transition: 'all 0.3s ease', // Animacija prijelaza
+            }}
           >
             Register
           </Button>

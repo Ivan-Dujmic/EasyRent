@@ -32,8 +32,8 @@ def activate(request, uidb64, token):
 	if user is not None and account_activation_token.check_token(user, token):
 		user.is_active = True
 		user.save()
-		return render("Email confirmed!")
-	return render("Email confirmation failed!")
+		return HttpResponse("Email confirmed!")
+	return HttpResponse("Email confirmation failed!")
 
 def activateEmail(request, user, toEmail):
     subject = "Activate EasyRent account"
@@ -44,11 +44,13 @@ def activateEmail(request, user, toEmail):
         "protocol": "https" if request.is_secure() else "http"
     })
     email = EmailMessage(subject, message, to=[toEmail])
-    if email.send():
+
+    try:
+        email.send()
         print("Email sent!")
         return 1
-    else:
-        print("Sending failed!")
+    except Exception as e:
+        print("Sending failed!", e)
         return 0
 
 @csrf_exempt
@@ -61,24 +63,24 @@ def registerUser(request):
             firstName = data.get("firstName")
             lastName = data.get("lastName")
             driversLicense = data.get("driversLicense")
-            phoneNumber = data.get("phoneNumber")
+            phoneNo = data.get("phoneNo")
             password = data.get("password")
             confirmPassword = data.get("confirmPassword")
-            
-            if not email or not firstName or not lastName or not phoneNumber or not password or not confirmPassword or not driversLicense:
-                return JsonResponse({"error": "All fields are required."}, status=400)
+
+            if not email or not firstName or not lastName or not phoneNo or not password or not confirmPassword or not driversLicense:
+                return JsonResponse({"message": "All fields are required."}, status=400)
             if User.objects.filter(email=email).exists():
-                return JsonResponse({"error": "Email already registered."}, status=400)
+                return JsonResponse({"message": "Email already registered."}, status=400)
             if password != confirmPassword:
-                return JsonResponse({"error: Passwords do not match."}, status=400)
+                return JsonResponse({"message: Passwords do not match."}, status=400)
             user = User.objects.create_user(username=username, email=email, password=password, first_name=firstName, last_name=lastName)
             user.is_active = False
             user.save()
-            rentoid = Rentoid.objects.create(user=user, phoneNumber=phoneNumber, driversLicenseNumber=driversLicense)
+            rentoid = Rentoid.objects.create(user=user, phoneNo=phoneNo, driversLicenseNo=driversLicense)
             if (activateEmail(request, user, email)):
                 return JsonResponse({"success": 1},status=200)
         except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON"}, status=400)
+            return JsonResponse({"message": "Invalid JSON"}, status=400)
 
 @csrf_exempt
 def registerCompany(request):
@@ -89,25 +91,25 @@ def registerCompany(request):
             username = "company_" + email
             companyName = data.get("name")
             tin = data.get("TIN")
-            phoneNumber = data.get("phoneNumber")
+            phoneNo = data.get("phoneNo")
             password = data.get("password")
             address = data.get("HQaddress")
             workingHours = data.get("workingHours")
             confirmPassword = data.get("confirmPassword")
-            if not email or not companyName or not tin or not phoneNumber or not password or not confirmPassword:
-                return JsonResponse({"error": "All fields are required."}, status=400)
+            if not email or not companyName or not tin or not phoneNo or not password or not confirmPassword:
+                return JsonResponse({"message": "All fields are required."}, status=400)
             if User.objects.filter(email=email).exists():
-                return JsonResponse({"error": "Email already registered."}, status=400)
+                return JsonResponse({"message": "Email already registered."}, status=400)
             if password != confirmPassword:
-                return JsonResponse({"error: Passwords do not match."}, status=400)
+                return JsonResponse({"message: Passwords do not match."}, status=400)
             user = User.objects.create_user(username=username, email=email, password=password, first_name=companyName, last_name='')
             user.is_active = False
             user.save()
-            dealership = Dealership.objects.create(user=user, phoneNumber=phoneNumber, TIN=tin)
+            dealership = Dealership.objects.create(user=user, phoneNo=phoneNo, TIN=tin)
             if (activateEmail(request, user, email)):
                 return JsonResponse({"success": 1},status=200)
         except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON"}, status=400)
+            return JsonResponse({"message": "Invalid JSON"}, status=400)
 
 def logoutUser(request):
     logout(request)
@@ -120,22 +122,24 @@ def loginUser(request):
         email = data.get("email")
         password = data.get("password")
         if not email or not password:
-            return JsonResponse({"error": "All fields are required."}, status=400)
+            return JsonResponse({"message": "All fields are required."}, status=400)
         try:
             user = User.objects.get(email=email)
             if not user.is_active:
-                return JsonResponse({"error:": "Awaiting email confirmation"}, status=403)
+                return JsonResponse({"message:": "Awaiting email confirmation"}, status=403)
             username = user.username
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
                 role = None
                 balance = None
+                firstName = None
                 try:
                     # Try to find rentoid
                     rentoid = Rentoid.objects.get(user=user.id)
                     role = 'user'
                     balance = rentoid.balance
+                    firstName = user.first_name
                 except Rentoid.DoesNotExist:
                     # If Rentoid does not exist, try to find the Dealership
                     try:
@@ -147,6 +151,7 @@ def loginUser(request):
                 return JsonResponse({
                                 'success': 1,
                                 'role': role,
+                                'firstName': firstName,
                                 'balance': balance
                             }, status=200)
             else:
@@ -155,17 +160,5 @@ def loginUser(request):
             return JsonResponse({'message': 'Invalid credentials'}, status=400)
 
 
-
-def userProfile(request):
-    return
-
-
-def companyProfile(request):
-    return
-
-
-def profile(request):
-    # based on content of request redirect to user/company
-    userProfile(request)
-    companyProfile(request)
-    return
+def redirectHome(request):
+	return redirect("http://localhost:3000/home")

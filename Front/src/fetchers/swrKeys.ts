@@ -1,9 +1,9 @@
-const apiUserUrl = 'http://127.0.0.1:8000/api/auth/';
-const apiCompanyUrl = 'http://127.0.0.1:8000/api/auth/';
-const apiLogInUrl = 'http://127.0.0.1:8000/api/auth/';
+const auth = 'http://127.0.0.1:8000/api/auth/';
+const home = 'http://127.0.0.1:8000/api/home/';
 
 export const swrKeys = {
-  registerUser: `${apiUserUrl}registerUser/`,
-  registerCompany: `${apiCompanyUrl}registerCompany/`,
-  logIn: `${apiLogInUrl}loginUser/`,
+  registerUser: `${auth}registerUser/`,
+  registerCompany: `${auth}registerCompany/`,
+  logIn: `${auth}loginUser/`,
+  showcased: `${home}showcased/`,
 };

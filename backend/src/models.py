@@ -4,9 +4,10 @@ from django.contrib.auth.models import AbstractUser, User
 
 
 class Rentoid(models.Model):
+    rentoid_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
-    phoneNumber = models.CharField(max_length=20, null=True, blank=True)
-    driversLicenseNumber = models.CharField(max_length=16, default=None)
+    phoneNo = models.CharField(max_length=20, null=True, blank=True)
+    driversLicenseNo = models.CharField(max_length=16, default=None)
     balance = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.00, blank=True
     )
@@ -16,9 +17,15 @@ class Rentoid(models.Model):
 
 
 class Dealership(models.Model):
+    dealership_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
+<<<<<<< HEAD
     phoneNumber = models.CharField(max_length=20, null=True, blank=True)
     TIN = models.CharField(max_length=16, default=None, unique=True)
+=======
+    phoneNo = models.CharField(max_length=20, null=True, blank=True)
+    TIN = models.CharField(max_length=16, default=None)
+>>>>>>> cad663db7b63bde5a3c1579caab5b4f759b54504
     description = models.TextField(blank=True, default="")
     image = models.BinaryField(default=b'')
     isAccepted = models.BooleanField(blank=True, null=True, default=None)
@@ -28,6 +35,7 @@ class Dealership(models.Model):
 
 
 class Location(models.Model):
+    location_id = models.AutoField(primary_key=True)
     countryName = models.CharField(max_length=50, blank=True, default='')
     cityName = models.CharField(max_length=50, blank=True, default='')
     streetName = models.CharField(max_length=100)
@@ -55,6 +63,7 @@ class Location(models.Model):
 
 
 class WorkingHours(models.Model):
+    workingHours_id = models.AutoField(primary_key=True)
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True)
     dayOfTheWeek = models.IntegerField(
         choices=[

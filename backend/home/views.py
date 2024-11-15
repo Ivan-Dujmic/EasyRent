@@ -26,7 +26,7 @@ def get_showcased(request):
 
     response_data = {
         "showcased_dealerships": showcased_dealership_data,
-        "most_popular_offers": most_popular_data,
+        "most_popular": most_popular_data,
         "best_value": best_value_data
     }
     

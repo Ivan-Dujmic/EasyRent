@@ -1,3 +1,4 @@
+import { IDealership } from '@/fetchers/homeData';
 import {
   Card,
   CardBody,
@@ -6,7 +7,11 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react';
 
-export default function CompanyList({ companies }: { companies: Company[] }) {
+interface CompanyListProps {
+  companies: Array<IDealership> | undefined;
+}
+
+export default function CompanyList({ companies }:  CompanyListProps ) {
   const imageSize = useBreakpointValue({
     base: '25px', // Small gap for small screens (mobile)
     md: '28px', // Slightly larger gap for medium screens (laptop/tablet)
@@ -16,7 +21,7 @@ export default function CompanyList({ companies }: { companies: Company[] }) {
 
   return (
     <Flex wrap="wrap" gap={3} justify="start">
-      {companies.map((company, index) => (
+      {companies?.map((company, index) => (
         <Card
           key={index}
           direction="row"
@@ -36,8 +41,8 @@ export default function CompanyList({ companies }: { companies: Company[] }) {
               objectFit="contain"
               width="auto"
               height={imageSize}
-              src={company.logo}
-              alt={`${company.name} logo`}
+              src={`data:image/png;base64,${company.image}`}
+              alt={`${company.companyName} logo`}
             />
           </CardBody>
         </Card>

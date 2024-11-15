@@ -10,6 +10,7 @@ class ModelType(models.Model):
         SUV = 'Suv', _('Suv')
         LIMO = 'Limo', _('Limo')
         COMPACT = 'Compact', _('Compact')
+    modelType_id = models.AutoField(primary_key=True)
     modelTypeName = models.CharField(max_length=7, choices=modelName.choices)
     def __str__(self):
         return self.modelTypeName
@@ -20,6 +21,7 @@ class Model(models.Model):
         GAS = 'G', _('Gas')
         DIESEL = 'D', _('Diesel')
         ELECTRIC = 'E', _('Electric')
+    model_id = models.AutoField(primary_key=True)
     noOfSeats = models.SmallIntegerField()
     automatic = models.BooleanField()
     fuelType = models.CharField(max_length=1, choices=typeOfFuel.choices)
@@ -33,6 +35,7 @@ class Model(models.Model):
 
 # for mapping the offer DB table
 class Offer(models.Model):
+    offer_id = models.AutoField(primary_key=True)
     model = models.ForeignKey(Model, on_delete=models.CASCADE)
     dealer = models.ForeignKey(Dealership, on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -48,6 +51,7 @@ class Offer(models.Model):
 
 # for mapping the Vehicle DB table
 class Vehicle(models.Model):
+    vehicle_id = models.AutoField(primary_key=True)
     registration = models.CharField(max_length=20, unique=True)
     model = models.ForeignKey(Model, on_delete=models.SET_NULL, null=True)
     dealer = models.ForeignKey(Dealership, on_delete=models.CASCADE)

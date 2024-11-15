@@ -13,6 +13,7 @@ export async function registerCompany(
     method: 'POST',
     body: JSON.stringify(arg),
   });
-  /*  localStorage.setItem('user-id', (data as IUser).user.id); */
+
+  console.log('podaci sa servera za register autokuce: ', data);
   return data;
 }

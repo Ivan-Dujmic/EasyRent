@@ -35,6 +35,6 @@ export async function fetcher<T>(
     throw error;
   }
 
-  // Vraćamo podatke ili undefined ako nije bilo sadržaja - samo tijelo odgovora koje je parsirano
+  // Vraćamo podatke ili undefined ako nije bilo sadržaja - samo tijelo odgovora koje je parsirano, tj pretvorneo je u objekt
   return data;
 }
