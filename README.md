@@ -1,6 +1,6 @@
 # EasyRent - Car Rental Platform
 
-🌐 **Live Demo**: [Easy Rent Frontend](https://easy-rent-ashy.vercel.app/home)
+🌐 **Live Demo**: [EasyRent Website](https://easy-rent-ashy.vercel.app/home)
 
 ## Project Overview
 
