@@ -1,5 +1,7 @@
 # EasyRent - Car Rental Platform
 
+🌐 **Live Demo**: [Easy Rent Frontend](https://easy-rent-ashy.vercel.app/home)    (Beckend potencijalno još nismo uspjeli deployat)
+
 ## Project Overview
 
 EasyRent is a web application designed to streamline the car rental process for users by offering a seamless platform where customers can browse available cars, filter them based on various parameters, and book vehicles using external payment services or an integrated virtual wallet. The application allows for multiple roles, where users, vehicle owners, and administrators interact and collaborate efficiently to create a personalized and effective car rental experience.
