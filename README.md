@@ -54,8 +54,10 @@ By addressing these challenges, EasyRent enhances both the customer and car owne
 ### Installation from source:
  ```sh
  git clone https://github.com/fran-galic/EasyRent.git
+ cd backend
  pip install -r requirements.txt
 ```
+- [Backend server](/backend)
 - Create a PostgreSQL database (ideally named EasyRentTest)
 - In backend/backend/settings.py navigate to object DATABASES and adjust the attributes (common ports are 5432 and 5433)
 - Migrate the changes:
@@ -64,28 +66,31 @@ python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
 ```
-- The backend should now be available at 127.0.0.1:8000
+- The backend should be available at 127.0.0.1:8000
 - Open 127.0.0.1:8000/admin
 - Go to SITES Sites and change example to
    - Domain name: 127.0.0.1:8000
    - Display name: localhost
-- (Optional) Email confirmation sender
-- (Optional) You have to setup your gmail account to work with apps
-- (Optional) Navigate to the outer backend folder, add file named .env and fill the following data:
+- (Optional) Email confirmation sender:
+- Configure the following inside settings.py
+  ```python
    - GOOGLE_CLIENT_ID=
    - GOOGLE_CLIENT_SECRET=
    - HOST_PASSWORD=
    - HOST_EMAIL=
+  ```
 - Go to the admin page again
 - ADD Social Accounts Social applications
    - Provider: Google
    - Name: google
    - Client id: GOOGLE_CLIENT_ID
    - Secret key: GOOGLE_CLIENT_SECRET
-   - add 127.0.0.1:8000 in the site table
-- Open another terminal
-- Navigate to Front
-- _npm install_
-- _npm run dev_
-- The frontend should now be running at localhost:3000
-- In case you skipped the email confirmation setup, you can go to the backend admin site or directly into the database and edit the auth_user's is_active property to true
+   - add 127.0.0.1:8000 to sites
+- [Frontend server](/frontend)
+- In separate terminal run:
+```sh
+npm install
+npm run dev
+```
+- The frontend should be available at localhost:3000
+
