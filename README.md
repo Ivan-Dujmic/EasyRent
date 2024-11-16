@@ -44,48 +44,46 @@ By addressing these challenges, EasyRent enhances both the customer and car owne
 - **Vehicle Recommendation System**: Based on user reviews, the system suggests the most popular or highly-rated cars.
 - **Negotiation System**: Customers and car owners can negotiate rental conditions 
 
-## Lokalno pokretanje
+## Local run
 
-Za svaku poteškoću pri pokretanju predlažemo ispitivanje ChatGPT-a ili drugog AI modela za pomoć jer daju vrlo dobra uputstva.
-
-Instalirati aktualne verzije sljedećih programa:
+Install the following:
 https://nodejs.org/en
 https://www.python.org/downloads/
 https://www.postgresql.org/download/
 https://git-scm.com/
 
-Klonirati repozitorij koristeći git
-
-U mapi projekta izvesti:
-python -m venv venv
-
-Zatim pokrenuti:
-Windows: venv\Scripts\activate
-macOS/Linux: venv/bin/activate
-
-Instalirati Django i potrebne pakete u backend direktoriju projekta:
+Create an empty directory and navigate to it
+_git clone --branch local https://github.com/fran-galic/EasyRent.git_
+Navigate to the outer backend directory
+_python -m venv venv_
+Windows: _.\venv\Scripts\activate_
+macOS/Linux: _source venv/bin/activate_
 pip install -r requirements.txt
-Ako se pri pokretanju backenda jave greške za nepoznate module, instalirati ih koristeći pip install
+Create a PostgreSQL database (ideally named EasyRentTest)
+In backend/backend/settings.py navigate to object DATABASES and adjust the attributes (common ports are 5432 and 5433)
+Navigate back to the outer backend
+_python manage.py migrate_
+_python manage.py createsuperuser_
+_python manage.py runserver_
+The backend should now be available at 127.0.0.1:8000
+Open 127.0.0.1:8000/admin
+Go to SITES Sites and change example to {Domain name: 127.0.0.1:8000, Display name: localhost}
 
-Izraditi PostgreSQL bazu i u backendu urediti settings.py objekt DATABASES = {}
+(Optional) Email confirmation sender
+You have to setup your gmail account to work with apps
+Navigate to the outer backend folder, add file named .env and fill the following data:
+_GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+HOST_PASSWORD=
+HOST_EMAIL=_
 
-U backend folderu izvesti:
-python manage.py makemigrations
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py runserver
+Go to the admin page again
+ADD Social Accounts Social applications {Provider: Google, Name: google, Client id: GOOGLE_CLIENT_ID, Secret key: GOOGLE_CLIENT_SECRET} and add the 127.0.0.1:8000 site
 
-Backend bi trebao biti dostupan na 
-http://127.0.0.1:8000
-http://127.0.0.1:8000/admin
+Open another terminal
+Navigate to Front
+_npm install_
+_npm run dev_
+The frontend should now be running at localhost:3000
 
-Otvoriti još jedan terminal
-
-U frontend folderu pokrenuti
-npm install
-npm run dev
-
-Frontend bi trebao biti dostupan na
-http://localhost:3000
-
-U slučaju grešaka povezivanja frontenda i backenda, na mjestima prijavljene greške potrebno je urediti adrese na prethodno navedene 127.0.0.1:8000 ili localhost:3000
+In case you skipped the email confirmation setup, you can go to the backend admin site or directly into the database and edit the auth_user's is_active property to true
