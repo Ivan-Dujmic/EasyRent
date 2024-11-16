@@ -1,0 +1,93 @@
+INSERT INTO auth_user ("password", "last_login", "is_superuser", "username", "first_name",
+			"last_name", "email", "is_staff", "is_active", "date_joined")
+VALUES 
+('naksdcpwenifonaosdnf','2024-11-14 17:43:17', false, 'company_jaka@gmail.com','jaka kompanija', '', 'jaka@gmail.com', false, true, '2024-11-14 17:42:20'),
+('nsksdcpweniforrosdnf','2024-11-14 17:43:17', false, 'company_slaba@gmail.com','slaba kompanija', '', 'slaba@gmail.com', false, true, '2024-11-14 17:42:20'),
+('naksdcpaefagnifonaosdnf','2024-11-14 17:43:17', false, 'company_bogata@gmail.com','bogata kompanija', '', 'bogata@gmail.com', false, true, '2024-11-14 17:42:20'),
+('nakwgewghpwenifonaosdnf','2024-11-14 17:43:17', false, 'company_siromasna@gmail.com','siromasna kompanija', '', 'siromasna@gmail.com', false, true, '2024-11-14 17:42:20'),
+('naksdcpwwgregreonaosdnf','2024-11-14 17:43:17', false, 'company_velika@gmail.com','velika kompanija', '', 'velika@gmail.com', false, true, '2024-11-14 17:42:20'),
+('naksdcpwenifonaosdnf','2024-11-14 17:43:17', false, 'company_mala@gmail.com','mala kompanija', '', 'mala@gmail.com', false, true, '2024-11-14 17:42:20');
+
+
+commit;
+
+INSERT INTO src_dealership ("user_id", "phoneNumber", "TIN", "description", "image","isAccepted")
+VALUES (1, '092340325', '1234567891011121', 'Ovo je jaka kompanija.', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images1234567891011121.png'), true),
+	(2, '095869385', '3849604937258032', 'Ovo je slaba kompanija.', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images3849604937258032.png'), true),
+	(3, '095624148', '1234567891019021','Ovo je velika kompanija.', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images1234567891019021.png'), true),
+	(4, '094552859', '1234567891011556', 'Ovo je mala kompanija.', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images1234567891011556.png'), true),
+	(5, '095417586', '1234555891011121', 'Ovo je bogata kompanija.', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images1234555891011121.png'), true),
+	(6, '095745326', '1334567891011121', 'Ovo je popularna kompanija.', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images1334567891011121.png'), true);
+INSERT INTO home_modeltype ("modelTypeName")
+VALUES ('Suv');
+INSERT INTO home_modeltype ("modelTypeName")
+VALUES ('Limo');
+INSERT INTO home_modeltype ("modelTypeName")
+VALUES ('Compact');
+
+commit;
+
+INSERT INTO home_model ("noOfSeats", "automatic", "fuelType", 
+					   "modelName", "makeName", "modelType_id")
+VALUES (5, false, 'G', 'T-cross', 'Volkswagen', 1);
+INSERT INTO home_model ("noOfSeats", "automatic", "fuelType", 
+					   "modelName", "makeName", "modelType_id")
+VALUES (5, true, 'E', 'CX-5', 'Mazda', 1);
+INSERT INTO home_model ("noOfSeats", "automatic", "fuelType", 
+					   "modelName", "makeName", "modelType_id")
+VALUES (5, false, 'G', 'Taigo', 'Volkswagen', 1);
+INSERT INTO home_model ("noOfSeats", "automatic", "fuelType", 
+					   "modelName", "makeName", "modelType_id")
+VALUES (5, true, 'G', 'Tiguan', 'Volkswagen', 1);
+INSERT INTO home_model ("noOfSeats", "automatic", "fuelType", 
+					   "modelName", "makeName", "modelType_id")
+VALUES (5, true, 'G', 'Quashqai', 'Nissan', 1);
+INSERT INTO home_model ("noOfSeats", "automatic", "fuelType", 
+					   "modelName", "makeName", "modelType_id")
+VALUES (4, true, 'G', '500', 'Fiat', 3);
+INSERT INTO home_model ("noOfSeats", "automatic", "fuelType", 
+					   "modelName", "makeName", "modelType_id")
+VALUES (4, false, 'D', 'Golf', 'Volkswagen', 2);
+INSERT INTO home_model ("noOfSeats", "automatic", "fuelType", 
+					   "modelName", "makeName", "modelType_id")
+VALUES (5, true, 'G', 'X5', 'BMW', 1);
+
+commit;
+INSERT INTO home_vehicle ("registration", "model_id", "dealer_id", "insured",
+			"yearOfCreation", "timesRented", "location_id")
+VALUES   ('ABC1234', 1, 1, true, 2022, 10, null),
+  ('XYZ5678', 2, 3, false, 2023, 20, null),
+  ('LMN4321', 3, 2, true, 2021, 5, null),
+  ('QRS8765', 4, 6, true, 2020, 0, null),
+  ('TUV9876', 5, 4, false, 2024, 30, null),
+  ('WXY3456', 6, 1, true, 2023, 25, null),
+  ('JKL1122', 7, 5, false, 2021, 12, null),
+  ('MNO7788', 8, 3, true, 2022, 9, null),
+  ('DEF2345', 1, 2, true, 2020, 7, null),
+  ('GHI6789', 2, 6, false, 2024, 50, null),
+  ('PQR5678', 3, 4, true, 2023, 15, null),
+  ('STU4321', 4, 5, false, 2021, 8, null),
+  ('VWX8765', 5, 2, true, 2022, 18, null),
+  ('YZA3456', 6, 1, false, 2024, 22, null),
+  ('BCD7890', 7, 6, true, 2023, 40, null);
+  
+  commit;
+  
+INSERT INTO home_offer ("model_id", "dealer_id", "price", "rating", "noOfReviews", "description", "image")
+
+VALUES 
+  (1, 1, 12, 4.23, 3, 'VW T-cross is a great car', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images1.png')),
+  (2, 3, 19, 3.56, 7, 'Mazda CX-5 is a great car', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images2.png')),
+  (3, 2, 15, 4.89, 1, 'VW Taigo is a great car', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images3.png')),
+  (4, 6, 18, 0, 0, 'VW Tiguan is a great car', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images4.png')),
+  (5, 4, 13, 4.10, 5, 'Nissan Quashqai is a great car', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images5.png')),
+  (6, 2, 11, 3.92, 4, 'Fiat 500 is a great car', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images6.png')),
+  (7, 5, 20, 4.75, 2, 'VW Golf is a great car', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images7.png')),
+  (8, 3, 9, 2.67, 8, 'BMW X5 is a great car', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images8.png')),
+  (1, 2, 14, 3.58, 6, 'VW T-cross is a great car', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images1.png')),
+  (2, 6, 10, 3.55, 10, 'Mazda CX-5 is a great car', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images2.png')),
+  (3, 4, 16, 3.30, 3, 'VW Taigo is a great car', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images3.png')),
+  (4, 5, 5, 2.95, 7, 'VW Tiguan is a great car', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images4.png')),
+  (5, 2, 17, 4.65, 2, 'Nissan Quashqai is a great car', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images5.png')),
+  (6, 3, 8, 1.80, 4, 'Fiat 500 is a great car', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images6.png')),
+  (7, 6, 13, 3.90, 5, 'VW Golf is a great car', pg_read_binary_file('/Users/dzanijaivan/Downloads/images/images7.png'));

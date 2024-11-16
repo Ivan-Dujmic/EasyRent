@@ -22,7 +22,7 @@ class Dealership(models.Model):
     phoneNo = models.CharField(max_length=20, null=True, blank=True)
     TIN = models.CharField(max_length=16, default=None)
     description = models.TextField(blank=True, default="")
-    image = models.BinaryField(default=b'')
+    image = models.BinaryField(default=b"")
     isAccepted = models.BooleanField(blank=True, null=True, default=None)
 
     def __str__(self):
@@ -31,8 +31,8 @@ class Dealership(models.Model):
 
 class Location(models.Model):
     location_id = models.AutoField(primary_key=True)
-    countryName = models.CharField(max_length=50, blank=True, default='')
-    cityName = models.CharField(max_length=50, blank=True, default='')
+    countryName = models.CharField(max_length=50, blank=True, default="")
+    cityName = models.CharField(max_length=50, blank=True, default="")
     streetName = models.CharField(max_length=100)
     streetNo = models.CharField(max_length=10)
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
@@ -87,6 +87,4 @@ class WorkingHours(models.Model):
             raise ValidationError("Start time must be before the end time.")
 
     def __str__(self):
-        return (
-            f"Working hours for {self.location} on {self.get_dayOfTheWeek_display()}"
-        )
+        return f"Working hours for {self.location} on {self.get_dayOfTheWeek_display()}"
