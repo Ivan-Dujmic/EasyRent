@@ -51,19 +51,19 @@ By addressing these challenges, EasyRent enhances both the customer and car owne
    - https://www.python.org/downloads/
    - https://www.postgresql.org/download/
    - https://git-scm.com/
-- Create an empty directory and navigate to it
-- _git clone --branch local https://github.com/fran-galic/EasyRent.git_
-- Navigate to the outer backend directory
-- _python -m venv venv_
-- Windows: _.\venv\Scripts\activate_
-- macOS/Linux: _source venv/bin/activate_
-- _pip install -r requirements.txt_
+### Installation from source:
+ ```sh
+ git clone https://github.com/fran-galic/EasyRent.git
+ pip install -r requirements.txt
+```
 - Create a PostgreSQL database (ideally named EasyRentTest)
 - In backend/backend/settings.py navigate to object DATABASES and adjust the attributes (common ports are 5432 and 5433)
-- Navigate back to the outer backend
-- _python manage.py migrate_
-- _python manage.py createsuperuser_
-- _python manage.py runserver_
+- Migrate the changes:
+ ```sh
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
 - The backend should now be available at 127.0.0.1:8000
 - Open 127.0.0.1:8000/admin
 - Go to SITES Sites and change example to
