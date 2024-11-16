@@ -46,44 +46,46 @@ By addressing these challenges, EasyRent enhances both the customer and car owne
 
 ## Local run
 
-Install the following:
-https://nodejs.org/en
-https://www.python.org/downloads/
-https://www.postgresql.org/download/
-https://git-scm.com/
-
-Create an empty directory and navigate to it
-_git clone --branch local https://github.com/fran-galic/EasyRent.git_
-Navigate to the outer backend directory
-_python -m venv venv_
-Windows: _.\venv\Scripts\activate_
-macOS/Linux: _source venv/bin/activate_
-pip install -r requirements.txt
-Create a PostgreSQL database (ideally named EasyRentTest)
-In backend/backend/settings.py navigate to object DATABASES and adjust the attributes (common ports are 5432 and 5433)
-Navigate back to the outer backend
-_python manage.py migrate_
-_python manage.py createsuperuser_
-_python manage.py runserver_
-The backend should now be available at 127.0.0.1:8000
-Open 127.0.0.1:8000/admin
-Go to SITES Sites and change example to {Domain name: 127.0.0.1:8000, Display name: localhost}
-
-(Optional) Email confirmation sender
-You have to setup your gmail account to work with apps
-Navigate to the outer backend folder, add file named .env and fill the following data:
-_GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-HOST_PASSWORD=
-HOST_EMAIL=_
-
-Go to the admin page again
-ADD Social Accounts Social applications {Provider: Google, Name: google, Client id: GOOGLE_CLIENT_ID, Secret key: GOOGLE_CLIENT_SECRET} and add the 127.0.0.1:8000 site
-
-Open another terminal
-Navigate to Front
-_npm install_
-_npm run dev_
-The frontend should now be running at localhost:3000
-
-In case you skipped the email confirmation setup, you can go to the backend admin site or directly into the database and edit the auth_user's is_active property to true
+- Install the following:
+   - https://nodejs.org/en
+   - https://www.python.org/downloads/
+   - https://www.postgresql.org/download/
+   - https://git-scm.com/
+- Create an empty directory and navigate to it
+- _git clone --branch local https://github.com/fran-galic/EasyRent.git_
+- Navigate to the outer backend directory
+- _python -m venv venv_
+- Windows: _.\venv\Scripts\activate_
+- macOS/Linux: _source venv/bin/activate_
+- _pip install -r requirements.txt_
+- Create a PostgreSQL database (ideally named EasyRentTest)
+- In backend/backend/settings.py navigate to object DATABASES and adjust the attributes (common ports are 5432 and 5433)
+- Navigate back to the outer backend
+- _python manage.py migrate_
+- _python manage.py createsuperuser_
+- _python manage.py runserver_
+- The backend should now be available at 127.0.0.1:8000
+- Open 127.0.0.1:8000/admin
+- Go to SITES Sites and change example to
+   - Domain name: 127.0.0.1:8000
+   - Display name: localhost
+- (Optional) Email confirmation sender
+- (Optional) You have to setup your gmail account to work with apps
+- (Optional) Navigate to the outer backend folder, add file named .env and fill the following data:
+   - GOOGLE_CLIENT_ID=
+   - GOOGLE_CLIENT_SECRET=
+   - HOST_PASSWORD=
+   - HOST_EMAIL=
+- Go to the admin page again
+- ADD Social Accounts Social applications
+   - Provider: Google
+   - Name: google
+   - Client id: GOOGLE_CLIENT_ID
+   - Secret key: GOOGLE_CLIENT_SECRET
+   - add 127.0.0.1:8000 in the site table
+- Open another terminal
+- Navigate to Front
+- _npm install_
+- _npm run dev_
+- The frontend should now be running at localhost:3000
+- In case you skipped the email confirmation setup, you can go to the backend admin site or directly into the database and edit the auth_user's is_active property to true
