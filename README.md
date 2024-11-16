@@ -62,6 +62,7 @@ By addressing these challenges, EasyRent enhances both the customer and car owne
 - In backend/backend/settings.py navigate to object DATABASES and adjust the attributes (common ports are 5432 and 5433)
 - Migrate the changes:
  ```sh
+cd backend
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
@@ -74,10 +75,10 @@ python manage.py runserver
 - (Optional) Email confirmation sender:
 - Configure the following inside settings.py
   ```python
-   - GOOGLE_CLIENT_ID=
-   - GOOGLE_CLIENT_SECRET=
-   - HOST_PASSWORD=
-   - HOST_EMAIL=
+   GOOGLE_CLIENT_ID=
+   GOOGLE_CLIENT_SECRET=
+   HOST_PASSWORD=
+   HOST_EMAIL=
   ```
 - Go to the admin page again
 - ADD Social Accounts Social applications
@@ -89,6 +90,7 @@ python manage.py runserver
 - [Frontend server](/frontend)
 - In separate terminal run:
 ```sh
+cd front
 npm install
 npm run dev
 ```
