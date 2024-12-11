@@ -9,17 +9,10 @@ import { registerUser } from '@/mutation/auth';
 import { IRegisterUser } from '@/typings/users/user.type';
 import {
   Box,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
   VStack,
   Flex,
   Spacer,
   chakra,
-  FormErrorMessage,
-  Center,
-  Heading,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -47,14 +40,7 @@ export default function HomePage() {
       });
     },
   });
-
-  const suppButtons = {
-    bg: 'brandlightgray',
-    p: 5,
-    m: 5,
-    BorderRadius: 'md',
-  };
-
+  
   const onRegister = async (data: IRegisterUser) => {
     if (data.password.length < 8) {
       setError('password', {
