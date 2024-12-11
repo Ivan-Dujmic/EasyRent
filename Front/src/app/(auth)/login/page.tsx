@@ -3,15 +3,10 @@
 import {
 	chakra,
 	Box,
-	Button,
-	FormControl,
-	FormLabel,
-	Input,
 	Heading,
 	VStack,
 	Flex,
 	Spacer,
-	FormErrorMessage,
 	Text,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
@@ -36,7 +31,6 @@ export default function HomePage() {
 		formState: { isSubmitting, errors },
 		setError,
 		clearErrors,
-		getValues,
 	} = useForm<ILogIn>();
 	const router = useRouter();
 
@@ -107,36 +101,31 @@ export default function HomePage() {
 						<SubmitButton 
 						label='Login'
 						submittingLabel='Logging in...'
-						p = "5"
 						m = "5"
 						isSubmitting={isSubmitting}
 						/>
 						<Spacer />
 						<SupportButton
-						label='Register'
 						href="/register/user"
-						p = "5"
 						m = "5"
-						/> 
+						>
+						Register
+						</SupportButton>
 						<SupportButton
-						label='Continue as guest'
 						href="/home"
-						p = "5"
 						m = "5"
-						/> 
-						<Button
-							as="a"
-							href="https://easyrent-t7he.onrender.com/accounts/google/login/?next=/"
-							bg="brandlightgray"
-							borderRadius="md"
-							p = "5"
-							m = "5"
+						> 
+						Continue as guest
+						</SupportButton>
+						<SupportButton
+						href="https://easyrent-t7he.onrender.com/accounts/google/login/?next=/"
+						m = "5"
 						>
 							<Flex justify={'space-between'} align={'center'} gap={2}>
 								<FcGoogle />
 								<Text>Sign in with Google</Text>
 							</Flex>
-						</Button>
+						</SupportButton>
 					</Flex>
 				</VStack>
 			</chakra.form>

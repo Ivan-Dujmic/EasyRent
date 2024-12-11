@@ -1,5 +1,8 @@
 'use client';
 
+import CustomInput from '@/components/shared/auth/CustomInput';
+import SubmitButton from '@/components/shared/auth/SubmitButton';
+import SupportButton from '@/components/shared/auth/SupportButton';
 import SuccessWindow from '@/components/shared/SuccessWidnow/SuccessWidnow';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { registerUser } from '@/mutation/auth';
@@ -52,10 +55,6 @@ export default function HomePage() {
     BorderRadius: 'md',
   };
 
-  const inputText = {
-    w: '40%',
-  };
-
   const onRegister = async (data: IRegisterUser) => {
     if (data.password.length < 8) {
       setError('password', {
@@ -85,7 +84,7 @@ export default function HomePage() {
       maxW="1200px"
       w="80vw"
       margin="0 auto"
-      mt={'10'}
+      mt='10'
       p="6"
       boxShadow="0 0 15px rgba(0, 0, 0, 0.2)"
       borderRadius="md"
@@ -94,96 +93,78 @@ export default function HomePage() {
       <chakra.form onSubmit={handleSubmit(onRegister)}>
         <Flex justifyContent="space-between">
           <VStack spacing="4" w="45%">
-            <FormControl isRequired>
-              <FormLabel>First Name</FormLabel>
-              <Input
-                type="text"
-                placeholder="Enter your first name"
-                {...register('firstName')}
-              />
-            </FormControl>
-
-            <FormControl isRequired>
-              <FormLabel>Last Name</FormLabel>
-              <Input
-                type="text"
-                placeholder="Enter your last name"
-                {...register('lastName')}
-              />
-            </FormControl>
-
-            <FormControl isRequired>
-              <FormLabel>Driver's License</FormLabel>
-              <Input
-                type="number"
-                placeholder="Enter your driver's license id"
-                {...register('driversLicense')}
-              />
-            </FormControl>
+            <CustomInput
+					  	{...register('firstName', {
+					  		required: "Must enter your first name",
+					  	})}
+					  	label = "First name"
+					  	type="text"
+					  	placeholder="Enter your first name"
+					  	error={errors.firstName?.message}
+					  /> 
+            <CustomInput
+					  	{...register('lastName', {
+					  		required: "Must enter your last name",
+					  	})}
+					  	label = "Last name"
+					  	type="text"
+					  	placeholder="Enter your last name"
+					  	error={errors.lastName?.message}
+					  />
+            <CustomInput
+					  	{...register('driversLicense', {
+					  		required: "Driver's license is required",
+					  	})}
+					  	label = "Driver's license"
+					  	type="number"
+					  	placeholder="Enter your driver's license id"
+					  	error={errors.driversLicense?.message}
+					  />
           </VStack>
 
           <VStack spacing="4" w="45%">
-            <FormControl isRequired isInvalid={!!errors.email}>
-              <FormLabel>Email</FormLabel>
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                required
-                {...register('email')}
-              />
-              {errors.email && (
-                <FormErrorMessage color="brandblue">
-                  {errors.email?.message}
-                </FormErrorMessage>
-              )}
-            </FormControl>
-
-            <FormControl isRequired>
-              <FormLabel>Phone number</FormLabel>
-              <Input
-                type="tel"
-                placeholder="Enter your phone number"
-                {...register('phoneNo')}
-              />
-            </FormControl>
-
-            <FormControl isRequired isInvalid={!!errors.password}>
-              <FormLabel>Password</FormLabel>
-              <Input
-                type="password"
-                placeholder="Enter your password"
-                {...register('password', {
-                  required: 'Password is required',
-                  minLength: {
-                    value: 8,
-                    message: 'Password must be at least 8 characters',
-                  },
-                })}
-              />
-              {errors.password && (
-                <FormErrorMessage color="brandblue">
-                  {errors.password?.message}
-                </FormErrorMessage>
-              )}
-            </FormControl>
-
-            <FormControl isRequired isInvalid={!!errors.confirmPassword}>
-              <FormLabel>Confirm password</FormLabel>
-              <Input
-                type="password"
-                placeholder="Repeat your password"
-                {...register('confirmPassword', {
-                  required: 'Password confirmation is required',
+            <CustomInput
+					  	{...register('email', {
+					  		required: 'Email is required',
+					  	})}
+					  	label = "Email"
+					  	type="email"
+					  	placeholder="Enter your email"
+					  	error={errors.email?.message}
+					  />
+            <CustomInput
+					  	{...register('phoneNo', {
+					  		required: 'Phone number is required',
+					  	})}
+					  	label = "Phone number"
+					  	type="tel"
+					  	placeholder="Enter your phone number"
+					  	error={errors.phoneNo?.message}
+					  />
+					  <CustomInput
+					  	{...register('password', {
+					  		required: 'Must enter password',
+                minLength: {
+                  value: 8,
+                  message: 'Password must be at least 8 characters',
+                }
+					  	})}
+					  	label = "Password"
+					  	type="password"
+					  	placeholder="Enter your password"
+					  	error={errors.password?.message}
+					  />
+            <CustomInput
+					  	{...register('confirmPassword', {
+					  		required: 'Password confirmation is required',
                   validate: (value) =>
                     value === getValues('password') || 'Passwords do not match',
-                })}
-              />
-              {errors.confirmPassword && (
-                <FormErrorMessage color="brandblue">
-                  {errors.confirmPassword?.message}
-                </FormErrorMessage>
-              )}
-            </FormControl>
+              })}
+					  	label = "Confirm password"
+					  	type="password"
+					  	placeholder="Repeat your password"
+					  	error={errors.confirmPassword?.message}
+					  />
           </VStack>
         </Flex>
 
@@ -194,40 +175,25 @@ export default function HomePage() {
           w={'full'}
           mt={5}
         >
-          <Button as="a" href="/home" sx={suppButtons}>
-            Continue as guest
-          </Button>
-          <Button
-            as="a"
-            href="/login"
-            p={5}
-            borderRadius="md"
-            sx={suppButtons}
-            bg="brandblue"
-            m="5"
-          >
-            Login
-          </Button>
+					<SupportButton
+					href="/home"
+					m = "5"
+					> 
+					Continue as guest
+					</SupportButton>
+          <SupportButton
+					href="/login"
+					m = "5"
+					> 
+						Log in
+					</SupportButton>
           <Spacer />
-          <Button
-            type="submit"
-            p={5}
-            borderRadius="md"
-            bg="brandblue"
-            m="5"
-            color={'brandwhite'}
-            mr="30%"
-            border="2px solid"
-            borderColor={'brandwhite'}
-            _hover={{
-              bg: 'brandgray',
-              color: 'brandblack',
-              borderColor: 'brandblue',
-              transition: 'all 0.3s ease', // Animacija prijelaza
-            }}
-          >
-            Register
-          </Button>
+          <SubmitButton 
+						label='Register'
+						submittingLabel='Trying to register...'
+						m = "5"
+						isSubmitting={isSubmitting}
+					/>
         </Flex>
       </chakra.form>
     </Box>
