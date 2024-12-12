@@ -8,7 +8,7 @@ EasyRent is a web application designed to streamline the car rental process for 
 
 ### Motivation
 
-This project is the result of team collaboration for the **Software Engineering** course at the Faculty of Electrical Engineering and Computing, University of Zagreb. The primary goal of EasyRent is to simplify car rental operations in the tourism and business sectors, enabling users to quickly and easily book vehicles online. The platform optimizes the business processes for companies dealing with car rentals and is scalable to meet the needs of different users and businesses. This project provided an opportunity for the team to learn about cutting-edge technologies, including **frontend and backend development, database management, DevOps practices, and security implementation through OAuth 2.0**. 
+This project is the result of teamwork developed as part of the course assignment for [Software Engineering](https://www.fer.unizg.hr/predmet/proinz) at the Faculty of Electrical Engineering and Computing, University of Zagreb. The primary goal of EasyRent is to simplify car rental operations in the tourism and business sectors, enabling users to quickly and easily book vehicles online. The platform optimizes the business processes for companies dealing with car rentals and is scalable to meet the needs of different users and businesses. This project provided an opportunity for the team to learn about cutting-edge technologies, including **frontend and backend development, database management, DevOps practices, and security implementation through OAuth 2.0**. 
 
 
 ### Problem We Are Solving
