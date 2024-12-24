@@ -8,8 +8,9 @@ from .models import *
 from .serializers import *
 from src.models import *
 from src.serializers import *
+from drf_spectacular.utils import extend_schema_view, extend_schema
 
-
+@extend_schema(tags=['home'])
 @api_view(['GET'])
 def get_showcased(request):
     dealerships = list(Dealership.objects.all())
