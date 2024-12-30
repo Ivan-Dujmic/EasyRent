@@ -8,8 +8,7 @@ import {
   Box,
   Text,
   Image,
-  Flex,
-  Link,
+  Flex
 } from '@chakra-ui/react';
 import { IoPersonSharp } from 'react-icons/io5';
 import { TbManualGearboxFilled } from 'react-icons/tb';
