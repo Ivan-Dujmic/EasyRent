@@ -8,26 +8,43 @@ from .models import *
 from .serializers import *
 from src.models import *
 from src.serializers import *
+from django.contrib.sessions.models import Session
+from django.contrib.auth.models import User
+from django.utils.timezone import now
+
+sessions = Session.objects.filter(expire_date__gte=now())
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 def get_showcased(request):
+    # Session debug
+    # for session in sessions:
+    #     if session.session_key == "e77fbr34a70emfsfow7veg5y1ifjst91":
+    #         print(session.session_key, session.get_decoded())
+    # for session in sessions:
+    #     data = session.get_decoded()
+    #     print(data)
+    #     print("Session: ", session.session_key)
+    # print("Trenutni: ", request.session.session_key)
+
     dealerships = list(Dealership.objects.all())
     size = 6 if len(dealerships) >= 6 else len(dealerships)
     showcased_dealerships = random.sample(dealerships, size)
 
     offers = Offer.objects.all()
-    most_popular = offers.order_by('-noOfReviews')[:5]
-    best_value = offers.order_by('price')[:5]
-    
-    showcased_dealership_data = DealershipLogoSerializer(showcased_dealerships, many=True).data
+    most_popular = offers.order_by("-noOfReviews")[:5]
+    best_value = offers.order_by("price")[:5]
+
+    showcased_dealership_data = DealershipLogoSerializer(
+        showcased_dealerships, many=True
+    ).data
     most_popular_data = OfferCardSerializer(most_popular, many=True).data
     best_value_data = OfferCardSerializer(best_value, many=True).data
 
     response_data = {
         "showcased_dealerships": showcased_dealership_data,
         "most_popular": most_popular_data,
-        "best_value": best_value_data
+        "best_value": best_value_data,
     }
-    
+
     return Response(response_data)
