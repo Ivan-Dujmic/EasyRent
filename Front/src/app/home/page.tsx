@@ -11,6 +11,7 @@ import { AuthRedirect } from '@/components/shared/auth/AuthRedirect/AuthRedirect
 import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { getShowCaseds } from '@/fetchers/homeData';
+import FQA from '@/components/shared/info/FQA/FQA';
 
 export default function HomePage() {
   const { data, error, isLoading } = useSWR(swrKeys.showcased, getShowCaseds);
@@ -79,6 +80,11 @@ export default function HomePage() {
             description={'Best value:'}
             useDescription={true}
           />
+        </Flex>
+
+        {/* Dio stranice sa dodatnim informacijama */}
+        <Flex justify={'center'} align={'center'} py={8} gap={2}>
+          <FQA />
         </Flex>
       </Flex>
     </>

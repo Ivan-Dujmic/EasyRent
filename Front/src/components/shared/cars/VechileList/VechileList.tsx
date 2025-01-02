@@ -32,7 +32,7 @@ export default function VehicleList({
   };
 
   return (
-    <Flex direction="column" align="center" width="75%">
+    <Flex direction="column" align="center" width="60vw" gap={5}>
       {useDescription && (
         <Heading size="md" color="brandblack" alignSelf="flex-start">
           {description}
