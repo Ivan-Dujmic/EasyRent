@@ -13,6 +13,37 @@ import { swrKeys } from '@/fetchers/swrKeys';
 import { getShowCaseds } from '@/fetchers/homeData';
 import FQA from '@/components/shared/info/FQA/FQA';
 import BenefitsSection from '@/components/shared/BenefitsSection/BenefitsSection';
+import Footer from '@/components/shared/Footer/Footer';
+import {
+  FaFacebookF,
+  FaInstagram,
+  FaTwitter,
+  FaLinkedinIn,
+  FaCcVisa,
+  FaCcMastercard,
+  FaCcStripe,
+} from 'react-icons/fa';
+
+const homeGuestFooterLinks = {
+  quickLinks: [
+    { label: 'Home', href: '/home' },
+    { label: 'About Us', href: '/home' },
+    { label: 'FAQ', href: '/home#faq-section' },
+    { label: 'Contact Us', href: '/contact' },
+  ],
+  contactInfo: {
+    phone: '+385 95 517 1890',
+    email: 'support@easyrent.com',
+    address: 'Unska ul. 3, 10000, Zagreb',
+  },
+  socialLinks: [
+    { label: 'Facebook', href: 'https://facebook.com', icon: FaFacebookF },
+    { label: 'Instagram', href: 'https://instagram.com', icon: FaInstagram },
+    { label: 'Twitter', href: 'https://twitter.com', icon: FaTwitter },
+    { label: 'LinkedIn', href: 'https://linkedin.com', icon: FaLinkedinIn },
+  ],
+  paymentIcons: [FaCcVisa, FaCcMastercard, FaCcStripe],
+};
 
 export default function HomePage() {
   const { data, error, isLoading } = useSWR(swrKeys.showcased, getShowCaseds);
@@ -89,9 +120,18 @@ export default function HomePage() {
         </Flex>
 
         {/* Dio stranice sa dodatnim informacijama */}
-        <Flex justify={'center'} align={'center'} py={8} gap={2}>
+        <Flex
+          justify={'center'}
+          align={'center'}
+          py={8}
+          gap={2}
+          id="faq-section"
+        >
           <FQA />
         </Flex>
+
+        {/* footer */}
+        <Footer links={homeGuestFooterLinks} />
       </Flex>
     </>
   );

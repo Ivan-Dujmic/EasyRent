@@ -8,7 +8,7 @@ import {
 
 export default function BenefitsSection() {
   return (
-    <Flex direction={'column'} bg="brandwhite" py={10} px={5} gap={6}>
+    <Flex direction={'column'} bg="brandwhite" py={5} px={5} gap={6}>
       {/* Naslov sekcije */}
       <Heading as="h2" size="lg" textAlign="center" mb={8}>
         Why Choose{' '}
