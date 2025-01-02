@@ -12,6 +12,7 @@ import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { getShowCaseds } from '@/fetchers/homeData';
 import FQA from '@/components/shared/info/FQA/FQA';
+import BenefitsSection from '@/components/shared/BenefitsSection/BenefitsSection';
 
 export default function HomePage() {
   const { data, error, isLoading } = useSWR(swrKeys.showcased, getShowCaseds);
@@ -80,6 +81,11 @@ export default function HomePage() {
             description={'Best value:'}
             useDescription={true}
           />
+        </Flex>
+
+        {/* Dio stranice sa benefitima */}
+        <Flex justify={'center'} align={'center'} py={8} gap={2}>
+          <BenefitsSection />
         </Flex>
 
         {/* Dio stranice sa dodatnim informacijama */}

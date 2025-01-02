@@ -11,7 +11,6 @@ import {
   ListItem,
   Text,
 } from '@chakra-ui/react';
-import FQAAccordionItem from '../FQAAccordionItem/FQAAccordionItem';
 
 export default function FQA() {
   return (
@@ -24,11 +23,11 @@ export default function FQA() {
         align={'flex-start'}
         justify={'space-between'}
         gap={5}
-        wrap={['wrap', 'nowrap']}
+        wrap={['wrap', 'wrap', 'wrap', 'nowrap']}
         width={'100%'}
       >
         {/* First Accordion */}
-        <Accordion allowToggle flexBasis={['100%', '48%']}>
+        <Accordion allowToggle flexBasis={['100%', '100%', '100%', '48%']}>
           {/* item 1.1 */}
           <AccordionItem>
             <h2>
@@ -206,7 +205,7 @@ export default function FQA() {
         </Accordion>
 
         {/* Second Accordion */}
-        <Accordion allowToggle flexBasis={['100%', '48%']}>
+        <Accordion allowToggle flexBasis={['100%', '100%', '100%', '48%']}>
           {/* item 2.1 */}
           <AccordionItem>
             <h2>
