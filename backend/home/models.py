@@ -55,9 +55,8 @@ class Vehicle(models.Model):
     registration = models.CharField(max_length=20, unique=True)
     model = models.ForeignKey(Model, on_delete=models.SET_NULL, null=True)
     dealer = models.ForeignKey(Dealership, on_delete=models.CASCADE)
-    insured = models.BooleanField(blank=True, default=None, null=True)
-    yearOfCreation = models.IntegerField(blank=True, default=None, null=True)
     timesRented = models.IntegerField(blank=True, default=0)
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, blank=True, default=None, null=True)
+    isVisible = models.BooleanField(default=True)
     def __str__(self):
         return "Reg: " + self.registration + " DealerID: " + self.dealer

@@ -160,7 +160,7 @@ AUTHENTICATION_BACKENDS = (
 
 SESSION_COOKIE_SECURE = True  # Send only over HTTPS
 SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access
-SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'None'
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_HOST_USER = os.getenv("HOST_EMAIL")
