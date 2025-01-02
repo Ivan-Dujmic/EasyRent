@@ -1,4 +1,4 @@
-import { Box, Flex, Heading, Text, Icon } from '@chakra-ui/react';
+import { Flex, Heading, Text, Icon } from '@chakra-ui/react';
 import {
   FaDollarSign,
   FaCar,
@@ -8,7 +8,7 @@ import {
 
 export default function BenefitsSection() {
   return (
-    <Flex direction={'column'} bg="brandwhite" py={12} px={5} gap={5}>
+    <Flex direction={'column'} bg="brandwhite" py={10} px={5} gap={6}>
       {/* Naslov sekcije */}
       <Heading as="h2" size="lg" textAlign="center" mb={8}>
         Why Choose{' '}
@@ -23,12 +23,30 @@ export default function BenefitsSection() {
         direction={['column', 'column', 'row']}
         justify="space-around"
         align="center"
-        gap={8}
+        gap={[6, 8, 10]} // Razmak prilagođen za manje ekrane
         wrap="wrap"
       >
         {/* Povoljna cijena */}
-        <Flex direction="column" align="center" maxW="250px" textAlign="center">
-          <Icon as={FaDollarSign} w={10} h={10} color="brandyellow" mb={4} />
+        <Flex
+          direction="column"
+          align="center"
+          maxW="250px"
+          textAlign="center"
+          _hover={{
+            transform: 'scale(1.05)', // Povećanje bloka
+            transition: 'transform 0.2s',
+          }}
+          role="group" // Omogućava grupni hover efekt
+          willChange="transform"
+        >
+          <Icon
+            as={FaDollarSign}
+            w={10}
+            h={10}
+            color="brandyellow"
+            mb={4}
+            _groupHover={{ color: 'brandblue' }} // Promjena boje na hover cijelog bloka
+          />
           <Heading as="h3" size="md" mb={2}>
             Affordable Prices
           </Heading>
@@ -39,8 +57,26 @@ export default function BenefitsSection() {
         </Flex>
 
         {/* Velik izbor vozila */}
-        <Flex direction="column" align="center" maxW="250px" textAlign="center">
-          <Icon as={FaCar} w={10} h={10} color="brandyellow" mb={4} />
+        <Flex
+          direction="column"
+          align="center"
+          maxW="250px"
+          textAlign="center"
+          _hover={{
+            transform: 'scale(1.05)',
+            transition: 'transform 0.2s',
+          }}
+          role="group"
+          willChange="transform"
+        >
+          <Icon
+            as={FaCar}
+            w={10}
+            h={10}
+            color="brandyellow"
+            mb={4}
+            _groupHover={{ color: 'brandblue' }}
+          />
           <Heading as="h3" size="md" mb={2}>
             Wide Vehicle Selection
           </Heading>
@@ -50,13 +86,25 @@ export default function BenefitsSection() {
         </Flex>
 
         {/* Jednostavan proces rezervacije */}
-        <Flex direction="column" align="center" maxW="250px" textAlign="center">
+        <Flex
+          direction="column"
+          align="center"
+          maxW="250px"
+          textAlign="center"
+          _hover={{
+            transform: 'scale(1.05)',
+            transition: 'transform 0.2s',
+          }}
+          role="group"
+          willChange="transform"
+        >
           <Icon
             as={FaRegCalendarAlt}
             w={10}
             h={10}
             color="brandyellow"
             mb={4}
+            _groupHover={{ color: 'brandblue' }}
           />
           <Heading as="h3" size="md" mb={2}>
             Easy Booking
@@ -67,8 +115,26 @@ export default function BenefitsSection() {
         </Flex>
 
         {/* Korisnička podrška */}
-        <Flex direction="column" align="center" maxW="250px" textAlign="center">
-          <Icon as={FaHeadset} w={10} h={10} color="brandyellow" mb={4} />
+        <Flex
+          direction="column"
+          align="center"
+          maxW="250px"
+          textAlign="center"
+          _hover={{
+            transform: 'scale(1.05)',
+            transition: 'transform 0.2s',
+          }}
+          role="group"
+          willChange="transform"
+        >
+          <Icon
+            as={FaHeadset}
+            w={10}
+            h={10}
+            color="brandyellow"
+            mb={4}
+            _groupHover={{ color: 'brandblue' }}
+          />
           <Heading as="h3" size="md" mb={2}>
             24/7 Customer Support
           </Heading>
