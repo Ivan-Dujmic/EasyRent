@@ -48,9 +48,10 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
+    "corsheaders",
+    "drf_spectacular",
     "src",
     "home",
-    "corsheaders",
 ]
 AUTH_USER_MODEL = "auth.User"
 
@@ -107,7 +108,7 @@ DATABASES = {
         "USER": "postgres",
         "PASSWORD": "postgres",
         "HOST": "localhost",
-        "PORT": "5433",
+        "PORT": "5432", #5432 or 5433
     }
 }
 
@@ -197,6 +198,18 @@ ACCOUNT_USERNAME_REQUIRED = False
 LOGIN_REDIRECT_URL = "/"
 
 LOGOUT_REDIRECT_URL = "/"
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+# To generate the API schema, run the following command:
+# python manage.py spectacular --file schema.yml
+# http://127.0.0.1:8000/api/schema/docs
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "EasyRent API",
+}
 
 # SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_LOGIN_ON_GET = True
