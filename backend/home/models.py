@@ -75,7 +75,7 @@ class Rent(models.Model):
 
 class Review(models.Model):
     review_id = models.AutoField(primary_key=True)
-    rent = models.ForeignKey(Rent, on_delete=models.CASCADE, unique=True)
+    rent = models.OneToOneField(Rent, on_delete=models.CASCADE)
     rating = models.SmallIntegerField(blank=True, default=None, null=True)
     description = models.TextField(blank=True, default='')
     reviewDate = models.DateField(blank=True, default=None, null=True)
