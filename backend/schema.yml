@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: EasyRent
+  title: EasyRent API
   version: 0.0.0
 paths:
   /api/auth/loginUser/:
@@ -51,18 +51,30 @@ paths:
       responses:
         '200':
           description: No response body
-  /api/home/showcased/:
+  /api/public/offer/{offer_id}:
     get:
-      operationId: api_home_showcased_retrieve
+      operationId: api_public_offer_retrieve
+      parameters:
+      - in: path
+        name: offer_id
+        schema:
+          type: string
+        required: true
       tags:
-      - home
+      - public
       security:
       - cookieAuth: []
       - basicAuth: []
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferDetails'
+          description: ''
+        '404':
+          description: Offer Not Found
   /api/schema/:
     get:
       operationId: api_schema_retrieve
@@ -210,6 +222,55 @@ paths:
                 additionalProperties: {}
           description: ''
 components:
+  schemas:
+    OfferDetails:
+      type: object
+      properties:
+        image:
+          type: string
+          default: base64
+        makeName:
+          type: string
+        modelName:
+          type: string
+        companyName:
+          type: string
+        dealership_id:
+          type: integer
+        noOfSeats:
+          type: integer
+        modelType:
+          type: string
+        automatic:
+          type: boolean
+        price:
+          type: number
+          format: double
+          default: 0.1
+        rating:
+          type: number
+          format: double
+          default: 0.1
+        noOfReviews:
+          type: integer
+        companyLogo:
+          type: string
+          default: base64
+        description:
+          type: string
+        canReview:
+          type: integer
+      required:
+      - automatic
+      - canReview
+      - companyName
+      - dealership_id
+      - description
+      - makeName
+      - modelName
+      - modelType
+      - noOfReviews
+      - noOfSeats
   securitySchemes:
     basicAuth:
       type: http

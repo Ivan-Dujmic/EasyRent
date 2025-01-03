@@ -202,6 +202,7 @@ REST_FRAMEWORK = {
 
 # To generate the API schema, run the following command:
 # python manage.py spectacular --file schema.yml
+# http://127.0.0.1:8000/api/schema/docs
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "EasyRent API",
