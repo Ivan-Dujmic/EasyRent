@@ -56,6 +56,8 @@ class Vehicle(models.Model):
     model = models.ForeignKey(Model, on_delete=models.SET_NULL, null=True)
     dealer = models.ForeignKey(Dealership, on_delete=models.CASCADE)
     timesRented = models.IntegerField(blank=True, default=0)
+    rating = models.FloatField(blank=True, default=None, null=True)
+    noOfReviews = models.IntegerField(blank=True, default=0)
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, blank=True, default=None, null=True)
     isVisible = models.BooleanField(default=True)
     def __str__(self):
@@ -66,7 +68,7 @@ class Rent(models.Model):
     rentoid = models.ForeignKey(Rentoid, on_delete=models.CASCADE)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
     dateTimeRented = models.DateTimeField()
-    dateTimeReturned = models.DateTimeField(blank=True, default=None, null=True)
+    dateTimeReturned = models.DateTimeField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
 class Review(models.Model):

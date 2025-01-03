@@ -51,7 +51,7 @@ paths:
       responses:
         '200':
           description: No response body
-  /api/home/offer/{offer_id}:
+  /api/home/offer/{offer_id}/:
     get:
       operationId: api_home_offer_retrieve
       parameters:
@@ -87,6 +87,119 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/profile/user/delete/:
+    delete:
+      operationId: delete_user
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: User deleted successfully
+        '400':
+          description: Password is required
+        '401':
+          description: User not authenticated
+        '403':
+          description: Incorrect password
+  /api/profile/user/info/:
+    get:
+      operationId: get_user_info
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUserInfo'
+          description: ''
+        '401':
+          description: User not authenticated
+    put:
+      operationId: update_user_info
+      tags:
+      - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutUserInfo'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PutUserInfo'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PutUserInfo'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: User info updated successfully
+        '400':
+          description: All fields are required
+        '401':
+          description: User not authenticated
+        '403':
+          description: Incorrect password
+  /api/profile/user/pass/:
+    put:
+      operationId: update_user_password
+      tags:
+      - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutUserPassword'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PutUserPassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PutUserPassword'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: Password updated successfully
+        '400':
+          description: New password must be at least 8 characters long
+        '401':
+          description: User not authenticated
+        '403':
+          description: Incorrect password
+  /api/profile/user/rentals/:
+    get:
+      operationId: get_user_rentals
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUserRentals'
+          description: ''
+        '401':
+          description: User not authenticated
   /api/schema/:
     get:
       operationId: api_schema_retrieve
@@ -235,6 +348,72 @@ paths:
           description: ''
 components:
   schemas:
+    GetUserInfo:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phoneNo:
+          type: string
+        driversLicense:
+          type: string
+      required:
+      - driversLicense
+      - firstName
+      - lastName
+      - phoneNo
+    GetUserRentals:
+      type: object
+      properties:
+        image:
+          type: string
+          default: base64
+        makeName:
+          type: string
+        modelName:
+          type: string
+        companyName:
+          type: string
+        noOfSeats:
+          type: integer
+        automatic:
+          type: boolean
+        price:
+          type: number
+          format: double
+          default: 0.1
+        rating:
+          type: number
+          format: double
+          default: 0.1
+        noOfReviews:
+          type: integer
+        dateTimeRented:
+          type: string
+          format: date-time
+        dateTimeReturned:
+          type: string
+          format: date-time
+        expired:
+          type: boolean
+        canReview:
+          type: boolean
+        offer_id:
+          type: integer
+      required:
+      - automatic
+      - canReview
+      - companyName
+      - dateTimeRented
+      - dateTimeReturned
+      - expired
+      - makeName
+      - modelName
+      - noOfReviews
+      - noOfSeats
+      - offer_id
     OfferDetails:
       type: object
       properties:
@@ -271,7 +450,7 @@ components:
         description:
           type: string
         canReview:
-          type: integer
+          type: boolean
       required:
       - automatic
       - canReview
@@ -283,6 +462,35 @@ components:
       - modelType
       - noOfReviews
       - noOfSeats
+    PutUserInfo:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phoneNo:
+          type: string
+        driversLicense:
+          type: string
+        password:
+          type: string
+      required:
+      - driversLicense
+      - firstName
+      - lastName
+      - password
+      - phoneNo
+    PutUserPassword:
+      type: object
+      properties:
+        oldPassword:
+          type: string
+        newPassword:
+          type: string
+      required:
+      - newPassword
+      - oldPassword
   securitySchemes:
     basicAuth:
       type: http

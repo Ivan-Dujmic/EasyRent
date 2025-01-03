@@ -19,7 +19,7 @@ class OfferDetailsSerializer(serializers.Serializer):
     noOfReviews = serializers.IntegerField()
     companyLogo = serializers.CharField(default="base64")
     description = serializers.CharField()
-    canReview = serializers.IntegerField()
+    canReview = serializers.BooleanField()
 
 
 class DealershipLogoSerializer(serializers.ModelSerializer):

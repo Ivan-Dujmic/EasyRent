@@ -39,7 +39,7 @@ def getOfferDetails(request, offer_id):
         can_review = 1 if request.user.is_authenticated and user_can_review(request.user, offer) else 0
 
         response_data = {
-            "image": base64.b64encode(offer.image).decode('utf-8'),  # Convert bytes to string
+            "image": base64.b64encode(offer.image).decode('utf-8'),
             "makeName": offer.model.makeName,
             "modelName": offer.model.modelName,
             "companyName": dealership.user.first_name,
