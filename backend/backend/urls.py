@@ -24,7 +24,7 @@ from src import urls, views
 urlpatterns = [
     path("api/auth/", include("src.urls")),
     path("api/home/", include("home.urls")),
-    #path("api/profile/", include("profile.urls")),
+    path("api/profile/", include("profiles.urls")),
     path("accounts/", include("allauth.urls")),
     path("admin/", admin.site.urls),
     
