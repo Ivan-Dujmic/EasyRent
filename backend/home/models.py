@@ -68,7 +68,7 @@ class Rent(models.Model):
     rentoid = models.ForeignKey(Rentoid, on_delete=models.CASCADE)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
     dateTimeRented = models.DateTimeField()
-    dateTimeReturned = models.DateTimeField(blank=True, default=None, null=True)
+    dateTimeReturned = models.DateTimeField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
 class Review(models.Model):
