@@ -30,7 +30,7 @@ SECRET_KEY = "django-insecure-upfieqv^tvk=6qdn1b3aps5-&!kqknvu-pa573k_2401*1uqvf
 # SECURITY WARNING: don"t run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['http://localhost:3000','127.0.0.1' ]
+ALLOWED_HOSTS = ["http://localhost:3000", "127.0.0.1"]
 
 
 # Application definition
@@ -49,9 +49,11 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
+    "corsheaders",
+    "drf_spectacular",
     "src",
     "home",
-    'corsheaders',
+    "profile",
 ]
 AUTH_USER_MODEL = "auth.User"
 
@@ -59,7 +61,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     #'django.middleware.csrf.CsrfViewMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -108,7 +110,7 @@ DATABASES = {
         "USER": "postgres",
         "PASSWORD": "postgres",
         "HOST": "localhost",
-        "PORT": "5432",
+        "PORT": "5432", #5432 or 5433
     }
 }
 
@@ -160,10 +162,6 @@ AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 )
-
-SESSION_COOKIE_SECURE = True  # Send only over HTTPS
-SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access
-SESSION_COOKIE_SAMESITE = 'Lax'
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_HOST_USER = os.getenv("HOST_EMAIL")
@@ -172,19 +170,26 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 
-
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_DOMAIN = None
+SESSION_COOKIE_NAME = "sessionid"
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "None"
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
+    "http://localhost:3000",
 ]
 CRSF_TRUSTED_ORIGINS = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8000",
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_HEADERS = [
-    'content-type',
-    'authorization',
+    "content-type",
+    "authorization",
 ]
 
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
@@ -197,3 +202,19 @@ ACCOUNT_USERNAME_REQUIRED = False
 LOGIN_REDIRECT_URL = "/"
 
 LOGOUT_REDIRECT_URL = "/"
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+# To generate the API schema, run the following command:
+# python manage.py spectacular --file schema.yml
+# http://127.0.0.1:8000/api/schema/docs
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "EasyRent API",
+}
+
+# SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_LOGIN_ON_GET = True
+# ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
