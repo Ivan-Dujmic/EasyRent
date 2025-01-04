@@ -59,7 +59,7 @@ class Location(models.Model):
 
 class WorkingHours(models.Model):
     workingHours_id = models.AutoField(primary_key=True)
-    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True)
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, null=True)
     dayOfTheWeek = models.IntegerField(
         choices=[
             (i, day)
