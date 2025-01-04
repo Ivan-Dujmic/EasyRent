@@ -42,7 +42,7 @@ class Offer(models.Model):
     rating = models.FloatField(blank=True, default=None, null=True)
     noOfReviews = models.IntegerField(blank=True, default=0)
     description = models.TextField(blank=True, default='')
-    image = models.BinaryField(default=b'')
+    image = models.ImageField(upload_to='offers')
     #unique
     class Meta:
         unique_together = ('model', 'dealer')
@@ -68,15 +68,21 @@ class Rent(models.Model):
     rentoid = models.ForeignKey(Rentoid, on_delete=models.CASCADE)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
     dateTimeRented = models.DateTimeField()
-    dateTimeReturned = models.DateTimeField(blank=True, default=None, null=True)
+    dateTimeReturned = models.DateTimeField()
+    rentedLocation = models.ForeignKey(Location, on_delete=models.SET_NULL, blank=True, default=None, null=True, related_name='rented_location')
+    returnLocation = models.ForeignKey(Location, on_delete=models.SET_NULL, blank=True, default=None, null=True, related_name='return_location')
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    def __str__(self):
+        return "Rentoid: " + self.rentoid + " Vehicle: " + self.vehicle + " Rented: " + self.dateTimeRented + " Returned: " + self.dateTimeReturned
 
 class Review(models.Model):
     review_id = models.AutoField(primary_key=True)
-    rent = models.ForeignKey(Rent, on_delete=models.CASCADE)
+    rent = models.OneToOneField(Rent, on_delete=models.CASCADE)
     rating = models.SmallIntegerField(blank=True, default=None, null=True)
     description = models.TextField(blank=True, default='')
     reviewDate = models.DateField(blank=True, default=None, null=True)
+    def __str__(self):
+        return "RentID: " + self.rent + " Rating: " + self.rating + " Date: " + self.reviewDate
 """
 Zapisi u recenziji se dodaju u trenutku kada se definira dateTimeReturned 
 i ostaju prazni dok ih rentoid ne ispuni što može biti u bilo kojem trenutku u budućnosti.

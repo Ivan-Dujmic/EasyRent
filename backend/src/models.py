@@ -21,8 +21,8 @@ class Dealership(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
     phoneNo = models.CharField(max_length=20, null=True, blank=True)
     TIN = models.CharField(max_length=16, default=None)
-    description = models.TextField(blank=True, default="")
-    image = models.BinaryField(default=b'')
+    description = models.TextField(blank=True, default='')
+    image = models.ImageField(upload_to='logos')
     isAccepted = models.BooleanField(blank=True, null=True, default=None)
 
     def __str__(self):
