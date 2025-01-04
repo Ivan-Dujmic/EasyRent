@@ -71,7 +71,7 @@ export default function HomePage() {
   return (
     <>
       <AuthRedirect to={''} condition={'isLoggedIn'} />
-      <Flex direction="column" grow={1} align={'center'}>
+      <Flex direction="column" grow={1} align={'center'} width={'100%'}>
         <Header />
         {/* Drugi dio stranice */}
         <Flex
@@ -83,7 +83,7 @@ export default function HomePage() {
           justify={'flex-start'}
           py={gapSize}
           gap={gapSize}
-          width={'100vw'}
+          width={'100%'}
         >
           <EasyRentMoto />
           <MainFilter />
