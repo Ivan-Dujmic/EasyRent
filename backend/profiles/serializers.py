@@ -2,11 +2,9 @@ from rest_framework import serializers
 from .models import *
 from src.models import *
 from home.models import *
-import base64
 
 
 class GetUserRentalsSerializer(serializers.Serializer):
-    image = serializers.CharField(default="base64")
     makeName = serializers.CharField()
     modelName = serializers.CharField()
     companyName = serializers.CharField()
@@ -20,6 +18,7 @@ class GetUserRentalsSerializer(serializers.Serializer):
     expired = serializers.BooleanField()
     canReview = serializers.BooleanField()
     offer_id = serializers.IntegerField()
+    image = serializers.ImageField(example="IMAGE")
 
 class GetUserInfoSerializer(serializers.Serializer):
     firstName = serializers.CharField()

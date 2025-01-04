@@ -29,16 +29,32 @@ paths:
           description: No response body
   /api/auth/registerCompany/:
     post:
-      operationId: api_auth_registerCompany_create
+      operationId: register_company
       tags:
       - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterCompany'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterCompany'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterCompany'
+        required: true
       security:
       - cookieAuth: []
       - basicAuth: []
       - {}
       responses:
         '200':
-          description: No response body
+          description: Email confirmation request sent
+        '400':
+          description: Location with these details already exists
+        '500':
+          description: Email confirmation request failed
   /api/auth/registerUser/:
     post:
       operationId: api_auth_registerUser_create
@@ -147,7 +163,7 @@ paths:
         '200':
           description: User info updated successfully
         '400':
-          description: All fields are required
+          description: Driver's license number must be at most 16 characters long
         '401':
           description: User not authenticated
         '403':
@@ -196,7 +212,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetUserRentals'
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetUserRentals'
           description: ''
         '401':
           description: User not authenticated
@@ -491,6 +509,73 @@ components:
       required:
       - newPassword
       - oldPassword
+    RegisterCompany:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        companyName:
+          type: string
+        tin:
+          type: string
+        phoneNo:
+          type: string
+        countryName:
+          type: string
+        cityName:
+          type: string
+        streetName:
+          type: string
+        streetNo:
+          type: string
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          default: '0.100000'
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          default: '0.100000'
+        workingHours:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkingHours'
+        description:
+          type: string
+        password:
+          type: string
+        image:
+          type: string
+          format: uri
+          default: null
+      required:
+      - cityName
+      - companyName
+      - countryName
+      - description
+      - email
+      - password
+      - phoneNo
+      - streetName
+      - streetNo
+      - tin
+      - workingHours
+    WorkingHours:
+      type: object
+      properties:
+        day:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+      required:
+      - day
+      - endTime
+      - startTime
   securitySchemes:
     basicAuth:
       type: http

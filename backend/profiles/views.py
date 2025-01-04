@@ -46,7 +46,6 @@ def userRentals(request):
                 model = offer.model
                 
                 item = {
-                    "image": base64.b64encode(offer.image).decode('utf-8'),
                     "makeName": model.makeName,
                     "modelName": model.modelName,
                     "companyName": dealer.user.first_name,
@@ -59,7 +58,8 @@ def userRentals(request):
                     "dateTimeReturned": rental.dateTimeReturned,
                     "expired": isUserRentalExpired(rental),
                     "canReview": canUserReview(user, rental),
-                    "offer_id": offer.offer_id
+                    "offer_id": offer.offer_id,
+                    "image": offer.image.url if offer.image else None,
                 }
 
                 rentalData.append(item)
@@ -113,39 +113,24 @@ def canUserReview(user, rental):
             ],
         ),
         400: OpenApiResponse(
-            description='All fields are required',
+            description='Invalid input',
             examples=[
                 OpenApiExample(
                     'All fields are required',
                     value={"success": 0, "message": "All fields are required"},
                 ),
-            ],
-        ),
-        400: OpenApiResponse(
-            description='Phone number must contain only digits',
-            examples=[
                 OpenApiExample(
                     'Phone number must contain only digits',
                     value={"success": 0, "message": "Phone number must contain only digits"},
                 ),
-            ],
-        ),
-        400: OpenApiResponse(
-            description='Phone number must be at most 20 characters long',
-            examples=[
-            OpenApiExample(
-                'Phone number must be at most 20 characters long',
-                value={"success": 0, "message": "Phone number must be at most 20 characters long"},
-            ),
-            ],
-        ),
-        400: OpenApiResponse(
-            description='Driver\'s license number must be at most 16 characters long',
-            examples=[
-            OpenApiExample(
-                'Driver\'s license number must be at most 16 characters long',
-                value={"success": 0, "message": "Driver's license number must be at most 16 characters long"},
-            ),
+                OpenApiExample(
+                    'Phone number must be at most 20 characters long',
+                    value={"success": 0, "message": "Phone number must be at most 20 characters long"},
+                ),
+                OpenApiExample(
+                    'Driver\'s license number must be at most 16 characters long',
+                    value={"success": 0, "message": "Driver's license number must be at most 16 characters long"},
+                ),
             ],
         ),
         401: OpenApiResponse(
@@ -232,17 +217,12 @@ def userInfo(request):
             ],
         ),
         400: OpenApiResponse(
-            description='All fields are required',
+            description='Invalid input',
             examples=[
                 OpenApiExample(
                     'All fields are required',
                     value={"success": 0, "message": "All fields are required"},
                 ),
-            ],
-        ),
-        400: OpenApiResponse(
-            description='New password must be at least 8 characters long',
-            examples=[
                 OpenApiExample(
                     'New password must be at least 8 characters long',
                     value={"success": 0, "message": "New password must be at least 8 characters long"},
