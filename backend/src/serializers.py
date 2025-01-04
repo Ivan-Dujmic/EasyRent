@@ -3,6 +3,13 @@ from .models import *
 from src.models import *
 from home.models import *
 
+class RegisterUserSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    firstName = serializers.CharField()
+    lastName = serializers.CharField()
+    driversLicense = serializers.CharField()
+    phoneNo = serializers.CharField()
+    password = serializers.CharField()
 
 class WorkingHoursSerializer(serializers.Serializer):
     day = serializers.CharField()

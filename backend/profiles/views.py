@@ -174,26 +174,26 @@ def userInfo(request):
             rentoid = Rentoid.objects.get(user=user)
             data = request.data
 
-            if not data["firstName"] or not data["lastName"] or not data["phoneNo"] or not data["driversLicense"]:
+            if not data.get("firstName") or not data.get("lastName") or not data.get("phoneNo") or not data.get("driversLicense"):
                 return Response({"success": 0, "message": "All fields are required"}, status=400)
             
-            if not data["phoneNo"].isdigit():
+            if not data.get("phoneNo").isdigit():
                 return Response({"success": 0, "message": "Phone number must contain only digits"}, status=400)
             
-            if len(data["phoneNo"]) > 20:
+            if len(data.get("phoneNo")) > 20:
                 return Response({"success": 0, "message": "Phone number must be at most 20 characters long"}, status=400)
             
-            if len(data["driversLicense"]) > 16:
+            if len(data.get("driversLicense")) > 16:
                 return Response({"success": 0, "message": "Driver's license number must be at most 16 characters long"}, status=400)
             
-            if not user.check_password(data["password"]):
+            if not user.check_password(data.get("password")):
                 return Response({"success": 0, "message": "Incorrect password"}, status=403)
             
-            user.first_name = data["firstName"]
-            user.last_name = data["lastName"]
+            user.first_name = data.get("firstName")
+            user.last_name = data.get("lastName")
             
-            rentoid.phoneNo = data["phoneNo"]
-            rentoid.driversLicenseNo = data["driversLicense"]
+            rentoid.phoneNo = data.get("phoneNo")
+            rentoid.driversLicenseNo = data.get("driversLicense")
             user.save()
             rentoid.save()
             return Response({"success": 1, "message": "User info updated successfully"}, status=200)
@@ -256,16 +256,16 @@ def userPass(request):
         if user.is_authenticated:
             data = request.data
 
-            if not data["oldPassword"] or not data["newPassword"]:
+            if not data.get("oldPassword") or not data.get("newPassword"):
                 return Response({"success": 0, "message": "All fields are required"}, status=400)
             
-            if len(data["newPassword"]) < 8:
+            if len(data.get("newPassword")) < 8:
                 return Response({"success": 0, "message": "New password must be at least 8 characters long"}, status=400)
             
-            if not user.check_password(data["oldPassword"]):
+            if not user.check_password(data.get("oldPassword")):
                 return Response({"success": 0, "message": "Incorrect password"}, status=403)
             
-            user.set_password(data["newPassword"])
+            user.set_password(data.get("newPassword"))
             user.save()
             return Response({"success": 1, "message": "Password updated successfully"}, status=200)
         else:
@@ -326,7 +326,7 @@ def userDelete(request):
             if not data.get("password"):
                 return Response({"success": 0, "message": "Password is required"}, status=400)
             
-            if not user.check_password(data["password"]):
+            if not user.check_password(data.get("password")):
                 return Response({"success": 0, "message": "Incorrect password"}, status=403)
             
             user.delete()
