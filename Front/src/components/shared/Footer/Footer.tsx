@@ -31,6 +31,7 @@ export default function Footer({ links }: FooterProps) {
       py={10}
       px={[4, 8, 16]}
       mt={10}
+      width={'100vw'}
     >
       {/* Gornji dio */}
       <Flex

@@ -11,6 +11,7 @@ export default function Header() {
       color={'brandblack'}
       fontSize="sm"
       zIndex={2}
+      width={'100vw'}
     >
       <Flex align="center" maxW="1200px" mx="auto" px={6} py={4}>
         {/* Logo */}

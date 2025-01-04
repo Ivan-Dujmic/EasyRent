@@ -23,6 +23,7 @@ import {
   FaCcMastercard,
   FaCcStripe,
 } from 'react-icons/fa';
+import CustomMap from '@/components/shared/Map/CustomMap/CustomMap';
 
 const homeGuestFooterLinks = {
   quickLinks: [
@@ -71,7 +72,7 @@ export default function HomePage() {
   return (
     <>
       <AuthRedirect to={''} condition={'isLoggedIn'} />
-      <Flex direction="column" grow={1}>
+      <Flex direction="column" grow={1} align={'center'}>
         <Header />
         {/* Drugi dio stranice */}
         <Flex
@@ -83,6 +84,7 @@ export default function HomePage() {
           justify={'flex-start'}
           py={gapSize}
           gap={gapSize}
+          width={'100vw'}
         >
           <EasyRentMoto />
           <MainFilter />
@@ -117,6 +119,21 @@ export default function HomePage() {
         {/* Dio stranice sa benefitima */}
         <Flex justify={'center'} align={'center'} py={8} gap={2}>
           <BenefitsSection />
+        </Flex>
+
+        {/* dio stranice s mapom */}
+        <Flex
+          justify={'center'}
+          align={'center'}
+          py={8}
+          gap={7}
+          width={'60vw'}
+          direction={'column'}
+        >
+          <Heading size="md" color="brandblack" alignSelf="flex-start">
+            Browse Nearby Dealerships for Your Next Ride:
+          </Heading>
+          <CustomMap />
         </Flex>
 
         {/* Dio stranice sa dodatnim informacijama */}
