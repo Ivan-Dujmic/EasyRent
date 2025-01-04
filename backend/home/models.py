@@ -67,7 +67,7 @@ class Rent(models.Model):
     rent_id = models.AutoField(primary_key=True)
     rentoid = models.ForeignKey(Rentoid, on_delete=models.SET_NULL, blank=True, default=None, null=True)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.SET_NULL, blank=True, default=None, null=True)
-    dealer = models.ForeignKey(Dealership, on_delete=models.CASCADE)    # We need this redundancy for the sake of deletion of a vehicle
+    dealer = models.ForeignKey(Dealership, on_delete=models.CASCADE, blank=True, default=None, null=True) # We need this redundancy for the sake of deletion of a vehicle
     dateTimeRented = models.DateTimeField()
     dateTimeReturned = models.DateTimeField()
     rentedLocation = models.ForeignKey(Location, on_delete=models.SET_NULL, blank=True, default=None, null=True, related_name='rented_location')
