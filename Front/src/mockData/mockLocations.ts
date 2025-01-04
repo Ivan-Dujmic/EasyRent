@@ -37,15 +37,6 @@ export const dealershipLocations = [
     availableCars: 20,
   },
   {
-    id: 5,
-    name: 'Zagreb North',
-    lat: 45.862448,
-    lng: 15.960138,
-    address: 'Gračanska cesta 67, 10000 Zagreb',
-    workingHours: 'Mon-Sun: 8 AM - 6 PM',
-    availableCars: 10,
-  },
-  {
     id: 6,
     name: 'Zagreb South',
     lat: 45.771922,

@@ -7,7 +7,7 @@ import {
   InfoWindow,
   useLoadScript,
 } from '@react-google-maps/api';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { FaMapMarkerAlt, FaClock, FaCar } from 'react-icons/fa';
 
 // Tip za lokacije
@@ -42,15 +42,15 @@ const mapStyles = [
   },
   {
     featureType: 'poi.park',
-    stylers: [{ visibility: 'off' }], // Hides parks
+    stylers: [{ visibility: 'off' }],
   },
   {
     featureType: 'poi.medical',
-    stylers: [{ visibility: 'off' }], // Hides hospitals/medical facilities
+    stylers: [{ visibility: 'off' }],
   },
   {
     featureType: 'poi.attraction',
-    stylers: [{ visibility: 'off' }], // Hides museums and attractions
+    stylers: [{ visibility: 'off' }],
   },
   {
     featureType: 'landscape',
@@ -69,6 +69,28 @@ const mapStyles = [
   },
 ];
 
+// Funkcija za izračun najbliže lokacije
+const getClosestLocation = (
+  lat: number,
+  lng: number,
+  locations: DealershipLocation[]
+) => {
+  let closestLocation = locations[0];
+  let minDistance = Number.MAX_VALUE;
+
+  locations.forEach((location) => {
+    const distance = Math.sqrt(
+      Math.pow(lat - location.lat, 2) + Math.pow(lng - location.lng, 2)
+    );
+    if (distance < minDistance) {
+      closestLocation = location;
+      minDistance = distance;
+    }
+  });
+
+  return closestLocation;
+};
+
 const CustomMap: React.FC<CustomMapProps> = ({
   locations,
   showInfoWindow = true,
@@ -79,6 +101,40 @@ const CustomMap: React.FC<CustomMapProps> = ({
 
   const [selectedLocation, setSelectedLocation] =
     useState<DealershipLocation | null>(null);
+  const [center, setCenter] = useState({ lat: 45.815399, lng: 15.966568 }); // Default Zagreb center
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [showUserInfoWindow, setShowUserInfoWindow] = useState(false);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+
+          // Spremi korisnikovu lokaciju
+          setUserLocation({ lat: latitude, lng: longitude });
+
+          // Pronađi najbližu lokaciju
+          const closestLocation = getClosestLocation(
+            latitude,
+            longitude,
+            locations
+          );
+
+          // Postavi centar na središte najbližeg grada
+          setCenter({ lat: closestLocation.lat, lng: closestLocation.lng });
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          // Zadrži default centar (Zagreb)
+          setCenter({ lat: 45.815399, lng: 15.966568 });
+        }
+      );
+    }
+  }, [locations]);
 
   const mapContainerStyle = useMemo(
     () => ({
@@ -86,14 +142,6 @@ const CustomMap: React.FC<CustomMapProps> = ({
       height: '400px',
       borderRadius: '10px',
       overflow: 'hidden',
-    }),
-    []
-  );
-
-  const center = useMemo(
-    () => ({
-      lat: 45.815399,
-      lng: 15.966568,
     }),
     []
   );
@@ -115,7 +163,10 @@ const CustomMap: React.FC<CustomMapProps> = ({
       center={center}
       zoom={12}
       options={options}
-      onClick={() => setSelectedLocation(null)}
+      onClick={() => {
+        setSelectedLocation(null);
+        setShowUserInfoWindow(false);
+      }}
     >
       {/* Prikaz markera za svaku lokaciju */}
       {locations.map((location: DealershipLocation) => (
@@ -123,9 +174,43 @@ const CustomMap: React.FC<CustomMapProps> = ({
           key={location.id}
           position={{ lat: location.lat, lng: location.lng }}
           title={location.name}
-          onClick={() => showInfoWindow && setSelectedLocation(location)} // Postavi odabranu lokaciju
+          onClick={() => {
+            setSelectedLocation(location);
+            setShowUserInfoWindow(false);
+          }} // Postavi odabranu lokaciju
         />
       ))}
+
+      {/* Prikaz korisnikove lokacije ako je dostupna */}
+      {userLocation && (
+        <>
+          <Marker
+            position={userLocation}
+            icon={{
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 8,
+              fillColor: '#007BFF',
+              fillOpacity: 1,
+              strokeColor: '#fff',
+              strokeWeight: 2,
+            }}
+            title="You are here!"
+            onClick={() => setShowUserInfoWindow(true)} // Otvori InfoWindow za korisnika
+          />
+          {showUserInfoWindow && (
+            <InfoWindow
+              position={userLocation}
+              onCloseClick={() => setShowUserInfoWindow(false)}
+            >
+              <Box bg="white" p={2} borderRadius="md" boxShadow="md">
+                <Text fontSize="sm" fontWeight="bold">
+                  Yes this little blue dot is you!
+                </Text>
+              </Box>
+            </InfoWindow>
+          )}
+        </>
+      )}
 
       {/* Prikaz InfoWindow za odabranu lokaciju */}
       {showInfoWindow && selectedLocation && (
