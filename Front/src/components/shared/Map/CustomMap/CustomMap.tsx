@@ -1,13 +1,11 @@
 'use client';
 
-import { dealershipLocations } from '@/mockData/mockLocations';
 import { Box, Text, Icon, Flex } from '@chakra-ui/react';
 import {
   GoogleMap,
   Marker,
   InfoWindow,
   useLoadScript,
-  StreetViewPanorama,
 } from '@react-google-maps/api';
 import { useMemo, useState } from 'react';
 import { FaMapMarkerAlt, FaClock, FaCar } from 'react-icons/fa';
@@ -23,38 +21,58 @@ interface DealershipLocation {
   availableCars: number;
 }
 
+interface CustomMapProps {
+  locations: DealershipLocation[]; // Lista lokacija
+  showInfoWindow?: boolean; // Opcionalno prikazivanje InfoWindow
+}
+
 // Stilovi mape u skladu s vašim brandom
 const mapStyles = [
   {
     featureType: 'poi.business',
-    stylers: [{ visibility: 'off' }], // Sakriva sve poslovne objekte poput trgovina
+    stylers: [{ visibility: 'off' }],
   },
   {
     featureType: 'poi.government',
-    stylers: [{ visibility: 'off' }], // Sakriva državne urede
+    stylers: [{ visibility: 'off' }],
   },
   {
     featureType: 'poi.school',
-    stylers: [{ visibility: 'off' }], // Sakriva škole
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.park',
+    stylers: [{ visibility: 'off' }], // Hides parks
+  },
+  {
+    featureType: 'poi.medical',
+    stylers: [{ visibility: 'off' }], // Hides hospitals/medical facilities
+  },
+  {
+    featureType: 'poi.attraction',
+    stylers: [{ visibility: 'off' }], // Hides museums and attractions
   },
   {
     featureType: 'landscape',
     elementType: 'geometry',
-    stylers: [{ color: '#F5F5F5' }], // Neutralna boja za teren
+    stylers: [{ color: '#F5F5F5' }],
   },
   {
     featureType: 'water',
     elementType: 'geometry',
-    stylers: [{ color: '#D4F1F9' }], // Svijetlo plava boja za vodene površine
+    stylers: [{ color: '#D4F1F9' }],
   },
   {
     featureType: 'road',
     elementType: 'geometry',
-    stylers: [{ color: '#E0E0E0' }], // Svijetlo siva za ceste
+    stylers: [{ color: '#E0E0E0' }],
   },
 ];
 
-const CustomMap: React.FC = () => {
+const CustomMap: React.FC<CustomMapProps> = ({
+  locations,
+  showInfoWindow = true,
+}) => {
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
   });
@@ -74,7 +92,7 @@ const CustomMap: React.FC = () => {
 
   const center = useMemo(
     () => ({
-      lat: 45.815399, // Središte Zagreba
+      lat: 45.815399,
       lng: 15.966568,
     }),
     []
@@ -83,7 +101,7 @@ const CustomMap: React.FC = () => {
   const options = useMemo(
     () => ({
       styles: mapStyles,
-      disableDefaultUI: true, // Onemogućuje zadane kontrole
+      disableDefaultUI: true,
       zoomControl: true,
     }),
     []
@@ -97,30 +115,31 @@ const CustomMap: React.FC = () => {
       center={center}
       zoom={12}
       options={options}
-      onClick={() => setSelectedLocation(null)} // Zatvori InfoWindow kad kliknete na mapu
+      onClick={() => setSelectedLocation(null)}
     >
       {/* Prikaz markera za svaku lokaciju */}
-      {dealershipLocations.map((location: DealershipLocation) => (
+      {locations.map((location: DealershipLocation) => (
         <Marker
           key={location.id}
           position={{ lat: location.lat, lng: location.lng }}
           title={location.name}
-          onClick={() => setSelectedLocation(location)} // Postavi odabranu lokaciju
+          onClick={() => showInfoWindow && setSelectedLocation(location)} // Postavi odabranu lokaciju
         />
       ))}
 
       {/* Prikaz InfoWindow za odabranu lokaciju */}
-      {selectedLocation && (
+      {showInfoWindow && selectedLocation && (
         <InfoWindow
           position={{ lat: selectedLocation.lat, lng: selectedLocation.lng }}
-          onCloseClick={() => setSelectedLocation(null)} // Close InfoWindow
+          onCloseClick={() => setSelectedLocation(null)}
         >
           <Box bg="white" borderRadius="md" maxWidth="300px">
-            {/* Content without extra padding */}
             <Box px={3} py={2}>
-              <Text fontWeight="bold" fontSize="lg" mb={1}>
-                {selectedLocation.name}
-              </Text>
+              <Flex align="center" justify="space-between" mb={2}>
+                <Text fontWeight="bold" fontSize="lg">
+                  {selectedLocation.name}
+                </Text>
+              </Flex>
 
               <Flex align="center" mb={2}>
                 <Icon as={FaMapMarkerAlt} color="brandblue" mr={2} />

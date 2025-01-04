@@ -24,6 +24,7 @@ import {
   FaCcStripe,
 } from 'react-icons/fa';
 import CustomMap from '@/components/shared/Map/CustomMap/CustomMap';
+import { dealershipLocations } from '@/mockData/mockLocations';
 
 const homeGuestFooterLinks = {
   quickLinks: [
@@ -133,7 +134,7 @@ export default function HomePage() {
           <Heading size="md" color="brandblack" alignSelf="flex-start">
             Browse Nearby Dealerships for Your Next Ride:
           </Heading>
-          <CustomMap />
+          <CustomMap locations={dealershipLocations} showInfoWindow={true} />
         </Flex>
 
         {/* Dio stranice sa dodatnim informacijama */}
