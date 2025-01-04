@@ -27,7 +27,7 @@ class Model(models.Model):
     fuelType = models.CharField(max_length=1, choices=typeOfFuel.choices)
     modelName = models.CharField(max_length=50)
     makeName = models.CharField(max_length=50)
-    modelType = models.ForeignKey(ModelType, on_delete=models.SET_NULL, null=True)
+    modelType = models.ForeignKey(ModelType, on_delete=models.CASCADE, null=True)
     class Meta:
         unique_together = ('makeName', 'modelName')
     def __str__(self):
@@ -53,7 +53,7 @@ class Offer(models.Model):
 class Vehicle(models.Model):
     vehicle_id = models.AutoField(primary_key=True)
     registration = models.CharField(max_length=20, unique=True)
-    model = models.ForeignKey(Model, on_delete=models.SET_NULL, null=True)
+    model = models.ForeignKey(Model, on_delete=models.CASCADE, null=True)
     dealer = models.ForeignKey(Dealership, on_delete=models.CASCADE)
     timesRented = models.IntegerField(blank=True, default=0)
     rating = models.FloatField(blank=True, default=None, null=True)
@@ -65,8 +65,9 @@ class Vehicle(models.Model):
     
 class Rent(models.Model):
     rent_id = models.AutoField(primary_key=True)
-    rentoid = models.ForeignKey(Rentoid, on_delete=models.CASCADE)
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
+    rentoid = models.ForeignKey(Rentoid, on_delete=models.SET_NULL, blank=True, default=None, null=True)
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.SET_NULL, blank=True, default=None, null=True)
+    dealer = models.ForeignKey(Dealership, on_delete=models.CASCADE)    # We need this redundancy for the sake of deletion of a vehicle
     dateTimeRented = models.DateTimeField()
     dateTimeReturned = models.DateTimeField()
     rentedLocation = models.ForeignKey(Location, on_delete=models.SET_NULL, blank=True, default=None, null=True, related_name='rented_location')
