@@ -1,5 +1,6 @@
 'use client';
 
+import "./style.css"
 import { CustomHeader as Header } from '@/components/shared/Header/Header';
 import VehicleList from '@/components/shared/cars/VechileList/VechileList';
 import useSWR from 'swr';
@@ -27,15 +28,14 @@ export default function UserProfilePage() {
     <Flex direction="column" grow={1}>
       {/* Header */}
       <Header>
-        <Text fontSize="lg">Balance: €31.42</Text>
-        <Button colorScheme="green" size="sm">
+        <Text fontSize="md">Balance: €31.42</Text>
+        <Button bgColor={"brandyellow"} color={"brandwhite"} size = "sm">
           Add funds
         </Button>
-        <Heading size="sm">Your Profile</Heading>
-        <Button size="sm" colorScheme="blue">
+        <Button bgColor={"brandblue"} color={"brandwhite"} size = "sm">
           Edit profile
         </Button>
-        <Button size="sm" colorScheme="blue">
+        <Button bgColor={"brandblue"} color={"brandwhite"} size = "sm">
           Logout
         </Button>
       </Header>
@@ -55,8 +55,9 @@ export default function UserProfilePage() {
               size="lg"
             />
           }
+          <Heading size="lg">Your Profile</Heading>
           <VehicleList vehicles={sample1} description='Ongoing rentals:'/>
-          <VehicleList vehicles={sample2} description='Previously rented:'/>
+          <VehicleList vehicles={sample2} description='Previously rented:' numCards={3}/>
         </Flex>  
         {/* Chats Section */}
         {isChatOpen && (

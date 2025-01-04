@@ -19,6 +19,7 @@ import { ICar } from '@/fetchers/homeData';
 export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
   return (
     <Card
+      margin={0}
       as={NextLink}
       href={`/vehicles/${vehicle.modelName}`}
       maxW="210px"

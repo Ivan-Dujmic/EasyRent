@@ -10,12 +10,16 @@ import { FlexProps } from '@chakra-ui/react';
 interface VehicleListProps extends FlexProps {
   vehicles?: Array<ICar>;
   description?: string;
+  numCards?: number;  // Number of cards to display
+  cardWidth?: number; // Width of each card
 }
 
 export default function VehicleList({
   vehicles = [],
   description = undefined,
+  numCards = 3,  // Default number of cards
   width = "75%",	
+  cardWidth = 200, // Default width in px
   ...props
 }: VehicleListProps) {
   const [startIndex, setStartIndex] = useState(0);
@@ -23,6 +27,7 @@ export default function VehicleList({
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const lastElementRef = useRef<HTMLDivElement | null>(null);
   const [isEndOfList, setIsEndOfList] = useState(true);
+  const [containerWidth, setContainerWidth] = useState(0);
 
   useEffect(() => {
     cardRefs.current = cardRefs.current.slice(0, vehicles.length);
@@ -35,6 +40,25 @@ export default function VehicleList({
       cardRefs.current[newIndex]?.scrollIntoView({ behavior: 'smooth', inline: 'start' });
     }
   };
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.offsetWidth);
+      }
+    };
+
+    // Set initial width
+    handleResize();
+
+    // Add event listener for window resize
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   const observerCallback = useCallback((entries: IntersectionObserverEntry[]) => {
     const [entry] = entries;
@@ -58,6 +82,8 @@ export default function VehicleList({
     };
   }, [observerCallback]);
 
+  const maxCardWidth = containerWidth / numCards;
+
   return (
     <Flex direction="column" align="center" width={width} {...props}>
       {description && (
@@ -79,6 +105,7 @@ export default function VehicleList({
         <Flex ref={containerRef} overflow="hidden" gap={3} width="80%" px={2} py={3}>
           {vehicles.map((vehicle, index) => (
             <div
+              className='pussy'
               key={index}
               ref={(el) => {
                 cardRefs.current[index] = el;
@@ -86,7 +113,7 @@ export default function VehicleList({
                   lastElementRef.current = el;
                 }
               }}
-              style={{ flex: '0 0 auto', width: '200px' }} // Set a fixed width for each card
+              style={{ flex: '0 0 auto', width: `${maxCardWidth}px` }} // Set a fixed width for each card
             >
               <VehicleCard vehicle={vehicle} />
             </div>
