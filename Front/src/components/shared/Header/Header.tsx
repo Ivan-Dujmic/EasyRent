@@ -13,6 +13,7 @@ import {
   Divider,
   Stack,
   useDisclosure,
+  Link,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
@@ -57,6 +58,7 @@ export default function Header() {
           <AnimatedSignUp />
 
           <Button
+            as={NextLink}
             bg={'brandblue'}
             color={'brandwhite'}
             fontWeight={'normal'}
@@ -68,6 +70,7 @@ export default function Header() {
               transform: 'translateY(-2px)',
               transition: 'transform 0.2s ease, box-shadow 0.3s ease',
             }}
+            href="/TalkToUs"
           >
             Talk to us
           </Button>
@@ -126,6 +129,7 @@ export default function Header() {
               <AnimatedSignUp />
 
               <Button
+                as={NextLink}
                 bg={'brandblue'}
                 color={'brandwhite'}
                 fontWeight={'normal'}
@@ -137,6 +141,7 @@ export default function Header() {
                   transition: 'transform 0.2s ease, box-shadow 0.3s ease',
                 }}
                 onClick={onClose}
+                href="/TalkToUs"
               >
                 Talk to us
               </Button>

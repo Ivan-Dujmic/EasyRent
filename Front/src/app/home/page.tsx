@@ -31,7 +31,7 @@ const homeGuestFooterLinks = {
     { label: 'Home', href: '/home' },
     { label: 'About Us', href: '/home' },
     { label: 'FAQ', href: '/home#faq-section' },
-    { label: 'Contact Us', href: '/contact' },
+    { label: 'Contact Us', href: '/TalkToUs' },
   ],
   contactInfo: {
     phone: '+385 95 517 1890',
