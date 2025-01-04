@@ -1,6 +1,6 @@
 import DateTimeDDM from '@/components/features/DropDownMenus/DateTimeDDM/DateTimeDDM';
 import LocationDDM from '@/components/features/DropDownMenus/LocationDDM/LocationDDM';
-import { Button, Flex, Input, InputGroup } from '@chakra-ui/react';
+import { Button, Flex, Box, useBreakpointValue } from '@chakra-ui/react';
 
 const options: { [key: string]: string[] } = {
   'Cities (including airports)': [
@@ -25,57 +25,82 @@ const options: { [key: string]: string[] } = {
 };
 
 export default function MainFilter() {
+  // Dodajemo podrazumevanu vrednost 'row' kada useBreakpointValue vrati undefined
+  const flexDirection =
+    useBreakpointValue<'row' | 'column'>({
+      base: 'column', // Na manjim ekranima sve ide jedno ispod drugog
+      md: 'row', // Na srednjim ekranima u dva reda
+    }) || 'row'; // Podrazumevano 'row'
+
+  const fieldWidth = useBreakpointValue({
+    base: '100%', // Na manjim ekranima svaki element zauzima ceo red
+    md: 'calc(50% - 1rem)', // Na srednjim ekranima dva elementa po redu
+    xl: 'calc(20% - 1rem)', // Na velikim ekranima četiri elementa u jednom redu
+  });
+
+  const gap = useBreakpointValue({
+    base: 2, // Manji razmak na malim ekranima
+    md: 4, // Veći razmak na srednjim i velikim ekranima
+  });
+
   return (
     <Flex
-      direction={'row'}
+      direction={flexDirection} // Koristi fleksibilni raspored
+      flexWrap={'wrap'}
       bg={'white'}
-      width={'60vw'}
-      height={'110px'}
+      width={'100%'}
+      maxWidth={'60vw'}
       borderRadius={14}
-      borderColor={'none'}
       borderWidth="0px"
-      align={'center'}
+      align={'flex-end'}
       p={5}
-      gap={7}
-      pb={7}
+      gap={gap}
+      justifyContent={'space-between'}
     >
-      <Flex gap={2}>
+      {/* Lokacije */}
+      <Box width={fieldWidth}>
         <LocationDDM
           options={options}
           description={'Pick-up location'}
           placeHolder={'From?'}
         />
+      </Box>
+      <Box width={fieldWidth}>
         <LocationDDM
           options={options}
-          description={'Drop-of location'}
+          description={'Drop-off location'}
           placeHolder={'To?'}
         />
-      </Flex>
-      <Flex gap={2}>
-        {/* placeholderi */}
+      </Box>
+
+      {/* Datum i vreme */}
+      <Box width={fieldWidth}>
         <DateTimeDDM
           options={{}}
           description={'Pick-up date/time'}
           placeHolder={'Start?'}
         />
+      </Box>
+      <Box width={fieldWidth}>
         <DateTimeDDM
           options={{}}
           description={'Drop-off date/time'}
           placeHolder={'End?'}
         />
-      </Flex>
+      </Box>
 
-      <Button
-        bg={'brandblue'}
-        mt={4}
-        size="lg"
-        ml={'auto'}
-        color={'white'}
-        _hover={{ bg: 'brandyellow', color: 'brandblack' }}
-        alignSelf={'center'}
-      >
-        Search
-      </Button>
+      {/* Dugme za pretragu */}
+      <Box width={fieldWidth} flex={1} mt={1}>
+        <Button
+          bg={'brandblue'}
+          size="lg"
+          color={'white'}
+          _hover={{ bg: 'brandyellow', color: 'brandblack' }}
+          width="100%" // Dugme uvek zauzima ceo red u svom kontejneru
+        >
+          Search
+        </Button>
+      </Box>
     </Flex>
   );
 }

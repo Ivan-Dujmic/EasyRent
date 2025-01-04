@@ -36,12 +36,6 @@ export default function DateTimeDDM({
   };
 
   // Responsive values for different screen sizes
-  const inputMaxWidth = useBreakpointValue({
-    base: '10rem', // For small screens (like mobile)
-    md: '15rem', // For medium screens (like tablets)
-    lg: '20rem', // For large screens (like desktops/laptops)
-  });
-
   const descriptionFontSize = useBreakpointValue({
     base: '0.75rem', // Smaller text on mobile
     md: '0.8rem', // Slightly bigger text on medium screens
@@ -49,7 +43,7 @@ export default function DateTimeDDM({
   });
 
   return (
-    <Stack gap={0} position={'relative'} ref={ref}>
+    <Stack gap={0} position={'relative'} ref={ref} width="100%">
       <Menu isOpen={isOpen}>
         <Text fontSize={descriptionFontSize} color={'brandblue'}>
           {description}
@@ -59,14 +53,13 @@ export default function DateTimeDDM({
           borderWidth={'2px'}
           borderRadius="md"
           borderColor={'brandblue'}
-          width={'fit-content'}
+          width="100%" // Maksimalno proširi input
           bg={'brandlightgray'}
           _focusWithin={{
             bg: 'brandwhite',
             borderColor: 'brandblack',
             color: 'brandblack',
           }}
-          maxWidth={inputMaxWidth} // Apply responsive maxWidth
         >
           <InputLeftElement pointerEvents="none" color="brandblack">
             <CalendarIcon />

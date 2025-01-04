@@ -1,4 +1,10 @@
-import { Flex, Heading, Text, Icon } from '@chakra-ui/react';
+import {
+  Flex,
+  Heading,
+  Text,
+  Icon,
+  useBreakpointValue,
+} from '@chakra-ui/react';
 import {
   FaDollarSign,
   FaCar,
@@ -7,10 +13,16 @@ import {
 } from 'react-icons/fa';
 
 export default function BenefitsSection() {
+  const headingSize = useBreakpointValue({
+    base: '2xl', // Default heading size for laptop/tablet
+    sm: '3xl', // Larger heading for desktop
+    md: '4xl',
+  });
+
   return (
     <Flex direction={'column'} bg="brandwhite" py={5} px={5} gap={6}>
       {/* Naslov sekcije */}
-      <Heading as="h2" size="lg" textAlign="center" mb={8}>
+      <Heading as="h2" fontSize={headingSize} textAlign="center" mb={8}>
         Why Choose{' '}
         <Text as={'span'} color={'brandblue'}>
           EasyRent

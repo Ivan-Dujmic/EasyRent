@@ -58,17 +58,15 @@ export default function HomePage() {
   });
 
   const headingSize = useBreakpointValue({
-    md: 'sm', // Default heading size for laptop/tablet
-    lg: 'lg', // Larger heading for desktop
+    base: '2xl', // Default heading size for laptop/tablet
+    sm: '3xl', // Larger heading for desktop
+    md: '4xl',
   });
 
-  /*   if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  } */
+  const mapWidth = useBreakpointValue({
+    base: '80vw', // Širina mape za mobilne uređaje i male ekrane
+    md: '60vw', // Širina mape za srednje i velike ekrane
+  });
 
   return (
     <>
@@ -90,7 +88,7 @@ export default function HomePage() {
           <EasyRentMoto />
           <MainFilter />
           <Flex gap={gapSize} align={'center'} px={5}>
-            <Heading size={headingSize} color={'brandblue'}>
+            <Heading fontSize={headingSize} color={'brandblue'}>
               Trusted by the Best:
             </Heading>
             <CompanyList companies={data?.showcased_dealerships} />
@@ -128,11 +126,11 @@ export default function HomePage() {
           align={'center'}
           py={8}
           gap={7}
-          width={'60vw'}
+          width={mapWidth}
           direction={'column'}
         >
-          <Heading size="md" color="brandblack" alignSelf="flex-start">
-            Browse Nearby Dealerships for Your Next Ride:
+          <Heading size="lg" color="brandblack" alignSelf="flex-start">
+            Explore Dealerships:
           </Heading>
           <CustomMap locations={dealershipLocations} showInfoWindow={true} />
         </Flex>

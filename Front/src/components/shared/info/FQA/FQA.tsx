@@ -10,6 +10,7 @@ import {
   List,
   ListItem,
   Text,
+  useBreakpointValue,
 } from '@chakra-ui/react';
 
 export default function FQA() {
