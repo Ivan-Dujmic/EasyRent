@@ -21,24 +21,6 @@ class GetUserRentalsSerializer(serializers.Serializer):
     canReview = serializers.BooleanField()
     offer_id = serializers.IntegerField()
 
-    def to_representation(self, instance):
-        return [
-            instance.image,
-            instance.makeName,
-            instance.modelName,
-            instance.companyName,
-            instance.noOfSeats,
-            instance.automatic,
-            instance.price,
-            instance.rating,
-            instance.noOfReviews,
-            instance.dateTimeRented,
-            instance.dateTimeReturned,
-            instance.expired,
-            instance.canReview,
-            instance.offer_id
-        ]
-
 class GetUserInfoSerializer(serializers.Serializer):
     firstName = serializers.CharField()
     lastName = serializers.CharField()

@@ -19,7 +19,7 @@ from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiResp
     tags=['profile'],
     operation_id='get_user_rentals',
     responses={
-        200: GetUserRentalsSerializer,
+        200: GetUserRentalsSerializer(many=True),
         401: OpenApiResponse(
             description='User not authenticated',
             examples=[
@@ -121,6 +121,33 @@ def canUserReview(user, rental):
                 ),
             ],
         ),
+        400: OpenApiResponse(
+            description='Phone number must contain only digits',
+            examples=[
+                OpenApiExample(
+                    'Phone number must contain only digits',
+                    value={"success": 0, "message": "Phone number must contain only digits"},
+                ),
+            ],
+        ),
+        400: OpenApiResponse(
+            description='Phone number must be at most 20 characters long',
+            examples=[
+            OpenApiExample(
+                'Phone number must be at most 20 characters long',
+                value={"success": 0, "message": "Phone number must be at most 20 characters long"},
+            ),
+            ],
+        ),
+        400: OpenApiResponse(
+            description='Driver\'s license number must be at most 16 characters long',
+            examples=[
+            OpenApiExample(
+                'Driver\'s license number must be at most 16 characters long',
+                value={"success": 0, "message": "Driver's license number must be at most 16 characters long"},
+            ),
+            ],
+        ),
         401: OpenApiResponse(
             description='User not authenticated',
             examples=[
@@ -164,6 +191,15 @@ def userInfo(request):
 
             if not data["firstName"] or not data["lastName"] or not data["phoneNo"] or not data["driversLicense"]:
                 return Response({"success": 0, "message": "All fields are required"}, status=400)
+            
+            if not data["phoneNo"].isdigit():
+                return Response({"success": 0, "message": "Phone number must contain only digits"}, status=400)
+            
+            if len(data["phoneNo"]) > 20:
+                return Response({"success": 0, "message": "Phone number must be at most 20 characters long"}, status=400)
+            
+            if len(data["driversLicense"]) > 16:
+                return Response({"success": 0, "message": "Driver's license number must be at most 16 characters long"}, status=400)
             
             if not user.check_password(data["password"]):
                 return Response({"success": 0, "message": "Incorrect password"}, status=403)

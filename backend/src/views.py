@@ -22,7 +22,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiResponse, OpenApiExample
-
+import base64
 
 def activate(request, uidb64, token):
     User = get_user_model()
@@ -110,49 +110,109 @@ def registerUser(request):
 
 
 @csrf_exempt
-@extend_schema(tags=['auth'])
+@extend_schema(
+    methods=['POST'],
+    operation_id='register_company',
+    tags=['auth'],
+    request=RegisterCompanySerializer,
+    responses={
+        200: OpenApiResponse(
+            description='Email confirmation request sent',
+            examples=[
+                OpenApiExample(
+                    'Email confirmation request sent',
+                    value={"success": 1, "message": "Email confirmation request sent"},
+                ),
+            ],
+        ),
+        400: OpenApiResponse(
+            description='All fields are required or Email already registered',
+            examples=[
+                OpenApiExample(
+                    'All fields are required',
+                    value={"success": 0, "message": "All fields are required."},
+                ),
+                OpenApiExample(
+                    'Email already registered',
+                    value={"success": 0, "message": "Email already registered."},
+                ),
+            ],
+        ),
+    },
+)
 @api_view(['POST'])
 def registerCompany(request):
+    data = json.loads(request.body)
+    email = data.get("email")
+    companyName = data.get("name")
+    tin = data.get("TIN")
+    phoneNo = data.get("phoneNo")
+    countryName = data.get("countryName")
+    cityName = data.get("cityName")
+    streetName = data.get("streetName")
+    streetNo = data.get("streetNo")
+    latitude = data.get("latitude")
+    longitude = data.get("longitude")
+    workingHours = data.get("workingHours")
+    description = data.get("description")
+    password = data.get("password")
+
+    if (
+        not email
+        or not companyName
+        or not tin
+        or not phoneNo
+        or not countryName
+        or not cityName
+        or not streetName
+        or not streetNo
+        or not latitude
+        or not longitude
+        or not workingHours
+        or not description
+        or not password
+    ):
+        return JsonResponse({"success": 0, "message": "All fields are required."}, status=400)
+    if User.objects.filter(email=email).exists():
+        return JsonResponse({"success": 0, "message": "Email already registered."}, status=400)
+    if len(phoneNo) > 20:
+        return JsonResponse({"success": 0, "message": "Phone number too long."}, status=400)
+    if len(tin) > 16:
+        return JsonResponse({"success": 0, "message": "TIN too long."}, status=400)
+    
     try:
-        data = json.loads(request.body)
-        email = data.get("email")
-        username = "company_" + email
-        companyName = data.get("name")
-        tin = data.get("TIN")
-        phoneNo = data.get("phoneNo")
-        password = data.get("password")
-        address = data.get("HQaddress")
-        workingHours = data.get("workingHours")
-        confirmPassword = data.get("confirmPassword")
-        if (
-            not email
-            or not companyName
-            or not tin
-            or not phoneNo
-            or not password
-            or not confirmPassword
-        ):
-            return JsonResponse({"message": "All fields are required."}, status=400)
-        if User.objects.filter(email=email).exists():
-            return JsonResponse(
-                {"message": "Email already registered."}, status=400
-            )
-        if password != confirmPassword:
-            return JsonResponse({"message: Passwords do not match."}, status=400)
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password,
-            first_name=companyName,
-            last_name="",
-        )
-        user.is_active = False
-        user.save()
-        dealership = Dealership.objects.create(user=user, phoneNo=phoneNo, TIN=tin)
-        if activateEmail(request, user, email):
-            return JsonResponse({"success": 1}, status=200)
+        workingHours = json.loads(workingHours)
+        if not isinstance(workingHours, list):
+            return JsonResponse({"success": 0, "message": "Working hours must be a list."}, status=400)
+        valid_days = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
+        for day_info in workingHours:
+            if not isinstance(day_info, dict):
+                return JsonResponse({"success": 0, "message": "Each working hour entry must be a dictionary."}, status=400)
+            day = day_info.get("day")
+            start_time = day_info.get("startTime")
+            end_time = day_info.get("endTime")
+            if day not in valid_days:
+                return JsonResponse({"success": 0, "message": f"Invalid day: {day}"}, status=400)
+            if not start_time or not end_time:
+                return JsonResponse({"success": 0, "message": "Start time and end time are required."}, status=400)
+            if start_time >= end_time:
+                return JsonResponse({"success": 0, "message": "End time must be after start time."}, status=400)
     except json.JSONDecodeError:
-        return JsonResponse({"message": "Invalid JSON"}, status=400)
+        return JsonResponse({"success": 0, "message": "Invalid JSON for working hours."}, status=400)
+
+    user = User.objects.create_user(
+        username="company_" + email,
+        email=email,
+        password=password,
+        first_name=companyName,
+        last_name="",
+    )
+    user.is_active = False  # User must confirm email
+    user.save()
+    dealership = Dealership.objects.create(user=user, phoneNo=phoneNo, TIN=tin, description=description)
+
+    if activateEmail(request, user, email):
+        return JsonResponse({"success": 1, "message": "Email confirmation request sent"}, status=200)
 
 
 @csrf_exempt
