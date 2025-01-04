@@ -3,9 +3,37 @@ info:
   title: EasyRent API
   version: 0.0.0
 paths:
-  /api/auth/loginUser/:
+  /api/auth/login/:
     post:
-      operationId: api_auth_loginUser_create
+      operationId: login_user
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginUser'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: Logged in
+        '400':
+          description: Bad Request
+        '403':
+          description: Forbidden
+  /api/auth/logout/:
+    post:
+      operationId: logout_user
       tags:
       - auth
       security:
@@ -14,20 +42,8 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
-  /api/auth/logoutUser/:
-    post:
-      operationId: api_auth_logoutUser_create
-      tags:
-      - auth
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /api/auth/registerCompany/:
+          description: Logged out
+  /api/auth/register-company/:
     post:
       operationId: register_company
       tags:
@@ -52,12 +68,40 @@ paths:
         '200':
           description: Email confirmation request sent
         '400':
-          description: Location with these details already exists
+          description: Bad Request
         '500':
           description: Email confirmation request failed
-  /api/auth/registerUser/:
+  /api/auth/register-user/:
     post:
-      operationId: api_auth_registerUser_create
+      operationId: register_user
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterUser'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: Email confirmation request sent
+        '400':
+          description: Bad Request
+        '500':
+          description: Email confirmation request failed
+  /api/auth/user-info/:
+    get:
+      operationId: user_info
       tags:
       - auth
       security:
@@ -66,7 +110,13 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfo'
+          description: ''
+        '500':
+          description: No rentoid or dealership to match user
   /api/home/offer/{offer_id}/:
     get:
       operationId: api_home_offer_retrieve
@@ -163,7 +213,7 @@ paths:
         '200':
           description: User info updated successfully
         '400':
-          description: Driver's license number must be at most 16 characters long
+          description: Invalid input
         '401':
           description: User not authenticated
         '403':
@@ -193,7 +243,7 @@ paths:
         '200':
           description: Password updated successfully
         '400':
-          description: New password must be at least 8 characters long
+          description: Invalid input
         '401':
           description: User not authenticated
         '403':
@@ -385,9 +435,6 @@ components:
     GetUserRentals:
       type: object
       properties:
-        image:
-          type: string
-          default: base64
         makeName:
           type: string
         modelName:
@@ -420,6 +467,10 @@ components:
           type: boolean
         offer_id:
           type: integer
+        image:
+          type: string
+          format: uri
+          default: null
       required:
       - automatic
       - canReview
@@ -432,6 +483,17 @@ components:
       - noOfReviews
       - noOfSeats
       - offer_id
+    LoginUser:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+      - email
+      - password
     OfferDetails:
       type: object
       properties:
@@ -563,17 +625,54 @@ components:
       - streetNo
       - tin
       - workingHours
+    RegisterUser:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        driversLicense:
+          type: string
+        phoneNo:
+          type: string
+        password:
+          type: string
+      required:
+      - driversLicense
+      - email
+      - firstName
+      - lastName
+      - password
+      - phoneNo
+    UserInfo:
+      type: object
+      properties:
+        role:
+          type: string
+          default: guest/user/company
+        name:
+          type: string
+          default: name if not guest, balance only for user
+        balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          default: '1.00'
     WorkingHours:
       type: object
       properties:
         day:
           type: string
+          default: mon=monday, leave out the day if the dealership is closed
         startTime:
           type: string
         endTime:
           type: string
       required:
-      - day
       - endTime
       - startTime
   securitySchemes:

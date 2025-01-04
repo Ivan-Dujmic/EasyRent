@@ -25,6 +25,7 @@ from django.utils.encoding import force_bytes, force_str
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiResponse, OpenApiExample
 from PIL import Image
 
+
 def activate(request, uidb64, token):
     User = get_user_model()
     try:
@@ -377,67 +378,164 @@ def registerCompany(request):
 
 
 @csrf_exempt
-@extend_schema(tags=['auth'])
+@extend_schema(
+    methods=['POST'],
+    operation_id='logout_user',
+    tags=['auth'],
+    request=None,
+    responses={
+        200: OpenApiResponse(
+            description='Logged out',
+            examples=[
+                OpenApiExample(
+                    'Logged out',
+                    value={"success": 1, "message": "Logged out"},
+                ),
+            ],
+        ),
+    },
+)
 @api_view(['POST'])
 def logoutUser(request):
-    logout(request)
-    return JsonResponse({"success": 1}, status=200)
+    if request.method == "POST":
+        logout(request)
+        return JsonResponse({"success": 1, "message": "Logged out"}, status=200)
 
 
 @csrf_exempt
-@extend_schema(tags=['auth'])
+@extend_schema(
+    methods=['POST'],
+    operation_id='login_user',
+    tags=['auth'],
+    request=LoginUserSerializer,
+    responses={
+        200: OpenApiResponse(
+            description='Logged in',
+            examples=[
+                OpenApiExample(
+                    'Logged in',
+                    value={"success": 1, "message": "Logged in"},
+                ),
+            ],
+        ),
+        400: OpenApiResponse(
+            description='Bad Request',
+            examples=[
+                OpenApiExample(
+                    'All fields are required',
+                    value={"success": 0, "message": "All fields are required."},
+                ),
+                OpenApiExample(
+                    'Invalid email',
+                    value={"message": "Invalid email"},
+                ),
+            ],
+        ),
+        403: OpenApiResponse(
+            description='Forbidden',
+            examples=[
+                OpenApiExample(
+                    'Awaiting email confirmation',
+                    value={"success": 0, "message:": "Awaiting email confirmation"},
+                ),
+                OpenApiExample(
+                    'Company registration has to be approved by an admin',
+                    value={"success": 0, "message": "Company registration has to be approved by an admin"},
+                ),
+                OpenApiExample(
+                    'Invalid password',
+                    value={"success": 0, "message": "Invalid password"},
+                ),
+            ],
+        ),
+    },
+)
 @api_view(['POST'])
 def loginUser(request):
-    data = json.loads(request.body)
-    email = data.get("email")
-    password = data.get("password")
-    if not email or not password:
-        return JsonResponse({"message": "All fields are required."}, status=400)
-    try:
-        user = User.objects.get(email=email)
-        if not user.is_active:
-            return JsonResponse(
-                {"message:": "Awaiting email confirmation"}, status=403
-            )
-        username = user.username
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            role = None
-            balance = None
-            firstName = None
+    if request.method == "POST":
+        data = request.data
+
+        email = data.get("email")
+        password = data.get("password")
+        if not email or not password:
+            return JsonResponse({"success": 0, "message": "All fields are required."}, status=400)
+        try:
+            user = User.objects.get(email=email)
+            if not user.is_active:
+                return JsonResponse(
+                    {"success": 0, "message:": "Awaiting email confirmation"}, status=403
+                )
+            username = user.username
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                try: # Try to find dealership because a dealership has to be approved by an admin
+                    dealership = Dealership.objects.get(user=user.id)
+                    if dealership.isAccepted:
+                        login(request, user)
+                        return JsonResponse({"success": 1, "message": "Logged in"}, status=200)
+                    else:
+                        return JsonResponse({"success": 0, "message": "Company registration has to be approved by an admin"}, status=403)
+                except Dealership.DoesNotExist: # User is not a company
+                        login(request, user)
+                        return JsonResponse({"success": 1, "message": "Logged in"}, status=200)
+            else:
+                return JsonResponse({"success": 0, "message": "Invalid password"}, status=403)
+        except User.DoesNotExist:
+            return JsonResponse({"message": "Invalid email"}, status=400)
+
+
+@extend_schema(
+    methods=['GET'],
+    operation_id='user_info',
+    tags=['auth'],
+    responses={
+        200: UserInfoSerializer,
+        500: OpenApiResponse(
+            description='No rentoid or dealership to match user',
+            examples=[
+                OpenApiExample(
+                    'No rentoid or dealership to match user',
+                    value={"success": 0, "message": "No rentoid or dealership to match user"},
+                ),
+            ],
+        ),
+    },
+)
+@api_view(['GET'])
+def userInfo(request):
+    if request.method == "GET":
+        if request.user.is_authenticated:
             try:
                 # Try to find rentoid
-                rentoid = Rentoid.objects.get(user=user.id)
-                role = "user"
-                balance = rentoid.balance
-                firstName = user.first_name
+                rentoid = Rentoid.objects.get(user=request.user.id)
+                return JsonResponse(
+                    {
+                        "role": "user",
+                        "firstName": request.user.first_name,
+                        "balance": rentoid.balance,
+                    },
+                    status=200,
+                )
             except Rentoid.DoesNotExist:
                 # If Rentoid does not exist, try to find the Dealership
                 try:
-                    dealership = Dealership.objects.get(user=user.id)
-                    role = "company"
-                except Dealership.DoesNotExist:
-                    # If neither exists return none
+                    dealership = Dealership.objects.get(user=request.user.id)
                     return JsonResponse(
                         {
-                            "message": "Something has gone horribly wrong on our side!"
+                            "role": "company",
+                            "companyName": request.user.first_name,
                         },
-                        status=500,
+                        status=200,
                     )
-            return JsonResponse(
-                {
-                    "success": 1,
-                    "role": role,
-                    "firstName": firstName,
-                    "balance": balance,
-                },
-                status=200,
-            )
+                except Dealership.DoesNotExist:
+                    # If neither exists and user is authenticated, something has gone horribly wrong
+                    return JsonResponse({"success": 0, "message": "No rentoid or dealership to match user"}, status=500)
         else:
-            return JsonResponse({"success": 0}, status=400)
-    except User.DoesNotExist:
-        return JsonResponse({"message": "Invalid credentials"}, status=400)
+            return Response(
+                {
+                    "role": "guest",
+                }
+            )
 
 
 def redirectHome(request):

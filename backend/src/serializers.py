@@ -12,7 +12,7 @@ class RegisterUserSerializer(serializers.Serializer):
     password = serializers.CharField()
 
 class WorkingHoursSerializer(serializers.Serializer):
-    day = serializers.CharField()
+    day = serializers.CharField(default="mon=monday, leave out the day if the dealership is closed")
     startTime = serializers.CharField()
     endTime = serializers.CharField()
 
@@ -34,3 +34,12 @@ class RegisterCompanySerializer(serializers.Serializer):
     description = serializers.CharField()
     password = serializers.CharField()
     image = serializers.ImageField(default="IMAGE")
+
+class LoginUserSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+
+class UserInfoSerializer(serializers.Serializer):
+    role = serializers.CharField(default="guest/user/company")
+    name = serializers.CharField(default="name if not guest, balance only for user")
+    balance = serializers.DecimalField(max_digits=10, decimal_places=2, default=1.00)

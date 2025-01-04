@@ -6,10 +6,11 @@ from . import views
 
 app_name = "src"
 urlpatterns = [
-    path("registerUser/", csrf_exempt(views.registerUser), name="registerUser"),
-    path("registerCompany/", csrf_exempt(views.registerCompany), name="registerCompany"),
-    path("logoutUser/", views.logoutUser, name="logoutUser"),
-    path("loginUser/", csrf_exempt(views.loginUser), name="loginUser"),
+    path("register-user/", csrf_exempt(views.registerUser), name="registerUser"),
+    path("register-company/", csrf_exempt(views.registerCompany), name="registerCompany"),
+    path("logout/", views.logoutUser, name="logoutUser"),
+    path("login/", csrf_exempt(views.loginUser), name="loginUser"),
+    path("user-info/", views.userInfo, name="userInfo"),
     path('activate/<uidb64>/<token>/', views.activate, name="activateUser"),
     path("", views.redirectHome, name="redirectHome")
 ]

@@ -18,7 +18,7 @@ class GetUserRentalsSerializer(serializers.Serializer):
     expired = serializers.BooleanField()
     canReview = serializers.BooleanField()
     offer_id = serializers.IntegerField()
-    image = serializers.ImageField(example="IMAGE")
+    image = serializers.ImageField(default="IMAGE")
 
 class GetUserInfoSerializer(serializers.Serializer):
     firstName = serializers.CharField()
