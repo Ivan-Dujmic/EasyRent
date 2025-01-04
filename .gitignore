@@ -5,3 +5,7 @@ backend/db.sqlite3
 venv/
 .vscode/
 env/
+media/logos/*
+!media/logos/.gitkeep
+media/offers/*
+!media/offers/.gitkeep
