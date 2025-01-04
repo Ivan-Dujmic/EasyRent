@@ -69,6 +69,8 @@ class Rent(models.Model):
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
     dateTimeRented = models.DateTimeField()
     dateTimeReturned = models.DateTimeField()
+    rentLocation = models.ForeignKey(Location, on_delete=models.SET_NULL, blank=True, default=None, null=True)
+    returnLocation = models.ForeignKey(Location, on_delete=models.SET_NULL, blank=True, default=None, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     def __str__(self):
         return "Rentoid: " + self.rentoid + " Vehicle: " + self.vehicle + " Rented: " + self.dateTimeRented + " Returned: " + self.dateTimeReturned
