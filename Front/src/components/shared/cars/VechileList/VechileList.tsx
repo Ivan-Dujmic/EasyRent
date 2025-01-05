@@ -31,8 +31,13 @@ export default function VehicleList({
     }
   };
 
+  const customWidth = useBreakpointValue({
+    base: '80vw', // Širina mape za mobilne uređaje i male ekrane
+    md: '60vw', // Širina mape za srednje i velike ekrane
+  });
+
   return (
-    <Flex direction="column" align="center" width="75%">
+    <Flex direction="column" align="center" width={customWidth} gap={5}>
       {useDescription && (
         <Heading size="md" color="brandblack" alignSelf="flex-start">
           {description}
