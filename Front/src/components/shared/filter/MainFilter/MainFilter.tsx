@@ -25,78 +25,82 @@ const options: { [key: string]: string[] } = {
 };
 
 export default function MainFilter() {
-  // Dodajemo podrazumevanu vrednost 'row' kada useBreakpointValue vrati undefined
   const flexDirection =
     useBreakpointValue<'row' | 'column'>({
-      base: 'column', // Na manjim ekranima sve ide jedno ispod drugog
-      md: 'row', // Na srednjim ekranima u dva reda
-    }) || 'row'; // Podrazumevano 'row'
+      base: 'column', // On smaller screens, stack elements
+      md: 'row', // On medium screens and above, show in rows
+    }) || 'row';
 
   const fieldWidth = useBreakpointValue({
-    base: '100%', // Na manjim ekranima svaki element zauzima ceo red
-    md: 'calc(50% - 1rem)', // Na srednjim ekranima dva elementa po redu
-    xl: 'calc(20% - 1rem)', // Na velikim ekranima četiri elementa u jednom redu
+    base: '100%', // Each element takes full width on small screens
+    md: 'calc(50% - 1rem)', // Two elements per row on medium screens
+    xl: 'calc(20% - 1rem)', // Four elements in a row on large screens
+  });
+
+  const maxWidth = useBreakpointValue({
+    base: '80vw', // On smaller screens
+    md: '60vw', // On medium and larger screens
   });
 
   const gap = useBreakpointValue({
-    base: 2, // Manji razmak na malim ekranima
-    md: 4, // Veći razmak na srednjim i velikim ekranima
+    base: 2, // Smaller gaps on small screens
+    md: 4, // Larger gaps on medium and larger screens
   });
 
   return (
     <Flex
-      direction={flexDirection} // Koristi fleksibilni raspored
-      flexWrap={'wrap'}
-      bg={'white'}
-      width={'100%'}
-      maxWidth={'60vw'}
+      direction={flexDirection}
+      flexWrap="wrap"
+      bg="white"
+      width="100%"
+      maxWidth={maxWidth}
       borderRadius={14}
       borderWidth="0px"
-      align={'flex-end'}
+      align="flex-end"
       p={5}
       gap={gap}
-      justifyContent={'space-between'}
+      justifyContent="space-between"
     >
-      {/* Lokacije */}
+      {/* Locations */}
       <Box width={fieldWidth}>
         <LocationDDM
           options={options}
-          description={'Pick-up location'}
-          placeHolder={'From?'}
+          description="Pick-up location"
+          placeHolder="From?"
         />
       </Box>
       <Box width={fieldWidth}>
         <LocationDDM
           options={options}
-          description={'Drop-off location'}
-          placeHolder={'To?'}
+          description="Drop-off location"
+          placeHolder="To?"
         />
       </Box>
 
-      {/* Datum i vreme */}
+      {/* Date and Time */}
       <Box width={fieldWidth}>
         <DateTimeDDM
           options={{}}
-          description={'Pick-up date/time'}
-          placeHolder={'Start?'}
+          description="Pick-up date/time"
+          placeHolder="Start?"
         />
       </Box>
       <Box width={fieldWidth}>
         <DateTimeDDM
           options={{}}
-          description={'Drop-off date/time'}
-          placeHolder={'End?'}
+          description="Drop-off date/time"
+          placeHolder="End?"
         />
       </Box>
 
-      {/* Dugme za pretragu */}
+      {/* Search Button */}
       <Box width={fieldWidth} flex={1} mt={1}>
         <Button
-          bg={'brandblue'}
+          bg="brandblue"
           size="lg"
-          color={'white'}
+          color="white"
           _hover={{ bg: 'brandyellow', color: 'brandblack' }}
-          width="100%" // Dugme uvek zauzima ceo red u svom kontejneru
+          width="100%" // Button always takes full width in its container
         >
           Search
         </Button>

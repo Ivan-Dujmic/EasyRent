@@ -14,8 +14,13 @@ import {
 } from '@chakra-ui/react';
 
 export default function FQA() {
+  const containerWidth = useBreakpointValue({
+    base: '80vw', // For smaller screens (e.g., phones)
+    md: '60vw', // For medium and larger screens
+  });
+
   return (
-    <Flex direction="column" align="center" width="60vw" gap={7}>
+    <Flex direction="column" align="center" width={containerWidth} gap={7}>
       <Heading size="md" color="brandblack" alignSelf="flex-start">
         Everything You Need to Know:
       </Heading>
