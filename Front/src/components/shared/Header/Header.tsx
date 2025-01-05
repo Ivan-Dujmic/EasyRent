@@ -16,6 +16,7 @@ export const CustomHeader: React.FC<React.PropsWithChildren<HeaderProps>> = ({
   zIndex = 2,
   gap = 4,
   align = "baseline",
+  width = "100%",
   justify = "flex-end",
   maxW = "1200px",
   mx = "auto",
@@ -24,7 +25,7 @@ export const CustomHeader: React.FC<React.PropsWithChildren<HeaderProps>> = ({
   ...rest
 }) => {
   return (
-    <Box bg={bg} boxShadow={boxShadow} color={color} fontSize={fontSize} zIndex={zIndex}>
+    <Box bg={bg} boxShadow={boxShadow} color={color} fontSize={fontSize} zIndex={zIndex} width={width}>
       <Flex justify={'space-between'} align={'center'} maxW={maxW} mx={mx} px={px} py={py}>
         {/* Logo */}
         <EasyRentLogo />

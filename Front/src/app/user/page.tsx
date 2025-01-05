@@ -29,13 +29,37 @@ export default function UserProfilePage() {
       {/* Header */}
       <Header>
         <Text fontSize="md">Balance: €31.42</Text>
-        <Button bgColor={"brandyellow"} color={"brandwhite"} size = "sm">
+        <Button bgColor={"brandblue"} color={"brandwhite"} size = "sm" _hover={{ bg: 'brandyellow' }}>
           Add funds
         </Button>
-        <Button bgColor={"brandblue"} color={"brandwhite"} size = "sm">
+        <Button
+          bg={'brandblue'}
+          color={'brandwhite'}
+          fontWeight={'normal'}
+          fontSize="sm"
+          size="sm"
+          _hover={{
+            bg: 'brandblue',
+            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
+            transform: 'translateY(-2px)',
+            transition: 'transform 0.2s ease, box-shadow 0.3s ease',
+          }}
+        >
           Edit profile
         </Button>
-        <Button bgColor={"brandblue"} color={"brandwhite"} size = "sm">
+          <Button
+          bg={'brandblue'}
+          color={'brandwhite'}
+          fontWeight={'normal'}
+          fontSize="sm"
+          size="sm"
+          _hover={{
+            bg: 'brandblue',
+            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
+            transform: 'translateY(-2px)',
+            transition: 'transform 0.2s ease, box-shadow 0.3s ease',
+          }}
+        >
           Logout
         </Button>
       </Header>
