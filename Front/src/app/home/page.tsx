@@ -106,12 +106,10 @@ export default function HomePage() {
           <VehicleList
             vehicles={data?.most_popular}
             description={'Most popular:'}
-            useDescription={true}
           />
           <VehicleList
             vehicles={data?.best_value}
             description={'Best value:'}
-            useDescription={true}
           />
         </Flex>
 
