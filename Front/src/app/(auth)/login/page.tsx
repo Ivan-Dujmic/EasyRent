@@ -6,7 +6,6 @@ import {
   Heading,
   VStack,
   Flex,
-  Spacer,
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react';
@@ -57,6 +56,13 @@ export default function HomePage() {
   const boxWidth = useBreakpointValue({
     base: '90vw', // Small screens
     md: '70vw', // Medium screens
+    lg: '50vw', // Large screens
+  });
+
+  const buttonWidth = useBreakpointValue({
+    base: '100%', // Full width on small screens
+    md: '32%', // Fit three buttons side by side on medium screens
+    lg: '30%', // Slightly smaller on large screens for spacing
   });
 
   return loggedIn ? (
@@ -76,6 +82,7 @@ export default function HomePage() {
       </Heading>
       <chakra.form onSubmit={handleSubmit(onLogIn)}>
         <VStack spacing={6}>
+          {/* Input Fields */}
           <CustomInput
             {...register('email', {
               required: 'Email is required',
@@ -94,40 +101,40 @@ export default function HomePage() {
             placeholder="Enter your password"
             error={errors.password?.message}
           />
+
           {/* Button Layout */}
-          <Flex direction="column" gap={4} w="full" align="center">
+          <Flex
+            direction="column"
+            gap={6}
+            w="full"
+            align="center"
+            justify="center"
+          >
             {/* Login Button */}
             <SubmitButton
               label="Login"
               submittingLabel="Logging in..."
               isSubmitting={isSubmitting}
               w={{ base: '100%', md: '50%' }}
-              mb={{ base: 4, md: 6 }} // Add spacing below the Login button
             />
+
             {/* Secondary Buttons */}
             <Flex
               direction={{ base: 'column', md: 'row' }}
               gap={4}
-              flexWrap="wrap"
-              justifyContent="center"
-              alignItems="center"
               w="full"
+              justify="center"
+              align="center"
             >
-              <SupportButton
-                href="/register/user"
-                w={{ base: '100%', md: 'auto', lg: '30%' }}
-              >
+              <SupportButton href="/register/user" w={buttonWidth}>
                 Register
               </SupportButton>
-              <SupportButton
-                href="/home"
-                w={{ base: '100%', md: 'auto', lg: '30%' }}
-              >
+              <SupportButton href="/home" w={buttonWidth}>
                 Continue as Guest
               </SupportButton>
               <SupportButton
                 href="https://easyrent-t7he.onrender.com/accounts/google/login/?next=/"
-                w={{ base: '100%', md: 'auto', lg: '30%' }}
+                w={buttonWidth}
               >
                 <Flex justify="center" align="center" gap={2}>
                   <FcGoogle />
