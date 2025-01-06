@@ -133,7 +133,6 @@ def getLocations(request):
             "longitude" : location.longitude
         })
         response_data = {"locations" : response_array}
-        print(response_data)
         return JsonResponse(response_data, status=200)
     except Location.DoesNotExist:
         return Response({"error": "Locations not found"}, status=404)
@@ -171,7 +170,6 @@ def getModels(request):
             }
             )
         response_data = {"makes" : response_array}
-        print(makeModel)
         return JsonResponse(response_data, status=200)
     except Model.DoesNotExist:
         return Response({"error": "Makes not found"}, status=404)
