@@ -30,7 +30,11 @@ import { AnimatedMyProfile } from '../../user/AnimatedMyProfile/AnimatedMyProfil
 import { useRouter } from 'next/navigation';
 import { ILoginData } from '@/mutation/login';
 
-export default function Header({ UserData }: { UserData?: ILoginData }) {
+export default function AuthUserHeader({
+  UserData,
+}: {
+  UserData?: ILoginData;
+}) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
     isOpen: isModalOpen,
