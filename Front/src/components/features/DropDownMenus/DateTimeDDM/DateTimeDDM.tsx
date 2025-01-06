@@ -7,11 +7,13 @@ import {
   InputGroup,
   Input,
   InputLeftElement,
+  InputRightElement,
+  IconButton,
   useBreakpointValue,
   useOutsideClick,
   Box,
 } from '@chakra-ui/react';
-import { CalendarIcon } from '@chakra-ui/icons';
+import { CalendarIcon, CloseIcon } from '@chakra-ui/icons';
 import Calendar, { CalendarProps } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css'; // Import default styles
 import './custom-calendar.css'; // Import custom styles
@@ -46,6 +48,11 @@ export default function DateTimeDDM({
       setIsOpen(false); // Close calendar dropdown
       onDateChange?.(value); // Notify parent of date change
     }
+  };
+
+  const handleClearDate = () => {
+    setSelectedDate(null); // Clear the selected date
+    onDateChange?.(null); // Notify parent of date reset
   };
 
   const descriptionFontSize = useBreakpointValue({
@@ -85,6 +92,18 @@ export default function DateTimeDDM({
           border="none"
           _focus={{ borderColor: 'none', boxShadow: 'none' }}
         />
+        {selectedDate && (
+          <InputRightElement>
+            <IconButton
+              aria-label="Clear date"
+              icon={<CloseIcon />}
+              size="sm"
+              onClick={handleClearDate} // Clear date on click
+              variant="ghost"
+              color="brandblack"
+            />
+          </InputRightElement>
+        )}
       </InputGroup>
 
       {isOpen && (
