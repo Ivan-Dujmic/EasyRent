@@ -7,27 +7,38 @@ import { swrKeys } from '@/fetchers/swrKeys';
 import { get, IRentals } from '@/fetchers/homeData';
 import { FaComments } from 'react-icons/fa';
 import React, { useState } from 'react';
-import { Flex, IconButton, Heading, Text, Button } from '@chakra-ui/react';
+import {
+  Flex,
+  IconButton,
+  Heading,
+  Text,
+  Button,
+  Box,
+  VStack,
+  Divider,
+} from '@chakra-ui/react';
 import CustomHeader from '@/components/shared/Header/CustomHeader/CustomHeader';
 
 export default function UserProfilePage() {
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const { data } = useSWR(swrKeys.registerUser, get<IRentals>); //no clue sto je registerUser, vjv treba promjenit
+  const { data } = useSWR(swrKeys.registerUser, get<IRentals>); // Placeholder for rentals fetcher
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
   };
 
   return (
-    <Flex direction="column" grow={1}>
+    <Flex direction="column" grow={1} bg="brandlightgray" minH="100vh">
       {/* Header */}
       <CustomHeader>
-        <Text fontSize="md">Balance: €31.42</Text>
+        <Text fontSize="md" fontWeight="bold" color="brandblue">
+          Balance: €31.42
+        </Text>
         <Button
           bgColor={'brandblue'}
           color={'brandwhite'}
           size="sm"
-          _hover={{ bg: 'brandyellow' }}
+          _hover={{ bg: 'brandyellow', color: 'brandblack' }}
         >
           Add funds
         </Button>
@@ -38,10 +49,8 @@ export default function UserProfilePage() {
           fontSize="sm"
           size="sm"
           _hover={{
-            bg: 'brandblue',
-            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
-            transform: 'translateY(-2px)',
-            transition: 'transform 0.2s ease, box-shadow 0.3s ease',
+            bg: 'brandyellow',
+            color: 'brandblack',
           }}
         >
           Edit profile
@@ -53,59 +62,59 @@ export default function UserProfilePage() {
           fontSize="sm"
           size="sm"
           _hover={{
-            bg: 'brandblue',
-            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
-            transform: 'translateY(-2px)',
-            transition: 'transform 0.2s ease, box-shadow 0.3s ease',
+            bg: 'brandyellow',
+            color: 'brandblack',
           }}
         >
           Logout
         </Button>
       </CustomHeader>
 
+      {/* Main Content */}
       <Flex
         mx="auto"
-        justify={isChatOpen ? 'space-between' : 'center'}
-        align={'center'}
-        width={'90vw'}
-        height={'100%'}
-        p="1vmax"
+        justify="space-between"
+        align="stretch"
+        width="90vw"
+        height="auto"
+        p="2vmax"
+        gap={5}
+        direction={{ base: 'column', lg: 'row' }}
       >
-        {/* Rentals */}
+        {/* Rentals Section */}
         <Flex
-          position="relative"
-          alignSelf="center"
-          px="1vmax"
-          direction={'column'}
-          width="60vw"
-          height="100%"
-          justify={'space-evenly'}
-          bg="brandlightgray"
-          boxShadow={'base'}
-          align={'center'}
+          direction="column"
+          width={{ base: '100%', lg: '70%' }}
+          bg="brandwhite"
+          boxShadow="base"
+          borderRadius="md"
+          p={5}
+          gap={6}
         >
-          {!isChatOpen && (
-            <IconButton
-              position="absolute"
-              top="1vmax"
-              right="-5vmax"
-              aria-label="Open chat"
-              icon={<FaComments />}
-              onClick={toggleChat}
-              isRound
-              size="lg"
-            />
-          )}
-          <Heading size="lg">Your Profile</Heading>
+          <Heading size="lg" color="brandblue" textAlign="center">
+            Your Profile
+          </Heading>
+          <Divider />
           <VehicleList vehicles={sample1} description="Ongoing rentals:" />
-          <VehicleList
-            vehicles={sample2}
-            description="Previously rented:"
-            numCards={3}
-          />
+          <VehicleList vehicles={sample2} description="Previously rented:" />
         </Flex>
+
         {/* Chats Section */}
-        {isChatOpen && <Chat onClose={toggleChat} />}
+        {isChatOpen ? (
+          <Chat onClose={toggleChat} />
+        ) : (
+          <IconButton
+            aria-label="Open chat"
+            icon={<FaComments />}
+            onClick={toggleChat}
+            isRound
+            size="lg"
+            bg="brandblue"
+            color="brandwhite"
+            _hover={{ bg: 'brandyellow', color: 'brandblack' }}
+            alignSelf={{ base: 'center', lg: 'flex-start' }}
+          />
+        )}
       </Flex>
     </Flex>
   );
@@ -114,26 +123,41 @@ export default function UserProfilePage() {
 function Chat({ onClose }: { onClose: () => void }) {
   return (
     <Flex
-      height={'100%'}
-      bg="brandlightgray"
-      width="20vw"
       direction="column"
-      p={5}
-      gap={3}
+      width={{ base: '100%', lg: '25%' }}
+      bg="brandwhite"
       boxShadow="base"
+      borderRadius="md"
+      p={5}
+      gap={4}
     >
-      <Heading size="sm">Chats</Heading>
-      {['Admin', 'Company1', 'Company2', 'Company3'].map((chat, index) => (
-        <Button
-          key={index}
-          size="sm"
-          variant="ghost"
-          justifyContent="flex-start"
-        >
-          {chat}
-        </Button>
-      ))}
-      <Button onClick={onClose} mt={3} size="sm" variant="ghost">
+      <Heading size="md" color="brandblue">
+        Chats
+      </Heading>
+      <Divider />
+      <VStack align="stretch" spacing={3}>
+        {['Admin', 'Company1', 'Company2', 'Company3'].map((chat, index) => (
+          <Button
+            key={index}
+            size="sm"
+            variant="outline"
+            color="brandblue"
+            justifyContent="flex-start"
+            _hover={{ bg: 'brandlightgray' }}
+          >
+            {chat}
+          </Button>
+        ))}
+      </VStack>
+      <Button
+        onClick={onClose}
+        mt={3}
+        size="sm"
+        variant="solid"
+        bg="brandblue"
+        color="brandwhite"
+        _hover={{ bg: 'brandyellow', color: 'brandblack' }}
+      >
         Close
       </Button>
     </Flex>
