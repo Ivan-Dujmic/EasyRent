@@ -1,20 +1,14 @@
 'use client';
 
-import "./style.css"
-import { CustomHeader as Header } from '@/components/shared/Header/Header';
+import './style.css';
 import VehicleList from '@/components/shared/cars/VechileList/VechileList';
 import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { get, IRentals } from '@/fetchers/homeData';
 import { FaComments } from 'react-icons/fa';
 import React, { useState } from 'react';
-import {
-  Flex,
-  IconButton,
-  Heading,
-  Text,
-  Button
-} from '@chakra-ui/react';
+import { Flex, IconButton, Heading, Text, Button } from '@chakra-ui/react';
+import CustomHeader from '@/components/shared/Header/CustomHeader/CustomHeader';
 
 export default function UserProfilePage() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -27,9 +21,14 @@ export default function UserProfilePage() {
   return (
     <Flex direction="column" grow={1}>
       {/* Header */}
-      <Header>
+      <CustomHeader>
         <Text fontSize="md">Balance: €31.42</Text>
-        <Button bgColor={"brandblue"} color={"brandwhite"} size = "sm" _hover={{ bg: 'brandyellow' }}>
+        <Button
+          bgColor={'brandblue'}
+          color={'brandwhite'}
+          size="sm"
+          _hover={{ bg: 'brandyellow' }}
+        >
           Add funds
         </Button>
         <Button
@@ -47,7 +46,7 @@ export default function UserProfilePage() {
         >
           Edit profile
         </Button>
-          <Button
+        <Button
           bg={'brandblue'}
           color={'brandwhite'}
           fontWeight={'normal'}
@@ -62,12 +61,30 @@ export default function UserProfilePage() {
         >
           Logout
         </Button>
-      </Header>
-      
-      <Flex mx="auto" justify={isChatOpen ? "space-between" : "center"} align={'center'} width={'90vw'} height={"100%"} p='1vmax'>
+      </CustomHeader>
+
+      <Flex
+        mx="auto"
+        justify={isChatOpen ? 'space-between' : 'center'}
+        align={'center'}
+        width={'90vw'}
+        height={'100%'}
+        p="1vmax"
+      >
         {/* Rentals */}
-        <Flex position="relative" alignSelf="center" px="1vmax" direction={'column'} width="60vw" height="100%" justify={'space-evenly'} bg="brandlightgray" boxShadow={'base'} align={"center"}>
-          {!isChatOpen &&
+        <Flex
+          position="relative"
+          alignSelf="center"
+          px="1vmax"
+          direction={'column'}
+          width="60vw"
+          height="100%"
+          justify={'space-evenly'}
+          bg="brandlightgray"
+          boxShadow={'base'}
+          align={'center'}
+        >
+          {!isChatOpen && (
             <IconButton
               position="absolute"
               top="1vmax"
@@ -78,15 +95,17 @@ export default function UserProfilePage() {
               isRound
               size="lg"
             />
-          }
+          )}
           <Heading size="lg">Your Profile</Heading>
-          <VehicleList vehicles={sample1} description='Ongoing rentals:'/>
-          <VehicleList vehicles={sample2} description='Previously rented:' numCards={3}/>
-        </Flex>  
+          <VehicleList vehicles={sample1} description="Ongoing rentals:" />
+          <VehicleList
+            vehicles={sample2}
+            description="Previously rented:"
+            numCards={3}
+          />
+        </Flex>
         {/* Chats Section */}
-        {isChatOpen && (
-          <Chat onClose={toggleChat} />
-        )}
+        {isChatOpen && <Chat onClose={toggleChat} />}
       </Flex>
     </Flex>
   );
@@ -95,7 +114,7 @@ export default function UserProfilePage() {
 function Chat({ onClose }: { onClose: () => void }) {
   return (
     <Flex
-      height={"100%"}
+      height={'100%'}
       bg="brandlightgray"
       width="20vw"
       direction="column"
@@ -105,7 +124,12 @@ function Chat({ onClose }: { onClose: () => void }) {
     >
       <Heading size="sm">Chats</Heading>
       {['Admin', 'Company1', 'Company2', 'Company3'].map((chat, index) => (
-        <Button key={index} size="sm" variant="ghost" justifyContent="flex-start">
+        <Button
+          key={index}
+          size="sm"
+          variant="ghost"
+          justifyContent="flex-start"
+        >
           {chat}
         </Button>
       ))}
@@ -116,7 +140,24 @@ function Chat({ onClose }: { onClose: () => void }) {
   );
 }
 
-let amoguscar = { companyName: "amogus", image: "sus", makeName: "amogubil", modelName: "amongus" };
-let amoguscar2 = { companyName: "sus", image: "sus2", makeName: "amogubil2", modelName: "amongus maximus" };
+let amoguscar = {
+  companyName: 'amogus',
+  image: 'sus',
+  makeName: 'amogubil',
+  modelName: 'amongus',
+};
+let amoguscar2 = {
+  companyName: 'sus',
+  image: 'sus2',
+  makeName: 'amogubil2',
+  modelName: 'amongus maximus',
+};
 let sample1 = [amoguscar, amoguscar];
-let sample2 = [amoguscar, amoguscar, amoguscar, amoguscar, amoguscar, amoguscar2];
+let sample2 = [
+  amoguscar,
+  amoguscar,
+  amoguscar,
+  amoguscar,
+  amoguscar,
+  amoguscar2,
+];
