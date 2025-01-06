@@ -1,6 +1,9 @@
+'use client';
+
+import { useState } from 'react';
+import { Button, Flex, Box, useBreakpointValue } from '@chakra-ui/react';
 import DateTimeDDM from '@/components/features/DropDownMenus/DateTimeDDM/DateTimeDDM';
 import LocationDDM from '@/components/features/DropDownMenus/LocationDDM/LocationDDM';
-import { Button, Flex, Box, useBreakpointValue } from '@chakra-ui/react';
 
 const options: { [key: string]: string[] } = {
   'Cities (including airports)': [
@@ -25,6 +28,9 @@ const options: { [key: string]: string[] } = {
 };
 
 export default function MainFilter() {
+  const [pickupDate, setPickupDate] = useState<Date | null>(null);
+  const [dropoffDate, setDropoffDate] = useState<Date | null>(null);
+
   const flexDirection =
     useBreakpointValue<'row' | 'column'>({
       base: 'column', // On smaller screens, stack elements
@@ -80,16 +86,19 @@ export default function MainFilter() {
       {/* Date and Time */}
       <Box width={fieldWidth}>
         <DateTimeDDM
-          options={{}}
           description="Pick-up date/time"
           placeHolder="Start?"
+          minDate={new Date()} // Always allow today's date or later
+          maxDate={dropoffDate || undefined} // Limit to drop-off date if selected
+          onDateChange={(date) => setPickupDate(date)} // Update pickup date
         />
       </Box>
       <Box width={fieldWidth}>
         <DateTimeDDM
-          options={{}}
           description="Drop-off date/time"
           placeHolder="End?"
+          minDate={pickupDate || new Date()} // Limit to pickup date or later
+          onDateChange={(date) => setDropoffDate(date)} // Update dropoff date
         />
       </Box>
 
