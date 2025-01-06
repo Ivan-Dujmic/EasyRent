@@ -16,15 +16,21 @@ import Calendar, { CalendarProps } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css'; // Import default styles
 import './custom-calendar.css'; // Import custom styles
 
-interface LocationDDMProps {
+interface DateTimeDDMProps {
   description: string;
   placeHolder: string;
+  minDate?: Date; // Earliest selectable date
+  maxDate?: Date; // Latest selectable date
+  onDateChange?: (date: Date | null) => void; // Callback for date selection
 }
 
 export default function DateTimeDDM({
   description,
   placeHolder,
-}: LocationDDMProps) {
+  minDate,
+  maxDate,
+  onDateChange,
+}: DateTimeDDMProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const ref = useRef(null);
@@ -38,10 +44,7 @@ export default function DateTimeDDM({
     if (value instanceof Date) {
       setSelectedDate(value); // Set selected date
       setIsOpen(false); // Close calendar dropdown
-    } else if (Array.isArray(value) && value.length === 2) {
-      // Handle date range (if enabled in the future)
-      const [startDate, endDate] = value;
-      console.log('Selected Date Range:', startDate, endDate);
+      onDateChange?.(value); // Notify parent of date change
     }
   };
 
@@ -98,10 +101,9 @@ export default function DateTimeDDM({
           <Calendar
             onChange={handleDateChange} // Handle date change
             value={selectedDate} // Current selected date
-            minDate={new Date()} // Disable past dates
+            minDate={minDate || new Date()} // Disable past dates or use provided minDate
+            maxDate={maxDate} // Use provided maxDate
             view="month" // Limit view to month only
-            onClickYear={() => setIsOpen(false)} // Disable year selection
-            onClickDecade={() => setIsOpen(false)} // Disable decade selection
             tileClassName={({ date, view }) =>
               view === 'month' &&
               date.toDateString() === new Date().toDateString()
