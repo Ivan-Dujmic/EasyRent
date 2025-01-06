@@ -100,3 +100,124 @@ def get_showcased(request):
     }
 
     return Response(response_data)
+
+
+@extend_schema(
+    tags=['home'],
+    responses={
+        200: LocationListSerializer,
+        404: OpenApiResponse(
+            description='Locations Not Found',
+            examples=[
+                OpenApiExample(
+                    'Location Not Found',
+                    value={"error": "Locations not found"},
+                ),
+            ],
+        ),
+    },
+)
+@api_view(["GET"])
+def getLocations(request):
+    try:
+        response_array = []
+        locations = Location.objects.all()
+        for location in locations:
+            response_array.append({
+            "companyName" : location.dealership.user.first_name,
+            "dealership_id" : location.dealership.dealership_id,
+            "streetName" : location.streetName,
+            "streetNo" : location.streetNo,
+            "cityName" : location.cityName,
+            "latitude" : location.latitude,
+            "longitude" : location.longitude
+        })
+        response_data = {"locations" : response_array}
+        print(response_data)
+        return JsonResponse(response_data, status=200)
+    except Location.DoesNotExist:
+        return Response({"error": "Locations not found"}, status=404)
+
+
+@extend_schema(
+    tags=['home'],
+    responses={
+        200: MakeModelListSerializer,
+        404: OpenApiResponse(
+            description='Makes Not Found',
+            examples=[
+                OpenApiExample(
+                    'Makes Not Found',
+                    value={"error": "Makes not found"},
+                ),
+            ],
+        ),
+    },
+)
+@api_view(["GET"])
+def getModels(request):
+    try:
+        makeModel = {}
+        response_array = []
+        makes = Model.objects.all()
+        for make in makes:
+            if not makeModel.__contains__(make.makeName):
+                makeModel[make.makeName] = []
+            makeModel[make.makeName].append({"modelName" : make.modelName, "model_id" : make.model_id})
+        for makeName, modelList in makeModel.items():
+            response_array.append({
+                "makeName" : makeName,
+                "models" : modelList 
+            }
+            )
+        response_data = {"makes" : response_array}
+        print(makeModel)
+        return JsonResponse(response_data, status=200)
+    except Model.DoesNotExist:
+        return Response({"error": "Makes not found"}, status=404)
+    
+
+
+@extend_schema(
+    tags=['home'],
+    responses={
+        200: DealershipSerializer,
+        404: OpenApiResponse(
+            description='Company Not Found',
+            examples=[
+                OpenApiExample(
+                    'Company Not Found',
+                    value={"error": "Company not found"},
+                ),
+            ],
+        ),
+    },
+)
+@api_view(["GET"])
+def getCompany(request, dealership_id):
+    try:
+        response_data = {}
+        if (dealership_id == None or not dealership_id.isdigit()):
+            return Response({"error": "Company not found"}, status=404)
+        company = Dealership.objects.get(pk = dealership_id)
+        locations = Location.objects.filter(dealership_id = company.dealership_id).all()
+        location_array = []
+        for location in locations:
+            location_array.append({
+            "streetName" : location.streetName,
+            "streetNo" : location.streetNo,
+            "cityName" : location.cityName,
+            "latitude" : location.latitude,
+            "longitude" : location.longitude,
+            "isHQ" : location.isHQ 
+        })
+        response_data = {
+            "companyLogo" : base64.b64encode(company.image),
+            "companyName" : company.user.first_name,
+            "dealership_id" : company.dealership_id,
+            "description" : company.description,
+            "locations" : location_array
+        }
+        return JsonResponse(response_data, status=200)
+    except Dealership.DoesNotExist:
+        return Response({"error": "Company not found"}, status=404)

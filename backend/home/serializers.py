@@ -21,6 +21,49 @@ class OfferDetailsSerializer(serializers.Serializer):
     description = serializers.CharField()
     canReview = serializers.IntegerField()
 
+#for api/home/locations/
+class LocationSerializer(serializers.Serializer):
+    companyName = serializers.CharField()
+    dealership_id = serializers.IntegerField()
+    streetName = serializers.CharField()
+    streetNo = serializers.CharField()
+    cityName = serializers.CharField()
+    latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
+    longitude = serializers.DecimalField(max_digits=9, decimal_places=6)
+
+class LocationListSerializer(serializers.Serializer):
+    locations = serializers.ListField(child = LocationSerializer())
+
+#for api/home/models
+class ModelSerializer(serializers.Serializer):
+    modelName = serializers.CharField()
+    model_id = serializers.IntegerField()
+
+
+class MakeModelSerializer(serializers.Serializer):
+    makeName = serializers.CharField()
+    models = serializers.ListField(child = ModelSerializer())
+
+class MakeModelListSerializer(serializers.Serializer):
+    makes = serializers.ListField(child = MakeModelSerializer())
+
+
+#for api/home/company/:dealership_id
+class DealershipLocationSerializer(serializers.Serializer):
+    streetName = serializers.CharField()
+    streetNo = serializers.CharField()
+    cityName = serializers.CharField()
+    latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
+    longitude = serializers.DecimalField(max_digits=9, decimal_places=6)
+    isHQ = serializers.BooleanField()
+
+class DealershipSerializer(serializers.Serializer):
+    companyLogo = serializers.CharField(default = "base64")
+    companyName = serializers.CharField()
+    dealership_id = serializers.IntegerField()
+    description = serializers.CharField()
+    locations = serializers.ListField(child = DealershipLocationSerializer())
+
 
 class DealershipLogoSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
