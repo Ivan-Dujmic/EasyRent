@@ -5,11 +5,10 @@ import React from "react";
 
 interface ISuppButton extends ButtonProps {
     children : React.ReactNode,
-    m : string,
     href : string
 }
 
-export default function SupportButton ({children, m, href, ...rest}: ISuppButton){
+export default function SupportButton ({children, href, ...props}: ISuppButton){
     return (
         <Button 
         as="a" 
@@ -17,8 +16,8 @@ export default function SupportButton ({children, m, href, ...rest}: ISuppButton
         borderRadius="md"
         p="5"
 
-        m={m}
         href={href} 
+        {...props}
         >
         {children}
         </Button>

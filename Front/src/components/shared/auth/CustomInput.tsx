@@ -19,7 +19,7 @@ export default function CustomInput ({label, type, placeholder, error, ...rest }
                     {...rest}
 				/>
 				{error && (
-					<FormErrorMessage color={'brandred'}>
+					<FormErrorMessage color={'red'}>
 						{error}
 					</FormErrorMessage>
 				)}
