@@ -1,97 +1,58 @@
 'use client';
 
-import { Flex, Heading, IconButton } from '@chakra-ui/react';
+import {
+  Flex,
+  Heading,
+  IconButton,
+  useBreakpointValue,
+} from '@chakra-ui/react';
 import { FaChevronRight, FaChevronLeft } from 'react-icons/fa';
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import VehicleCard from '../VehicleCard/VechileCard';
 import { ICar } from '@/fetchers/homeData';
-import { FlexProps } from '@chakra-ui/react';
 
-interface VehicleListProps extends FlexProps {
+interface VehicleListProps {
   vehicles?: Array<ICar>;
   description?: string;
-  numCards?: number;  // Number of cards to display
-  cardWidth?: number; // Width of each card
 }
 
 export default function VehicleList({
   vehicles = [],
   description = undefined,
-  numCards = 3,  // Default number of cards
-  width = "75%",	
-  cardWidth = 200, // Default width in px
-  ...props
 }: VehicleListProps) {
-  const [startIndex, setStartIndex] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const lastElementRef = useRef<HTMLDivElement | null>(null);
-  const [isEndOfList, setIsEndOfList] = useState(true);
-  const [containerWidth, setContainerWidth] = useState(0);
+  // Dynamically determine the number of visible cards based on screen size
+  const numCards = useBreakpointValue({ base: 1, sm: 2, md: 3, lg: 4 }) || 4;
 
-  useEffect(() => {
-    cardRefs.current = cardRefs.current.slice(0, vehicles.length);
-  }, [vehicles]);
+  const gap = 16; // Gap between cards in pixels
+  const cardWidth = `calc((100% - ${(numCards - 1) * gap}px) / ${numCards})`; // Dynamically calculate card width
+
+  const [startIndex, setStartIndex] = useState(0);
 
   const handleScroll = (direction: 'left' | 'right') => {
-    const newIndex = direction === 'right' ? startIndex + 1 : startIndex - 1;
-    if (newIndex >= 0 && newIndex < vehicles.length) {
-      setStartIndex(newIndex);
-      cardRefs.current[newIndex]?.scrollIntoView({ behavior: 'smooth', inline: 'start' });
+    if (direction === 'right' && startIndex < vehicles.length - numCards) {
+      setStartIndex((prev) => prev + 1);
+    } else if (direction === 'left' && startIndex > 0) {
+      setStartIndex((prev) => prev - 1);
     }
   };
 
-  useEffect(() => {
-    const handleResize = () => {
-      if (containerRef.current) {
-        setContainerWidth(containerRef.current.offsetWidth);
-      }
-    };
-
-    // Set initial width
-    handleResize();
-
-    // Add event listener for window resize
-    window.addEventListener('resize', handleResize);
-
-    // Cleanup event listener on component unmount
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  const observerCallback = useCallback((entries: IntersectionObserverEntry[]) => {
-    const [entry] = entries;
-    setIsEndOfList(entry.isIntersecting);
-  }, []);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(observerCallback, {
-      root: containerRef.current,
-      threshold: 1.0,
-    });
-
-    if (lastElementRef.current) {
-      observer.observe(lastElementRef.current);
-    }
-
-    return () => {
-      if (lastElementRef.current) {
-        observer.unobserve(lastElementRef.current);
-      }
-    };
-  }, [observerCallback]);
-
-  const maxCardWidth = containerWidth / numCards;
+  const visibleVehicles = vehicles.slice(startIndex, startIndex + numCards);
 
   return (
-    <Flex direction="column" align="center" width={width} {...props}>
+    <Flex direction="column" align="center" width="100%">
       {description && (
         <Heading size="md" color="brandblack" alignSelf="flex-start">
           {description}
         </Heading>
       )}
-      <Flex position="relative" justify="center" align="center" width="100%" mb={2}>
+      <Flex
+        position="relative"
+        justify="center"
+        align="center"
+        width="100%"
+        mb={4}
+      >
+        {/* Left Scroll Button */}
         {startIndex > 0 && (
           <IconButton
             position="absolute"
@@ -100,26 +61,35 @@ export default function VehicleList({
             icon={<FaChevronLeft />}
             onClick={() => handleScroll('left')}
             isRound
+            zIndex="1"
           />
         )}
-        <Flex ref={containerRef} overflow="hidden" gap={3} width="80%" px={2} py={3}>
-          {vehicles.map((vehicle, index) => (
+
+        {/* Vehicle Cards */}
+        <Flex
+          overflow="hidden"
+          justify="center"
+          align="center"
+          width="80%"
+          gap={`${gap}px`}
+          px={2}
+        >
+          {visibleVehicles.map((vehicle, index) => (
             <div
-              className='pussy'
               key={index}
-              ref={(el) => {
-                cardRefs.current[index] = el;
-                if (index === vehicles.length - 1) {
-                  lastElementRef.current = el;
-                }
+              style={{
+                flex: '0 0 auto',
+                width: cardWidth, // Dynamically calculated width
+                maxWidth: cardWidth,
               }}
-              style={{ flex: '0 0 auto', width: `${maxCardWidth}px` }} // Set a fixed width for each card
             >
               <VehicleCard vehicle={vehicle} />
             </div>
           ))}
         </Flex>
-        {!isEndOfList && (
+
+        {/* Right Scroll Button */}
+        {startIndex < vehicles.length - numCards && (
           <IconButton
             position="absolute"
             right="1vmax"
@@ -127,6 +97,7 @@ export default function VehicleList({
             icon={<FaChevronRight />}
             onClick={() => handleScroll('right')}
             isRound
+            zIndex="1"
           />
         )}
       </Flex>
