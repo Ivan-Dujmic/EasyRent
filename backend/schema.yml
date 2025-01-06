@@ -110,6 +110,7 @@ paths:
       - {}
       responses:
         '200':
+<<<<<<< HEAD
           content:
             application/json:
               schema:
@@ -117,6 +118,33 @@ paths:
           description: ''
         '500':
           description: No rentoid or dealership to match user
+=======
+          description: No response body
+  /api/auth/registerCompany/:
+    post:
+      operationId: api_auth_registerCompany_create
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/auth/registerUser/:
+    post:
+      operationId: api_auth_registerUser_create
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+>>>>>>> local-matija
   /api/home/offer/{offer_id}/:
     get:
       operationId: api_home_offer_retrieve
@@ -414,6 +442,60 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+  /money/wallet/addAccount/:
+    post:
+      operationId: money_wallet_addAccount_create
+      tags:
+      - wallet
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          description: Wallet successfully created
+        '400':
+          description: Bad Request
+  /money/wallet/addMoney/{wallid}/:
+    post:
+      operationId: money_wallet_addMoney_create
+      parameters:
+      - in: path
+        name: wallid
+        schema:
+          type: string
+        required: true
+      tags:
+      - wallet
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: Money added successfully
+        '400':
+          description: Bad Request
+  /money/wallet/removeMoney/{wallid}/:
+    post:
+      operationId: money_wallet_removeMoney_create
+      parameters:
+      - in: path
+        name: wallid
+        schema:
+          type: string
+        required: true
+      tags:
+      - wallet
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: Money removed successfully
+        '400':
+          description: Bad Request
 components:
   schemas:
     GetUserInfo:

@@ -28,10 +28,14 @@ urlpatterns = [
     path("api/home/", include("home.urls")),
     path("api/profile/", include("profiles.urls")),
     path("accounts/", include("allauth.urls")),
+    path("money/", include("wallet.urls")),
     path("admin/", admin.site.urls),
-    
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),           # Do not use this path
-    path("api/schema/docs", SpectacularSwaggerView.as_view(url_name="schema")), # Use this one instead
+    path(
+        "api/schema/", SpectacularAPIView.as_view(), name="schema"
+    ),  # Do not use this path
+    path(
+        "api/schema/docs", SpectacularSwaggerView.as_view(url_name="schema")
+    ),  # Use this one instead
 ]
 
 if settings.DEBUG:

@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "src",
     "home",
     "profile",
+    "wallet",
 ]
 AUTH_USER_MODEL = "auth.User"
 
@@ -108,7 +109,7 @@ DATABASES = {
         "USER": "postgres",
         "PASSWORD": "postgres",
         "HOST": "localhost",
-        "PORT": "5432", #5432 or 5433
+        "PORT": "5432",  # 5432 or 5433
     }
 }
 
@@ -216,5 +217,5 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 # ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
 
 # Images (using Pillow)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
