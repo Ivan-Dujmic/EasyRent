@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Text, Icon, Flex } from '@chakra-ui/react';
+import { Box, Text, Icon, Flex, Spinner } from '@chakra-ui/react';
 import {
   GoogleMap,
   Marker,
@@ -155,7 +155,9 @@ const CustomMap: React.FC<CustomMapProps> = ({
     []
   );
 
-  if (!isLoaded) return <div>Loading map...</div>;
+  if (!isLoaded) {
+    return <Spinner color="brandblue" size="lg" />;
+  }
 
   return (
     <GoogleMap

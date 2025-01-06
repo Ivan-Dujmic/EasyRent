@@ -1,6 +1,6 @@
 /* Custom Calendar Styling */
 .react-calendar {
-  width: 340px;
+  width: 335px;
   max-width: 100%;
   background-color: var(--chakra-colors-brandwhite);
   color: var(--chakra-colors-brandblack);
@@ -26,7 +26,7 @@
   font-weight: bold;
   padding: 0.5rem;
   border: none;
-  border-radius: 8px; /* Umjesto elipse */
+  border-radius: 8px;
   width: 40px;
   height: 40px;
   transition:
@@ -53,7 +53,8 @@
 }
 
 .react-calendar__month-view__weekdays abbr {
-  text-decoration: none; /* Uklanja podcrtane točke */
+  text-decoration: none !important; /* Forcira uklanjanje podcrtavanja */
+  border-bottom: none !important; /* Forcira uklanjanje donje linije */
 }
 
 .react-calendar__month-view__days {
@@ -65,7 +66,7 @@
 .react-calendar__tile {
   background: var(--chakra-colors-brandwhite);
   color: var(--chakra-colors-brandblack);
-  border-radius: 50%; /* Ostavlja zaokruženost dana */
+  border-radius: 50%; /* Zaokruženi dani */
   padding: 0.6rem;
   text-align: center;
   font-weight: 500;
@@ -144,4 +145,17 @@
 
 .react-calendar__tile--rangeEnd {
   margin-left: auto;
+}
+
+/* Pravokutni stil za mjesece */
+.react-calendar__month-view__months {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.react-calendar__month-view__months .react-calendar__tile {
+  border-radius: 8px; /* Pravokutni stil za mjesece */
+  height: auto;
+  padding: 0.5rem 0;
 }

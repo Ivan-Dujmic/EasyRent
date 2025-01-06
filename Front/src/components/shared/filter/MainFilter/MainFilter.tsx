@@ -79,18 +79,10 @@ export default function MainFilter() {
 
       {/* Date and Time */}
       <Box width={fieldWidth}>
-        <DateTimeDDM
-          options={{}}
-          description="Pick-up date/time"
-          placeHolder="Start?"
-        />
+        <DateTimeDDM description="Pick-up date/time" placeHolder="Start?" />
       </Box>
       <Box width={fieldWidth}>
-        <DateTimeDDM
-          options={{}}
-          description="Drop-off date/time"
-          placeHolder="End?"
-        />
+        <DateTimeDDM description="Drop-off date/time" placeHolder="End?" />
       </Box>
 
       {/* Search Button */}
