@@ -51,7 +51,7 @@ paths:
       responses:
         '200':
           description: No response body
-  /api/home/offer/{offer_id}:
+  /api/home/offer/{offer_id}/:
     get:
       operationId: api_home_offer_retrieve
       parameters:
@@ -233,6 +233,60 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+  /money/wallet/addAccount/:
+    post:
+      operationId: money_wallet_addAccount_create
+      tags:
+      - wallet
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          description: Wallet successfully created
+        '400':
+          description: Bad Request
+  /money/wallet/addMoney/{wallid}/:
+    post:
+      operationId: money_wallet_addMoney_create
+      parameters:
+      - in: path
+        name: wallid
+        schema:
+          type: string
+        required: true
+      tags:
+      - wallet
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: Money added successfully
+        '400':
+          description: Bad Request
+  /money/wallet/removeMoney/{wallid}/:
+    post:
+      operationId: money_wallet_removeMoney_create
+      parameters:
+      - in: path
+        name: wallid
+        schema:
+          type: string
+        required: true
+      tags:
+      - wallet
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: Money removed successfully
+        '400':
+          description: Bad Request
 components:
   schemas:
     OfferDetails:
