@@ -27,7 +27,7 @@ import CustomMap from '@/components/shared/Map/CustomMap/CustomMap';
 import { dealershipLocations } from '@/mockData/mockLocations';
 import { useEffect, useState } from 'react';
 import { ILoginData } from '@/mutation/login';
-import AuthHeader from '@/components/shared/Header/AuthUserHeader/AuthHeader';
+import AuthUserHeader from '@/components/shared/Header/AuthUserHeader/AuthUserHeader';
 
 const homeGuestFooterLinks = {
   quickLinks: [
@@ -103,7 +103,7 @@ export default function HomePage() {
     <>
       <AuthRedirect to={''} condition={'isLoggedIn'} />
       <Flex direction="column" grow={1} align={'center'} width={'100%'}>
-        <AuthHeader UserData={mockUserData} />{' '}
+        <AuthUserHeader UserData={mockUserData} />{' '}
         {/* trebat c enazad promjenit kasnije u pravi user data, trebat ce dodat i onaj spiining circle ukolo*/}
         {/* Drugi dio stranice */}
         <Flex
@@ -137,12 +137,10 @@ export default function HomePage() {
           <VehicleList
             vehicles={data?.most_popular}
             description={'Most popular:'}
-            useDescription={true}
           />
           <VehicleList
             vehicles={data?.best_value}
             description={'Best value:'}
-            useDescription={true}
           />
         </Flex>
         {/* Dio stranice sa benefitima */}
