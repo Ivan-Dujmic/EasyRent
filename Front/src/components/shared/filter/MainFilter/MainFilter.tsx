@@ -1,9 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Flex, Box, Text, useBreakpointValue } from '@chakra-ui/react';
 import DateTimeDDM from '@/components/features/DropDownMenus/DateTimeDDM/DateTimeDDM';
 import LocationDDM from '@/components/features/DropDownMenus/LocationDDM/LocationDDM';
+import { useCarContext } from '@/context/CarContext';
+import { useRouter } from 'next/navigation';
+import useSWRMutation from 'swr/mutation';
+import { CustomGet, ICar } from '@/fetchers/homeData';
+import { swrKeys } from '@/fetchers/swrKeys';
 
 const options: { [key: string]: string[] } = {
   'Cities (including airports)': [
@@ -28,10 +33,14 @@ const options: { [key: string]: string[] } = {
 };
 
 export default function MainFilter() {
+  const router = useRouter();
+  const { setCars } = useCarContext();
+
   const [pickupLocation, setPickupLocation] = useState('');
   const [dropoffLocation, setDropoffLocation] = useState('');
   const [pickupDate, setPickupDate] = useState<Date | null>(null);
   const [dropoffDate, setDropoffDate] = useState<Date | null>(null);
+  const [url, setUrl] = useState(''); // State za URL
 
   const [formErrors, setFormErrors] = useState({
     pickupLocation: false,
@@ -52,17 +61,80 @@ export default function MainFilter() {
     return !Object.values(errors).some((hasError) => hasError);
   };
 
-  const handleSearch = () => {
-    if (validateForm()) {
-      console.log('Search Payload:', {
-        pickupLocation,
-        dropoffLocation,
-        pickupDate,
-        dropoffDate,
-      });
+  const { trigger } = useSWRMutation(
+    url,
+    CustomGet,
+    // Fetcher funkcija
+    {
+      onSuccess: (data: ICar[]) => {
+        setCars(data); // Spremanje automobila u globalni kontekst
+        router.push('/results'); // Preusmjeravanje na novu stranicu
+      },
+      onError: (error) => {
+        console.error('Error fetching data:', error);
+      },
     }
-  };
+  );
 
+  useEffect(() => {
+    if (url) {
+      trigger();
+    }
+  }, [url, trigger]);
+
+  const handleSearch = () => {
+    if (!validateForm()) return;
+
+    /*     if (url) {
+      // Ako URL već postoji, pokreće mutaciju
+      trigger();
+    }
+ */
+
+    // Helper funkcija za odvajanje datuma i vremena
+    const extractDateAndTime = (date: Date | null) => {
+      if (!date) return { date: '', time: '' };
+
+      // Formatiranje datuma u DD-MM-YYYY
+      const dateObj = new Date(date);
+      const dateString = `${String(dateObj.getDate()).padStart(2, '0')}-${String(
+        dateObj.getMonth() + 1
+      ).padStart(2, '0')}-${dateObj.getFullYear()}`;
+
+      // Formatiranje vremena u HH:MM:SS
+      const hours = String(dateObj.getHours()).padStart(2, '0');
+      const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+      const seconds = String(dateObj.getSeconds()).padStart(2, '0');
+      const timeString = `${hours}:${minutes}:${seconds}`;
+
+      return { date: dateString, time: timeString };
+    };
+
+    // Helper funkcija za formatiranje gradova
+    const formatLocation = (location: string) => {
+      const [city, country] = location.split(',').map((s) => s.trim());
+      return `${city}-${country}`;
+    };
+
+    // Ekstrahiranje i formatiranje podataka
+    const pickup = extractDateAndTime(pickupDate);
+    const dropoff = extractDateAndTime(dropoffDate);
+    const formattedPickupLocation = formatLocation(pickupLocation);
+    const formattedDropoffLocation = formatLocation(dropoffLocation);
+
+    // Kreiranje URL-a sa query parametrima
+    const queryParams = new URLSearchParams({
+      pick_up_location: formattedPickupLocation,
+      drop_off_location: formattedDropoffLocation,
+      pick_up_date: pickup.date, // Datum u DD-MM-YYYY formatu
+      pick_up_time: pickup.time, // Vrijeme u HH:MM:SS formatu
+      drop_off_date: dropoff.date, // Datum u DD-MM-YYYY formatu
+      drop_off_time: dropoff.time, // Vrijeme u HH:MM:SS formatu
+    });
+
+    const fullUrl = `/api/home/search?${queryParams.toString()}`;
+    setUrl(fullUrl); // Postavljamo URL u state
+  };
   const maxWidth = useBreakpointValue({
     base: '80vw',
     md: '60vw',
