@@ -71,6 +71,10 @@ export default function LocationDDM({
             borderColor: 'brandblack',
             color: 'brandblack',
           }}
+          _hover={{
+            borderColor: '#cbd5e0',
+            transition: 'border-color 0.2s ease-in-out',
+          }}
         >
           <InputLeftElement pointerEvents="none" color="brandblack">
             <FaCarAlt />
