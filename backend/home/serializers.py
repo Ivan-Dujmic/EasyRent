@@ -64,6 +64,58 @@ class DealershipSerializer(serializers.Serializer):
     description = serializers.CharField()
     locations = serializers.ListField(child = DealershipLocationSerializer())
 
+#for api/home/offer/:dealership_id
+class OfferSerializer(serializers.Serializer):
+    image = serializers.CharField(default="base64")
+    makeName = serializers.CharField()
+    modelName = serializers.CharField()
+    noOfSeats = serializers.IntegerField()
+    automatic = serializers.BooleanField()
+    price = serializers.FloatField(default=0.1)
+    rating = serializers.FloatField(default=0.1)
+    noOfReviews = serializers.IntegerField()
+    offer_id = serializers.IntegerField()
+
+class OfferListSerializer(serializers.Serializer):
+    offers = serializers.ListField(child = OfferSerializer())
+
+#for GET api/home/showcased-companies
+class ShowcasedCompanySerializer(serializers.Serializer):
+    companyName = serializers.CharField()
+    companyLogo = serializers.CharField(default="base64")
+    dealership_id = serializers.IntegerField()
+
+class ShowcasedCompanyListSerializer(serializers.Serializer):
+    companies = serializers.ListField(child = ShowcasedCompanySerializer())
+
+
+#for GET api/home/most-popular and other endpoints where an offer list is returned
+class SearchedOffersSerializer(serializers.Serializer):
+    image = serializers.CharField(default="base64")
+    companyName = serializers.CharField()
+    makeName = serializers.CharField()
+    modelName = serializers.CharField()
+    noOfSeats = serializers.IntegerField()
+    automatic = serializers.BooleanField()
+    price = serializers.FloatField(default=0.1)
+    rating = serializers.FloatField(default=0.1)
+    noOfReviews = serializers.IntegerField()
+    offer_id = serializers.IntegerField()
+
+class SearchedOffersListSerializer(serializers.Serializer):
+    offers = serializers.ListField(child = SearchedOffersSerializer())
+
+#for GET api/home/cities
+class CitySerializer(serializers.Serializer):
+    cityName = serializers.CharField()
+
+class CountrySerializer(serializers.Serializer):
+    countryName = serializers.CharField()
+    cities = serializers.ListField(child = CitySerializer())
+
+class CountryListSerializer(serializers.Serializer):
+    countries = serializers.ListField(child = CountrySerializer())
+
 
 class DealershipLogoSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
