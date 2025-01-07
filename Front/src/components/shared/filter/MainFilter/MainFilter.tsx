@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Flex, Box, useBreakpointValue } from '@chakra-ui/react';
+import { Button, Flex, Box, Text, useBreakpointValue } from '@chakra-ui/react';
 import DateTimeDDM from '@/components/features/DropDownMenus/DateTimeDDM/DateTimeDDM';
 import LocationDDM from '@/components/features/DropDownMenus/LocationDDM/LocationDDM';
 
@@ -28,43 +28,75 @@ const options: { [key: string]: string[] } = {
 };
 
 export default function MainFilter() {
+  const [pickupLocation, setPickupLocation] = useState('');
+  const [dropoffLocation, setDropoffLocation] = useState('');
   const [pickupDate, setPickupDate] = useState<Date | null>(null);
   const [dropoffDate, setDropoffDate] = useState<Date | null>(null);
 
+  const [formErrors, setFormErrors] = useState({
+    pickupLocation: false,
+    dropoffLocation: false,
+    pickupDate: false,
+    dropoffDate: false,
+  });
+
+  const validateForm = () => {
+    const errors = {
+      pickupLocation: !pickupLocation,
+      dropoffLocation: !dropoffLocation,
+      pickupDate: !pickupDate,
+      dropoffDate: !dropoffDate,
+    };
+    setFormErrors(errors);
+
+    return !Object.values(errors).some((hasError) => hasError);
+  };
+
+  const handleSearch = () => {
+    if (validateForm()) {
+      console.log('Search Payload:', {
+        pickupLocation,
+        dropoffLocation,
+        pickupDate,
+        dropoffDate,
+      });
+    }
+  };
+
   const maxWidth = useBreakpointValue({
-    base: '80vw', // On smaller screens
-    md: '60vw', // On medium and larger screens
-    xl: '1200px', // On very large screens
+    base: '80vw',
+    md: '60vw',
+    xl: '1200px',
   });
 
   const buttonWidth = useBreakpointValue({
-    base: '100%', // Full width on small screens
-    md: '100%', // Medium-sized on medium screens
-    xl: '150px', // Compact button on extra-large screens
+    base: '100%',
+    md: '100%',
+    xl: '150px',
   });
 
   const locationWidth = useBreakpointValue({
-    base: '100%', // Full width on small screens
-    md: 'calc(50% - 1rem)', // Medium-sized location input
-    xl: 'calc(15% - 1rem)', // Compact location input on extra-large screens
+    base: '100%',
+    md: 'calc(50% - 1rem)',
+    xl: 'calc(15% - 1rem)',
   });
 
   const dateTimeWidth = useBreakpointValue({
-    base: '100%', // Full width on small screens
-    md: 'calc(50% - 1rem)', // Medium-sized date/time input
-    xl: 'calc(25% - 1rem)', // Wider date/time input on extra-large screens
+    base: '100%',
+    md: 'calc(50% - 1rem)',
+    xl: 'calc(25% - 1rem)',
   });
 
   const gap = useBreakpointValue({
     base: 2,
     md: 2,
-    xl: 4, // Increased spacing for very large screens
+    xl: 4,
   });
 
   const justifyContent = useBreakpointValue({
-    base: 'space-around', // Spaced around on small screens
-    md: 'space-between', // Balanced spacing on medium screens
-    xl: 'center', // Even spacing on extra-large screens
+    base: 'space-around',
+    md: 'space-between',
+    xl: 'center',
   });
 
   return (
@@ -88,14 +120,26 @@ export default function MainFilter() {
           options={options}
           description="Pick-up location"
           placeHolder="From?"
+          onLocationChange={(location) => setPickupLocation(location)}
         />
+        {formErrors.pickupLocation && (
+          <Text color="red.500" fontSize="sm">
+            Pick-up location is required.
+          </Text>
+        )}
       </Box>
       <Box width={locationWidth}>
         <LocationDDM
           options={options}
           description="Drop-off location"
           placeHolder="To?"
+          onLocationChange={(location) => setDropoffLocation(location)}
         />
+        {formErrors.dropoffLocation && (
+          <Text color="red.500" fontSize="sm">
+            Drop-off location is required.
+          </Text>
+        )}
       </Box>
 
       {/* Date and Time */}
@@ -103,10 +147,19 @@ export default function MainFilter() {
         <DateTimeDDM
           description="Pick-up date/time"
           placeHolder="Start?"
-          minDate={new Date()} // Allow today or later
-          maxDate={dropoffDate || undefined} // Restrict to drop-off date if selected
+          minDate={new Date()} // Današnji dan ili kasnije
+          maxDate={
+            dropoffDate
+              ? new Date(dropoffDate.getTime() - 24 * 60 * 60 * 1000) // Dan prije drop-off datuma
+              : undefined // Nema ograničenja ako drop-off nije postavljen
+          }
           onDateTimeChange={(dateTime) => setPickupDate(dateTime)}
         />
+        {formErrors.pickupDate && (
+          <Text color="red.500" fontSize="sm">
+            Pick-up date/time is required.
+          </Text>
+        )}
       </Box>
       <Box width={dateTimeWidth}>
         <DateTimeDDM
@@ -114,12 +167,16 @@ export default function MainFilter() {
           placeHolder="End?"
           minDate={
             pickupDate
-              ? new Date(pickupDate.getTime() + 24 * 60 * 60 * 1000) // Add 1 day to pickup date
-              : new Date() // Allow today or later if no pickup date is selected
+              ? new Date(pickupDate.getTime() + 24 * 60 * 60 * 1000) // Sljedeći dan nakon pick-up
+              : new Date(new Date().getTime() + 24 * 60 * 60 * 1000) // Sutrašnji dan ako pick-up nije postavljen
           }
-          maxDate={undefined} // No upper limit
           onDateTimeChange={(dateTime) => setDropoffDate(dateTime)}
         />
+        {formErrors.dropoffDate && (
+          <Text color="red.500" fontSize="sm">
+            Drop-off date/time is required.
+          </Text>
+        )}
       </Box>
 
       {/* Search Button */}
@@ -130,6 +187,7 @@ export default function MainFilter() {
           color="white"
           _hover={{ bg: 'brandyellow', color: 'brandblack' }}
           width="100%"
+          onClick={handleSearch}
         >
           Search
         </Button>

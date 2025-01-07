@@ -44,7 +44,7 @@ export async function getShowCaseds(
   return result;
 }
 
-export async function get<T>(
+export async function CustomGet<T>(
   url: string,
   { arg }: { arg?: any } = {}
 ): Promise<T> {

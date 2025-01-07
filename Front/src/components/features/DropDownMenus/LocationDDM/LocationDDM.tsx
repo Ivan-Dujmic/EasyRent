@@ -18,6 +18,7 @@ export default function LocationDDM({
   options,
   description,
   placeHolder,
+  onLocationChange,
 }: LocationDDMProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -40,8 +41,9 @@ export default function LocationDDM({
   });
 
   const handleSelectLocation = (location: string) => {
-    setSearch(location); // Prikaz odabrane lokacije u Input
-    setIsOpen(false); // Zatvori menu
+    setSearch(location);
+    onLocationChange?.(location); // Notify parent
+    setIsOpen(false);
   };
 
   const handleInputClick = () => {
