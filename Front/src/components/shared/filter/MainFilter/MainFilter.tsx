@@ -120,11 +120,17 @@ export default function MainFilter() {
           options={options}
           description="Pick-up location"
           placeHolder="From?"
-          onLocationChange={(location) => setPickupLocation(location)}
+          onLocationChange={(location) => {
+            setPickupLocation(location);
+            setFormErrors((prev) => ({
+              ...prev,
+              pickupLocation: location == '',
+            }));
+          }}
         />
         {formErrors.pickupLocation && (
-          <Text color="red.500" fontSize="sm">
-            Pick-up location is required.
+          <Text color="brandyellow" fontSize="sm">
+            Pick-up is required.
           </Text>
         )}
       </Box>
@@ -133,11 +139,17 @@ export default function MainFilter() {
           options={options}
           description="Drop-off location"
           placeHolder="To?"
-          onLocationChange={(location) => setDropoffLocation(location)}
+          onLocationChange={(location) => {
+            setDropoffLocation(location);
+            setFormErrors((prev) => ({
+              ...prev,
+              dropoffLocation: location == '',
+            }));
+          }}
         />
         {formErrors.dropoffLocation && (
-          <Text color="red.500" fontSize="sm">
-            Drop-off location is required.
+          <Text color="brandyellow" fontSize="sm">
+            Drop-off is required.
           </Text>
         )}
       </Box>
@@ -147,17 +159,20 @@ export default function MainFilter() {
         <DateTimeDDM
           description="Pick-up date/time"
           placeHolder="Start?"
-          minDate={new Date()} // Današnji dan ili kasnije
+          minDate={new Date()}
           maxDate={
             dropoffDate
-              ? new Date(dropoffDate.getTime() - 24 * 60 * 60 * 1000) // Dan prije drop-off datuma
-              : undefined // Nema ograničenja ako drop-off nije postavljen
+              ? new Date(dropoffDate.getTime() - 24 * 60 * 60 * 1000)
+              : undefined
           }
-          onDateTimeChange={(dateTime) => setPickupDate(dateTime)}
+          onDateTimeChange={(dateTime) => {
+            setPickupDate(dateTime);
+            setFormErrors((prev) => ({ ...prev, pickupDate: !dateTime }));
+          }}
         />
         {formErrors.pickupDate && (
-          <Text color="red.500" fontSize="sm">
-            Pick-up date/time is required.
+          <Text color="brandyellow" fontSize="sm">
+            Pick-up date and time are required.
           </Text>
         )}
       </Box>
@@ -167,14 +182,17 @@ export default function MainFilter() {
           placeHolder="End?"
           minDate={
             pickupDate
-              ? new Date(pickupDate.getTime() + 24 * 60 * 60 * 1000) // Sljedeći dan nakon pick-up
-              : new Date(new Date().getTime() + 24 * 60 * 60 * 1000) // Sutrašnji dan ako pick-up nije postavljen
+              ? new Date(pickupDate.getTime() + 24 * 60 * 60 * 1000)
+              : new Date(new Date().getTime() + 24 * 60 * 60 * 1000)
           }
-          onDateTimeChange={(dateTime) => setDropoffDate(dateTime)}
+          onDateTimeChange={(dateTime) => {
+            setDropoffDate(dateTime);
+            setFormErrors((prev) => ({ ...prev, dropoffDate: !dateTime }));
+          }}
         />
         {formErrors.dropoffDate && (
-          <Text color="red.500" fontSize="sm">
-            Drop-off date/time is required.
+          <Text color="brandyellow" fontSize="sm">
+            Drop-off date and time are required.
           </Text>
         )}
       </Box>

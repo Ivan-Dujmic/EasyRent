@@ -39,6 +39,7 @@ export default function DateTimeDDM({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [error, setError] = useState(false);
 
   const ref = useRef(null);
 
@@ -56,9 +57,10 @@ export default function DateTimeDDM({
         const dateTime = new Date(value);
         dateTime.setHours(hours);
         dateTime.setMinutes(minutes);
+        setError(false);
         onDateTimeChange?.(dateTime);
       } else {
-        onDateTimeChange?.(value);
+        setError(true);
       }
     }
   };
@@ -71,13 +73,17 @@ export default function DateTimeDDM({
       const dateTime = new Date(selectedDate);
       dateTime.setHours(hours);
       dateTime.setMinutes(minutes);
+      setError(false);
       onDateTimeChange?.(dateTime);
+    } else {
+      setError(true);
     }
   };
 
   const handleClearDateTime = () => {
     setSelectedDate(null);
     setSelectedTime(null);
+    setError(true);
     onDateTimeChange?.(null);
   };
 
@@ -114,12 +120,12 @@ export default function DateTimeDDM({
             onClick={() => setIsOpen(!isOpen)}
             borderWidth={'2px'}
             borderRadius="md"
-            borderColor={'brandblue'}
+            borderColor={error ? 'brandyellow' : 'brandblue'}
             bg={'brandlightgray'}
             color="brandblack"
             _focusWithin={{
               bg: 'brandwhite',
-              borderColor: 'brandblack',
+              borderColor: error ? 'brandyellow' : 'brandblack',
             }}
           />
           {selectedDate && (
@@ -142,12 +148,12 @@ export default function DateTimeDDM({
           width={{ base: '110px', md: '100%', lg: '110px' }}
           borderWidth={'2px'}
           borderRadius="md"
-          borderColor={'brandblue'}
+          borderColor={error ? 'brandyellow' : 'brandblue'}
           bg={'brandlightgray'}
           color="brandblack"
           _focusWithin={{
             bg: 'brandwhite',
-            borderColor: 'brandblack',
+            borderColor: error ? 'brandyellow' : 'brandblack',
           }}
         >
           {Array.from({ length: 24 }, (_, hour) => (
