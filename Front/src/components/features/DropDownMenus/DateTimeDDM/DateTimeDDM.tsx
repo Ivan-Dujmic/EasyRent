@@ -24,6 +24,7 @@ interface DateTimeDDMProps {
   placeHolder: string;
   minDate?: Date;
   maxDate?: Date;
+  minTime?: string; // New prop to restrict time
   onDateTimeChange?: (dateTime: Date | null) => void;
 }
 
@@ -32,6 +33,7 @@ export default function DateTimeDDM({
   placeHolder,
   minDate,
   maxDate,
+  minTime,
   onDateTimeChange,
 }: DateTimeDDMProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -77,6 +79,17 @@ export default function DateTimeDDM({
     setSelectedDate(null);
     setSelectedTime(null);
     onDateTimeChange?.(null);
+  };
+
+  const isTimeDisabled = (time: string) => {
+    if (!minTime) return false;
+    const [minHours, minMinutes] = minTime.split(':').map(Number);
+    const [currentHours, currentMinutes] = time.split(':').map(Number);
+
+    return (
+      currentHours < minHours ||
+      (currentHours === minHours && currentMinutes < minMinutes)
+    );
   };
 
   return (
@@ -138,12 +151,20 @@ export default function DateTimeDDM({
           }}
         >
           {Array.from({ length: 24 }, (_, hour) => (
-            <option key={hour} value={`${hour}:00`}>
+            <option
+              key={hour}
+              value={`${hour}:00`}
+              disabled={isTimeDisabled(`${hour}:00`)}
+            >
               {`${hour}:00`}
             </option>
           ))}
           {Array.from({ length: 24 }, (_, hour) => (
-            <option key={`${hour}:30`} value={`${hour}:30`}>
+            <option
+              key={`${hour}:30`}
+              value={`${hour}:30`}
+              disabled={isTimeDisabled(`${hour}:30`)}
+            >
               {`${hour}:30`}
             </option>
           ))}

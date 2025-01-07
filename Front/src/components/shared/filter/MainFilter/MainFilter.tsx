@@ -103,17 +103,22 @@ export default function MainFilter() {
         <DateTimeDDM
           description="Pick-up date/time"
           placeHolder="Start?"
-          minDate={new Date()}
-          maxDate={dropoffDate || undefined}
-          onDateTimeChange={(dateTime) => setPickupDate(dateTime)} // Handles Date correctly
+          minDate={new Date()} // Allow today or later
+          maxDate={dropoffDate || undefined} // Restrict to drop-off date if selected
+          onDateTimeChange={(dateTime) => setPickupDate(dateTime)}
         />
       </Box>
       <Box width={dateTimeWidth}>
         <DateTimeDDM
           description="Drop-off date/time"
           placeHolder="End?"
-          minDate={pickupDate || new Date()}
-          onDateTimeChange={(dateTime) => setDropoffDate(dateTime)} // Handles Date correctly
+          minDate={
+            pickupDate
+              ? new Date(pickupDate.getTime() + 24 * 60 * 60 * 1000) // Add 1 day to pickup date
+              : new Date() // Allow today or later if no pickup date is selected
+          }
+          maxDate={undefined} // No upper limit
+          onDateTimeChange={(dateTime) => setDropoffDate(dateTime)}
         />
       </Box>
 
