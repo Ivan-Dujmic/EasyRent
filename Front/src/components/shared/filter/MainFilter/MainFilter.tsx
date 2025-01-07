@@ -31,51 +31,66 @@ export default function MainFilter() {
   const [pickupDate, setPickupDate] = useState<Date | null>(null);
   const [dropoffDate, setDropoffDate] = useState<Date | null>(null);
 
-  const flexDirection =
-    useBreakpointValue<'row' | 'column'>({
-      base: 'column', // On smaller screens, stack elements
-      md: 'row', // On medium screens and above, show in rows
-    }) || 'row';
-
-  const fieldWidth = useBreakpointValue({
-    base: '100%', // Each element takes full width on small screens
-    md: 'calc(50% - 1rem)', // Two elements per row on medium screens
-    xl: 'calc(20% - 1rem)', // Four elements in a row on large screens
-  });
-
   const maxWidth = useBreakpointValue({
     base: '80vw', // On smaller screens
     md: '60vw', // On medium and larger screens
+    xl: '1200px', // On very large screens
+  });
+
+  const buttonWidth = useBreakpointValue({
+    base: '100%', // Full width on small screens
+    md: '100%', // Medium-sized on medium screens
+    xl: '150px', // Compact button on extra-large screens
+  });
+
+  const locationWidth = useBreakpointValue({
+    base: '100%', // Full width on small screens
+    md: 'calc(50% - 1rem)', // Medium-sized location input
+    xl: 'calc(15% - 1rem)', // Compact location input on extra-large screens
+  });
+
+  const dateTimeWidth = useBreakpointValue({
+    base: '100%', // Full width on small screens
+    md: 'calc(50% - 1rem)', // Medium-sized date/time input
+    xl: 'calc(25% - 1rem)', // Wider date/time input on extra-large screens
   });
 
   const gap = useBreakpointValue({
-    base: 2, // Smaller gaps on small screens
-    md: 4, // Larger gaps on medium and larger screens
+    base: 2,
+    md: 2,
+    xl: 4, // Increased spacing for very large screens
+  });
+
+  const justifyContent = useBreakpointValue({
+    base: 'space-around', // Spaced around on small screens
+    md: 'space-between', // Balanced spacing on medium screens
+    xl: 'center', // Even spacing on extra-large screens
   });
 
   return (
     <Flex
-      direction={flexDirection}
+      direction={{ base: 'column', md: 'row' }}
       flexWrap="wrap"
       bg="white"
       width="100%"
       maxWidth={maxWidth}
       borderRadius={14}
       borderWidth="0px"
-      align="flex-end"
-      p={5}
+      align="center"
+      py={5}
+      px={{ base: 5, xl: 0 }}
       gap={gap}
-      justifyContent="space-between"
+      justifyContent={justifyContent}
     >
       {/* Locations */}
-      <Box width={fieldWidth}>
+      <Box width={locationWidth}>
         <LocationDDM
           options={options}
           description="Pick-up location"
           placeHolder="From?"
         />
       </Box>
-      <Box width={fieldWidth}>
+      <Box width={locationWidth}>
         <LocationDDM
           options={options}
           description="Drop-off location"
@@ -84,32 +99,32 @@ export default function MainFilter() {
       </Box>
 
       {/* Date and Time */}
-      <Box width={fieldWidth}>
+      <Box width={dateTimeWidth}>
         <DateTimeDDM
           description="Pick-up date/time"
           placeHolder="Start?"
-          minDate={new Date()} // Always allow today's date or later
-          maxDate={dropoffDate || undefined} // Limit to drop-off date if selected
-          onDateChange={(date) => setPickupDate(date)} // Update pickup date
+          minDate={new Date()}
+          maxDate={dropoffDate || undefined}
+          onDateTimeChange={(dateTime) => setPickupDate(dateTime)} // Handles Date correctly
         />
       </Box>
-      <Box width={fieldWidth}>
+      <Box width={dateTimeWidth}>
         <DateTimeDDM
           description="Drop-off date/time"
           placeHolder="End?"
-          minDate={pickupDate || new Date()} // Limit to pickup date or later
-          onDateChange={(date) => setDropoffDate(date)} // Update dropoff date
+          minDate={pickupDate || new Date()}
+          onDateTimeChange={(dateTime) => setDropoffDate(dateTime)} // Handles Date correctly
         />
       </Box>
 
       {/* Search Button */}
-      <Box width={fieldWidth} flex={1} mt={1}>
+      <Box width={buttonWidth} mt={{ base: 2, md: 4 }}>
         <Button
           bg="brandblue"
           size="lg"
           color="white"
           _hover={{ bg: 'brandyellow', color: 'brandblack' }}
-          width="100%" // Button always takes full width in its container
+          width="100%"
         >
           Search
         </Button>
