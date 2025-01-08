@@ -3,7 +3,9 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.contrib.auth.decorators import *
 from django import forms
+from datetime import datetime
 import random
 from .models import *
 from .serializers import *
@@ -12,28 +14,33 @@ from home.models import *
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
 from django.utils.timezone import now
-from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiResponse, OpenApiExample
+from drf_spectacular.utils import (
+    extend_schema_view,
+    extend_schema,
+    OpenApiResponse,
+    OpenApiExample,
+)
 
 
 @extend_schema(
-    tags=['profile'],
-    operation_id='get_user_rentals',
+    tags=["profile"],
+    operation_id="get_user_rentals",
     responses={
         200: GetUserRentalsSerializer(many=True),
         401: OpenApiResponse(
-            description='User not authenticated',
+            description="User not authenticated",
             examples=[
                 OpenApiExample(
-                    'User not authenticated',
+                    "User not authenticated",
                     value={"success": 0, "message": "User not authenticated"},
                 ),
             ],
         ),
     },
 )
-@api_view(['GET'])
+@api_view(["GET"])
 def userRentals(request):
-    if request.method == 'GET':
+    if request.method == "GET":
         user = request.user
         if user.is_authenticated:
             rentoid = Rentoid.objects.get(user=user)
@@ -44,7 +51,7 @@ def userRentals(request):
                 dealer = vehicle.location.dealership
                 offer = Offer.objects.filter(dealer=dealer, model=vehicle.model).first()
                 model = offer.model
-                
+
                 item = {
                     "makeName": model.makeName,
                     "modelName": model.modelName,
@@ -63,13 +70,15 @@ def userRentals(request):
                 }
 
                 rentalData.append(item)
-                rentalData.sort(key=lambda x: x['dateTimeRented'])
+                rentalData.sort(key=lambda x: x["dateTimeRented"])
 
             return Response(rentalData, status=200)
         else:
-            return Response({"success": 0, "message": "User not authenticated"}, status=401)
-    
-    
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+
+
 def isUserRentalExpired(rental):
     return rental.dateTimeReturned < now()
 
@@ -77,20 +86,24 @@ def isUserRentalExpired(rental):
 def canUserReview(user, rental):
     oneMonthAfterExpiry = rental.dateTimeReturned + timedelta(days=30)
     hasReviewed = Review.objects.filter(user=user, rental=rental).exists()
-    return rental.dateTimeReturned < now() and not hasReviewed and now() <= oneMonthAfterExpiry
+    return (
+        rental.dateTimeReturned < now()
+        and not hasReviewed
+        and now() <= oneMonthAfterExpiry
+    )
 
 
 @extend_schema(
-    methods=['GET'],
-    operation_id='get_user_info',
-    tags=['profile'],
+    methods=["GET"],
+    operation_id="get_user_info",
+    tags=["profile"],
     responses={
         200: GetUserInfoSerializer,
         401: OpenApiResponse(
-            description='User not authenticated',
+            description="User not authenticated",
             examples=[
                 OpenApiExample(
-                    'User not authenticated',
+                    "User not authenticated",
                     value={"success": 0, "message": "User not authenticated"},
                 ),
             ],
@@ -98,64 +111,73 @@ def canUserReview(user, rental):
     },
 )
 @extend_schema(
-    methods=['PUT'],
-    operation_id='update_user_info',
-    tags=['profile'],
+    methods=["PUT"],
+    operation_id="update_user_info",
+    tags=["profile"],
     request=PutUserInfoSerializer,
     responses={
         200: OpenApiResponse(
-            description='User info updated successfully',
+            description="User info updated successfully",
             examples=[
                 OpenApiExample(
-                    'User info updated successfully',
+                    "User info updated successfully",
                     value={"success": 1, "message": "User info updated successfully"},
                 ),
             ],
         ),
         400: OpenApiResponse(
-            description='Invalid input',
+            description="Invalid input",
             examples=[
                 OpenApiExample(
-                    'All fields are required',
+                    "All fields are required",
                     value={"success": 0, "message": "All fields are required"},
                 ),
                 OpenApiExample(
-                    'Phone number must contain only digits',
-                    value={"success": 0, "message": "Phone number must contain only digits"},
+                    "Phone number must contain only digits",
+                    value={
+                        "success": 0,
+                        "message": "Phone number must contain only digits",
+                    },
                 ),
                 OpenApiExample(
-                    'Phone number must be at most 20 characters long',
-                    value={"success": 0, "message": "Phone number must be at most 20 characters long"},
+                    "Phone number must be at most 20 characters long",
+                    value={
+                        "success": 0,
+                        "message": "Phone number must be at most 20 characters long",
+                    },
                 ),
                 OpenApiExample(
-                    'Driver\'s license number must be at most 16 characters long',
-                    value={"success": 0, "message": "Driver's license number must be at most 16 characters long"},
+                    "Driver's license number must be at most 16 characters long",
+                    value={
+                        "success": 0,
+                        "message": "Driver's license number must be at most 16 characters long",
+                    },
                 ),
             ],
         ),
         401: OpenApiResponse(
-            description='User not authenticated',
+            description="User not authenticated",
             examples=[
                 OpenApiExample(
-                    'User not authenticated',
+                    "User not authenticated",
                     value={"success": 0, "message": "User not authenticated"},
                 ),
             ],
         ),
         403: OpenApiResponse(
-            description='Incorrect password',
+            description="Incorrect password",
             examples=[
                 OpenApiExample(
-                    'Incorrect password',
+                    "Incorrect password",
                     value={"success": 0, "message": "Incorrect password"},
                 ),
             ],
         ),
     },
 )
-@api_view(['GET', 'PUT'])
+@api_view(["GET", "PUT"])
 def userInfo(request):
-    if request.method == 'GET':
+    if request.method == "GET":
         user = request.user
         if user.is_authenticated:
             rentoid = Rentoid.objects.get(user=user)
@@ -167,169 +189,582 @@ def userInfo(request):
             }
             return Response(userInfo, status=200)
         else:
-            return Response({"success": 0, "message": "User not authenticated"}, status=401)
-    elif request.method == 'PUT':
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+    elif request.method == "PUT":
         user = request.user
         if user.is_authenticated:
             rentoid = Rentoid.objects.get(user=user)
             data = request.data
 
-            if not data.get("firstName") or not data.get("lastName") or not data.get("phoneNo") or not data.get("driversLicense"):
-                return Response({"success": 0, "message": "All fields are required"}, status=400)
-            
+            if (
+                not data.get("firstName")
+                or not data.get("lastName")
+                or not data.get("phoneNo")
+                or not data.get("driversLicense")
+            ):
+                return Response(
+                    {"success": 0, "message": "All fields are required"}, status=400
+                )
+
             if not data.get("phoneNo").isdigit():
-                return Response({"success": 0, "message": "Phone number must contain only digits"}, status=400)
-            
+                return Response(
+                    {"success": 0, "message": "Phone number must contain only digits"},
+                    status=400,
+                )
+
             if len(data.get("phoneNo")) > 20:
-                return Response({"success": 0, "message": "Phone number must be at most 20 characters long"}, status=400)
-            
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Phone number must be at most 20 characters long",
+                    },
+                    status=400,
+                )
+
             if len(data.get("driversLicense")) > 16:
-                return Response({"success": 0, "message": "Driver's license number must be at most 16 characters long"}, status=400)
-            
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Driver's license number must be at most 16 characters long",
+                    },
+                    status=400,
+                )
+
             if not user.check_password(data.get("password")):
-                return Response({"success": 0, "message": "Incorrect password"}, status=403)
-            
+                return Response(
+                    {"success": 0, "message": "Incorrect password"}, status=403
+                )
+
             user.first_name = data.get("firstName")
             user.last_name = data.get("lastName")
-            
+
             rentoid.phoneNo = data.get("phoneNo")
             rentoid.driversLicenseNo = data.get("driversLicense")
             user.save()
             rentoid.save()
-            return Response({"success": 1, "message": "User info updated successfully"}, status=200)
+            return Response(
+                {"success": 1, "message": "User info updated successfully"}, status=200
+            )
         else:
             return Response({"error": "User not authenticated"}, status=401)
 
 
 @extend_schema(
-    methods=['PUT'],
-    operation_id='update_user_password',
-    tags=['profile'],
+    methods=["PUT"],
+    operation_id="update_user_password",
+    tags=["profile"],
     request=PutUserPasswordSerializer,
     responses={
         200: OpenApiResponse(
-            description='Password updated successfully',
+            description="Password updated successfully",
             examples=[
                 OpenApiExample(
-                    'Password updated successfully',
+                    "Password updated successfully",
                     value={"success": 1, "message": "Password updated successfully"},
                 ),
             ],
         ),
         400: OpenApiResponse(
-            description='Invalid input',
+            description="Invalid input",
             examples=[
                 OpenApiExample(
-                    'All fields are required',
+                    "All fields are required",
                     value={"success": 0, "message": "All fields are required"},
                 ),
                 OpenApiExample(
-                    'New password must be at least 8 characters long',
-                    value={"success": 0, "message": "New password must be at least 8 characters long"},
+                    "New password must be at least 8 characters long",
+                    value={
+                        "success": 0,
+                        "message": "New password must be at least 8 characters long",
+                    },
                 ),
             ],
         ),
         401: OpenApiResponse(
-            description='User not authenticated',
+            description="User not authenticated",
             examples=[
                 OpenApiExample(
-                    'User not authenticated',
+                    "User not authenticated",
                     value={"success": 0, "message": "User not authenticated"},
                 ),
             ],
         ),
         403: OpenApiResponse(
-            description='Incorrect password',
+            description="Incorrect password",
             examples=[
                 OpenApiExample(
-                    'Incorrect password',
+                    "Incorrect password",
                     value={"success": 0, "message": "Incorrect password"},
                 ),
             ],
         ),
     },
 )
-@api_view(['PUT'])
+@api_view(["PUT"])
 def userPass(request):
-    if request.method == 'PUT':
+    if request.method == "PUT":
         user = request.user
         if user.is_authenticated:
             data = request.data
 
             if not data.get("oldPassword") or not data.get("newPassword"):
-                return Response({"success": 0, "message": "All fields are required"}, status=400)
-            
+                return Response(
+                    {"success": 0, "message": "All fields are required"}, status=400
+                )
+
             if len(data.get("newPassword")) < 8:
-                return Response({"success": 0, "message": "New password must be at least 8 characters long"}, status=400)
-            
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "New password must be at least 8 characters long",
+                    },
+                    status=400,
+                )
+
             if not user.check_password(data.get("oldPassword")):
-                return Response({"success": 0, "message": "Incorrect password"}, status=403)
-            
+                return Response(
+                    {"success": 0, "message": "Incorrect password"}, status=403
+                )
+
             user.set_password(data.get("newPassword"))
             user.save()
-            return Response({"success": 1, "message": "Password updated successfully"}, status=200)
+            return Response(
+                {"success": 1, "message": "Password updated successfully"}, status=200
+            )
         else:
-            return Response({"success": 0, "message": "User not authenticated"}, status=401)
-        
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+
 
 @extend_schema(
-    methods=['DELETE'],
-    operation_id='delete_user',
-    tags=['profile'],
+    methods=["DELETE"],
+    operation_id="delete_user",
+    tags=["profile"],
     request=DeleteUserSerializer,
     responses={
         200: OpenApiResponse(
-            description='User deleted successfully',
+            description="User deleted successfully",
             examples=[
                 OpenApiExample(
-                    'User deleted successfully',
+                    "User deleted successfully",
                     value={"success": 1, "message": "User deleted successfully"},
                 ),
             ],
         ),
         400: OpenApiResponse(
-            description='Password is required',
+            description="Password is required",
             examples=[
                 OpenApiExample(
-                    'Password is required',
+                    "Password is required",
                     value={"success": 0, "message": "Password is required"},
                 ),
             ],
         ),
         401: OpenApiResponse(
-            description='User not authenticated',
+            description="User not authenticated",
             examples=[
                 OpenApiExample(
-                    'User not authenticated',
+                    "User not authenticated",
                     value={"success": 0, "message": "User not authenticated"},
                 ),
             ],
         ),
         403: OpenApiResponse(
-            description='Incorrect password',
+            description="Incorrect password",
             examples=[
                 OpenApiExample(
-                    'Incorrect password',
+                    "Incorrect password",
                     value={"success": 0, "message": "Incorrect password"},
                 ),
             ],
         ),
     },
 )
-@api_view(['DELETE'])
+@api_view(["DELETE"])
 def userDelete(request):
-    if request.method == 'DELETE':
+    if request.method == "DELETE":
         user = request.user
         if user.is_authenticated:
             data = request.data
 
             if not data.get("password"):
-                return Response({"success": 0, "message": "Password is required"}, status=400)
-            
+                return Response(
+                    {"success": 0, "message": "Password is required"}, status=400
+                )
+
             if not user.check_password(data.get("password")):
-                return Response({"success": 0, "message": "Incorrect password"}, status=403)
-            
+                return Response(
+                    {"success": 0, "message": "Incorrect password"}, status=403
+                )
+
             user.delete()
-            return Response({"success": 1, "message": "User deleted successfully"}, status=200)
+            return Response(
+                {"success": 1, "message": "User deleted successfully"}, status=200
+            )
         else:
-            return Response({"success": 0, "message": "User not authenticated"}, status=401)
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+
+
+@login_required
+def companyVehicles(request):
+    if request.method == "GET":
+        company = request.user
+        if company.is_authenticated:
+            try:
+                dealership = Dealership.object.filter(user=company)
+                page = int(request.GET.get("page", 1))
+                limit = int(request.GET.get("limit", 10))
+
+                images = []
+                makeNames = []
+                modelNames = []
+                registrations = []
+                prices = []
+                ratings = []
+                noOfReviews = []
+                isVisible = []
+                vehicleIds = []
+                offerIds = []
+
+                vehicles = Vehicle.objects.filter(dealer=Dealership)
+                # Return: [image, makeName, modelName, registration, price, rating, noOfReviews, isVisible, vehicle_id, offer_id]
+                res = []
+                for vehicle in vehicles:
+                    # make, model, registration, noOfReviews, isVisible, vehicleId
+                    model = Model.object.filter(vehicle_id=vehicle)
+                    makeNames.append(model.makeName)
+                    modelNames.append(model.modelName)
+                    registrations.append(vehicle.registration)
+                    noOfReviews.append(vehicle.noOfReviews)
+                    isVisible.append(vehicle.isVisible)
+                    vehicleIds.append(vehicle.vehicle_id)
+
+                    # price, rating, offerId, image
+                    offer = Offer.object.filter(model=vehicle.model, dealer=Dealership)
+                    prices.append(offer.price)
+                    ratings.append(offer.rating)
+                    offerIds.append(offer.offer_id)
+                    images.append(offer.image)
+
+                    current = {
+                        "makeName": model.makeName,
+                        "modelName": model.modelName,
+                        "registration": vehicle.registration,
+                        "noOfReviews": vehicle.noOfReviews,
+                        "isVisible": vehicle.isVisible,
+                        "vehicleId": vehicle.vehicle_id,
+                        "price": offer.price,
+                        "rating": offer.rating,
+                        "offerId": offer.offer_id,
+                        "image": offer.image,
+                    }
+                    res.append(current)
+                retObject = {
+                    "results": res[(page - 1) * limit : page * limit],
+                    "isLastPage": True if len(res) <= page * limit else False,
+                }
+                return JsonResponse(retObject, status=200)
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no vehicles yet!",
+                    },
+                    status=200,
+                )
+
+
+@login_required
+def toogleVehicleVisibility(request):
+    if request.method == "PUT":
+        user = request.user
+        if user.is_authenticated:
+            data = request.data
+            if not data.get("vehicleId"):
+                return Response(
+                    {"success": 0, "message": "Vehicle ID is required"}, status=400
+                )
+            try:
+                vehicle = Vehicle.objects.get(vehicle_id=data.get("vehicleId"))
+                vehicle.isVisible = not vehicle.isVisible
+                vehicle.save()
+                return Response(
+                    {
+                        "success": 1,
+                        "message": "Vehicle visibility toggled successfully",
+                    },
+                    status=200,
+                )
+            except:
+                return Response(
+                    {"success": 0, "message": "Company has no vehicles yet!"},
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+    else:
+        return Response({"success": 0, "message": "Method not allowed"}, status=405)
+
+
+@login_required
+def companyOffers(request):
+    if request.method == "GET":
+        company = request.user
+        if company.is_authenticated:
+            try:
+                dealership = Dealership.object.filter(user=company)
+                page = int(request.GET.get("page", 1))
+                limit = int(request.GET.get("limit", 10))
+
+                images = []
+                makeNames = []
+                modelNames = []
+                prices = []
+                ratings = []
+                noOfReviews = []
+                offerIds = []
+                isVisible = []
+
+                offers = Offer.objects.filter(dealer=Dealership)
+                # Return: [image, makeName, modelName, price, rating, noOfReviews, isVisible, offer_id]
+                res = []
+                for offer in offers:
+                    # make, model, noOfReviews, offerId
+                    model = Model.object.filter(model_id=offer.model)
+                    vehicle = Vehicle.object.filter(model=model, dealer=Dealership)
+                    makeNames.append(model.makeName)
+                    modelNames.append(model.modelName)
+                    noOfReviews.append(offer.noOfReviews)
+                    offerIds.append(offer.offer_id)
+                    isVisible.append(vehicle.isVisible)
+
+                    # price, rating, image
+                    prices.append(offer.price)
+                    ratings.append(offer.rating)
+                    images.append(offer.image)
+
+                    current = {
+                        "isVisible": vehicle.isVisible,
+                        "makeName": model.makeName,
+                        "modelName": model.modelName,
+                        "noOfReviews": offer.noOfReviews,
+                        "offerId": offer.offer_id,
+                        "price": offer.price,
+                        "rating": offer.rating,
+                        "image": offer.image,
+                    }
+                    res.append(current)
+                    retObject = {
+                        "results": res[(page - 1) * limit : page * limit],
+                        "isLastPage": True if len(res) <= page * limit else False,
+                    }
+                    return JsonResponse(retObject, status=200)
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no offers yet!",
+                    },
+                    status=200,
+                )
+
+
+@login_required
+def toggleOfferVisibility(request):
+    if request.method == "PUT":
+        user = request.user
+        if user.is_authenticated:
+            data = request.data
+            if not data.get("offerId"):
+                return Response(
+                    {"success": 0, "message": "Offer ID is required"}, status=400
+                )
+            try:
+                offer = Offer.objects.get(offer_id=data.get("offerId"))
+                vehicles = Vehicle.objects.get(model=offer.model, dealer=Dealership)
+                if all(not vehicle.isVisible for vehicle in vehicles):
+                    for vehicle in vehicles:
+                        vehicle.isVisible = True
+                        vehicle.save()
+                else:
+                    for vehicle in vehicles:
+                        vehicle.isVisible = False
+                        vehicle.save()
+
+                return Response(
+                    {"success": 1, "message": "Offer visibility toggled successfully"},
+                    status=200,
+                )
+            except:
+                return Response(
+                    {"success": 0, "message": "Company has no offers yet!"}, status=200
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+    else:
+        return Response({"success": 0, "message": "Method not allowed"}, status=405)
+
+
+@login_required
+def upcomingCompanyRents(request):
+    if request.method == "GET":
+        user = request.user
+        if user.is_authenticated:
+            try:
+                page = int(request.GET.get("page", 1))
+                limit = int(request.GET.get("limit", 10))
+                rents = Rent.objects.filter(dealer_id=user)
+                res = []
+                for rent in rents:
+                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
+                    rentUser = User.object.filter(id=rentoid.user_id)
+                    vehicle = Vehicle.object.filter(vehicle_id=rent.vehicle_id)
+                    offer = Offer.objects.filter(
+                        dealer=rent.dealer_id, model=vehicle.model
+                    )
+                    model = Model.object.filter(model_id=vehicle.model_id)
+                    if rent.dateTimeRented < datetime.now():
+                        item = {
+                            "dateTimePickup": rent.dateTimeRented,
+                            "dateTimeReturned": rent.dateTimeReturned,
+                            "firstName": rentUser.first_name,
+                            "lastName": rentUser.last_name,
+                            "price": offer.price,
+                            "vehicleId": offer.vehicle_id,
+                            "registration": vehicle.registration,
+                            "makeName": model.makeName,
+                            "modelName": model.modelName,
+                            "image": offer.image,
+                        }
+                        res.append(item)
+                retObject = {
+                    "results": res[(page - 1) * limit : page * limit],
+                    "isLastPage": True if len(res) <= page * limit else False,
+                }
+                return Response(retObject, status=200)
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "User has no upcoming rents yet or does not exist!",
+                    },
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+
+
+@login_required
+def ongoingCompanyRents(request):
+    if request.method == "GET":
+        user = request.user
+        if user.is_authenticated:
+            try:
+                page = int(request.GET.get("page", 1))
+                limit = int(request.GET.get("limit", 10))
+                rents = Rent.objects.filter(dealer_id=user)
+                res = []
+                for rent in rents:
+                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
+                    rentUser = User.object.filter(id=rentoid.user_id)
+                    vehicle = Vehicle.object.filter(vehicle_id=rent.vehicle_id)
+                    offer = Offer.objects.filter(
+                        dealer=rent.dealer_id, model=vehicle.model
+                    )
+                    model = Model.object.filter(model_id=vehicle.model_id)
+                    if (
+                        rent.dateTimeRented >= datetime.now()
+                        and rent.dateTimeReturned < datetime.now()
+                    ):
+                        item = {
+                            "dateTimePickup": rent.dateTimeRented,
+                            "dateTimeReturned": rent.dateTimeReturned,
+                            "firstName": rentUser.first_name,
+                            "lastName": rentUser.last_name,
+                            "price": offer.price,
+                            "vehicleId": offer.vehicle_id,
+                            "registration": vehicle.registration,
+                            "makeName": model.makeName,
+                            "modelName": model.modelName,
+                            "image": offer.image,
+                        }
+                        res.append(item)
+                retObject = {
+                    "results": res[(page - 1) * limit : page * limit],
+                    "isLastPage": True if len(res) <= page * limit else False,
+                }
+                return Response(retObject, status=200)
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "User has no upcoming rents yet or does not exist!",
+                    },
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+
+
+@login_required
+def completedCompanyRents(request):
+    if request.method == "GET":
+        user = request.user
+        if user.is_authenticated:
+            try:
+                page = int(request.GET.get("page", 1))
+                limit = int(request.GET.get("limit", 10))
+                rents = Rent.objects.filter(dealer_id=user)
+                res = []
+                for rent in rents:
+                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
+                    rentUser = User.object.filter(id=rentoid.user_id)
+                    vehicle = Vehicle.object.filter(vehicle_id=rent.vehicle_id)
+                    offer = Offer.objects.filter(
+                        dealer=rent.dealer_id, model=vehicle.model
+                    )
+                    model = Model.object.filter(model_id=vehicle.model_id)
+                    if rent.dateTimeReturned >= datetime.now():
+                        item = {
+                            "dateTimePickup": rent.dateTimeRented,
+                            "dateTimeReturned": rent.dateTimeReturned,
+                            "firstName": rentUser.first_name,
+                            "lastName": rentUser.last_name,
+                            "price": offer.price,
+                            "vehicleId": offer.vehicle_id,
+                            "registration": vehicle.registration,
+                            "makeName": model.makeName,
+                            "modelName": model.modelName,
+                            "image": offer.image,
+                        }
+                        res.append(item)
+                retObject = {
+                    "results": res[(page - 1) * limit : page * limit],
+                    "isLastPage": True if len(res) <= page * limit else False,
+                }
+                return Response(retObject, status=200)
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "User has no upcoming rents yet or does not exist!",
+                    },
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
