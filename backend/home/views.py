@@ -730,7 +730,7 @@ def getFilteredOffers(request):
             offers = offers.filter(model__noOfSeats=seats)
         #filter by car type
         if car_type != None:
-            offers = offers.filter(model__modelType__modelTypeName=car_type)
+            offers = offers.filter(model__modelType__modelTypeName=car_type.capitalize())
         #filter by automatic
         if automatic != None:
             automatic = True if automatic.lower() == "true" else False
