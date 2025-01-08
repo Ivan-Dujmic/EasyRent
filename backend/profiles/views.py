@@ -431,7 +431,7 @@ def companyVehicles(request):
                 vehicleIds = []
                 offerIds = []
 
-                vehicles = Vehicle.objects.filter(dealer=Dealership)
+                vehicles = Vehicle.objects.filter(dealer_id=dealership.dealer_id)
                 # Return: [image, makeName, modelName, registration, price, rating, noOfReviews, isVisible, vehicle_id, offer_id]
                 res = []
                 for vehicle in vehicles:
@@ -445,7 +445,9 @@ def companyVehicles(request):
                     vehicleIds.append(vehicle.vehicle_id)
 
                     # price, rating, offerId, image
-                    offer = Offer.object.filter(model=vehicle.model, dealer=Dealership)
+                    offer = Offer.object.filter(
+                        model=vehicle.model, dealer_id=dealership.dealer_id
+                    )
                     prices.append(offer.price)
                     ratings.append(offer.rating)
                     offerIds.append(offer.offer_id)
@@ -532,13 +534,15 @@ def companyOffers(request):
                 offerIds = []
                 isVisible = []
 
-                offers = Offer.objects.filter(dealer=Dealership)
+                offers = Offer.objects.filter(dealer_id=dealership.dealer_id)
                 # Return: [image, makeName, modelName, price, rating, noOfReviews, isVisible, offer_id]
                 res = []
                 for offer in offers:
                     # make, model, noOfReviews, offerId
                     model = Model.object.filter(model_id=offer.model)
-                    vehicle = Vehicle.object.filter(model=model, dealer=Dealership)
+                    vehicle = Vehicle.object.filter(
+                        model=model, dealer_id=dealership.dealer_id
+                    )
                     makeNames.append(model.makeName)
                     modelNames.append(model.modelName)
                     noOfReviews.append(offer.noOfReviews)
@@ -587,8 +591,11 @@ def toggleOfferVisibility(request):
                     {"success": 0, "message": "Offer ID is required"}, status=400
                 )
             try:
+                dealership = Dealership.object.filter(user_id=user)
                 offer = Offer.objects.get(offer_id=data.get("offerId"))
-                vehicles = Vehicle.objects.get(model=offer.model, dealer=Dealership)
+                vehicles = Vehicle.objects.get(
+                    model=offer.model, dealer_id=dealership.dealer_id
+                )
                 if all(not vehicle.isVisible for vehicle in vehicles):
                     for vehicle in vehicles:
                         vehicle.isVisible = True
@@ -620,9 +627,10 @@ def upcomingCompanyRents(request):
         user = request.user
         if user.is_authenticated:
             try:
+                dealership = Dealership.object.filter(user_id=user)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
-                rents = Rent.objects.filter(dealer_id=user)
+                rents = Rent.objects.filter(dealer_id=dealership.dealer_id)
                 res = []
                 for rent in rents:
                     rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
@@ -671,9 +679,10 @@ def ongoingCompanyRents(request):
         user = request.user
         if user.is_authenticated:
             try:
+                dealership = Dealership.object.filter(user_id=user)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
-                rents = Rent.objects.filter(dealer_id=user)
+                rents = Rent.objects.filter(dealer_id=dealership.dealer_id)
                 res = []
                 for rent in rents:
                     rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
@@ -725,9 +734,10 @@ def completedCompanyRents(request):
         user = request.user
         if user.is_authenticated:
             try:
+                dealership = Dealership.object.filter(user_id=user)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
-                rents = Rent.objects.filter(dealer_id=user)
+                rents = Rent.objects.filter(dealer_id=dealership.dealership_id)
                 res = []
                 for rent in rents:
                     rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
@@ -768,3 +778,52 @@ def completedCompanyRents(request):
             return Response(
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
+
+
+@login_required
+def companyReviews(request):
+    if request.method == "GET":
+        user = request.user
+        if user.is_authenticated:
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                page = int(request.GET.get("page", 1))
+                limit = int(request.GET.get("limit", 10))
+
+                rents = Rent.object.filter(dealer_id=dealership.dealer_id)
+                res = []
+                for rent in rents:
+                    reviews = Review.object.filter(rent_id=rent.rent_id)
+                    vehicle = Vehicle.object.filter(vehicle_id=rent.vehicle_id)
+                    model = Model.object.filter(model_id=vehicle.model_id)
+                    offer = Offer.object.filter(
+                        dealer_id=dealership.dealer_id, model_id=vehicle.model_id
+                    )
+                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
+                    rentUser = User.object.filter(id=rentoid.user_id)
+
+                    current = {
+                        "image": offer.image,
+                        "makeName": model.makeName,
+                        "modelName": model.modelName,
+                        "registration": vehicle.registration,
+                        "firstName": rentUser.first_name,
+                        "lastName": rentUser.last_name,
+                        "descriptions": [review.description for review in reviews],
+                        "ratings": [review.rating for review in reviews],
+                        "vehicleId": vehicle.vehicle_id,
+                    }
+                    res.append(current)
+                    retObject = {
+                        "results": res[(page - 1) * limit : page * limit],
+                        "isLastPage": True if len(res) <= page * limit else False,
+                    }
+                    return JsonResponse(retObject, status=200)
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no offers yet!",
+                    },
+                    status=200,
+                )

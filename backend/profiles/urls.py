@@ -19,4 +19,9 @@ urlpatterns = [
         "company/log/upcoming", views.upcomingCompanyRents, name="upcomingCompanyRents"
     ),
     path("company/log/ongoing", views.ongoingCompanyRents, name="ongoingCompanyRents"),
+    path(
+        "company/log/completed",
+        views.completedCompanyRents,
+        name="completedCompanyRents",
+    ),
 ]
