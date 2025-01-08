@@ -8,12 +8,12 @@ from .models import *
 from .serializers import *
 from src.models import *
 from src.serializers import *
-from django.db.models import F, ExpressionWrapper, DecimalField
+from django.db.models import F, ExpressionWrapper, DecimalField, Q
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
 from django.utils.timezone import now
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiResponse, OpenApiExample, OpenApiParameter
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import re
 
 #extend_schema has to come before api_view
@@ -558,17 +558,17 @@ def getCities(request):
             name='pick_up_location',
             type=str,
             location=OpenApiParameter.QUERY,
-            description='Format: streetName-streetNo-cityName',
+            description='Format: cityName-countryName',
             required=True,
-            default='Grove Street-12-San Andreas'
+            default='Zagreb-Hrvatska'
         ),
                 OpenApiParameter(
             name='drop_off_location',
             type=str,
             location=OpenApiParameter.QUERY,
-            description='Format: streetName-streetNo-cityName',
+            description='Format: cityName-countryName',
             required=False,
-            default='Negra Arroyo Lane-308-Albuquerque'
+            default='Zagreb-Hrvatska'
         ),
                 OpenApiParameter(
             name='pick_up_date',
@@ -698,11 +698,10 @@ def getFilteredOffers(request):
         except ValueError:
             return Response({"error": "Invalid date format"}, status=404)
         #check if location format is valid
-        if not re.match("^[a-zA-Z ]+-[0-9]+-[a-zA-Z ]$", pick_up_location):
+        if not re.match("^[a-zA-Z ]+-[a-zA-Z ]+$", pick_up_location):
             return Response({"error": "Invalid location format"}, status=404)
-        pick_up_streetName = pick_up_location.split("-")[0]
-        pick_up_streetNo = pick_up_location.split("-")[1]
-        pick_up_cityName = pick_up_location.split("-")[2]
+        pick_up_cityName = pick_up_location.split("-")[0]
+        pick_up_countryName = pick_up_location.split("-")[1]
         seats = request.GET.get("seats")
         car_type = request.GET.get("car_type")
         automatic = request.GET.get("automatic")
@@ -711,27 +710,27 @@ def getFilteredOffers(request):
         make = request.GET.get("make")
         model = request.GET.get("model")
         #get offers at the pick up location
-        pick_up_location = Location.objects.get(streetName=pick_up_streetName, streetNo=pick_up_streetNo, cityName=pick_up_cityName)
-        dealer = pick_up_location.dealership
+        pick_up_locations = Location.objects.filter(cityName=pick_up_cityName, countryName=pick_up_countryName).values_list('dealership', flat=True)    
+        pick_up_dealers = Dealership.objects.filter(dealership_id__in=pick_up_locations)
         #if drop off location exists, check if it is owned by the same dealer
         if drop_off_location != None:
-            if not re.match("^[a-zA-Z ]+-[0-9]+-[a-zA-Z ]$", drop_off_location):
+            if not re.match("^[a-zA-Z ]+-[a-zA-Z ]+$", drop_off_location):
                 return Response({"error": "Invalid location format"}, status=404)
-            drop_off_streetName = drop_off_location.split("-")[0]
-            drop_off_streetNo = drop_off_location.split("-")[1]
-            drop_off_cityName = drop_off_location.split("-")[2]
-            drop_off_location = Location.objects.get(streetName=drop_off_streetName, streetNo=drop_off_streetNo, cityName=drop_off_cityName)
-            drop_off_dealer = drop_off_location.dealership
-            if drop_off_dealer.dealership_id != dealer.dealership_id:
+            drop_off_cityName = drop_off_location.split("-")[0]
+            drop_off_countryName = drop_off_location.split("-")[1]
+            drop_off_locations = Location.objects.filter(cityName=drop_off_cityName, countryName=drop_off_countryName).values_list('dealership', flat=True)
+            drop_off_dealers = Dealership.objects.filter(dealership_id__in=drop_off_locations).values_list('dealership_id', flat=True)
+            pick_up_dealers = pick_up_dealers.filter(dealership_id__in=drop_off_dealers)
+            if pick_up_dealers.count() == 0:
                 return Response({"error": "Pick up and drop off locations are not owned by the same dealer"}, status=404)
-        #get offers for specified location/dealer
-        offers = Offer.objects.filter(dealer=dealer)
+        #get offers for specified location/dealers
+        offers = Offer.objects.filter(dealer__in=pick_up_dealers)
         #filter by seats
         if seats != None:
             offers = offers.filter(model__noOfSeats=seats)
         #filter by car type
         if car_type != None:
-            offers = offers.filter(model__modelType=car_type)
+            offers = offers.filter(model__modelType__modelTypeName=car_type)
         #filter by automatic
         if automatic != None:
             offers = offers.filter(model__automatic=automatic)
@@ -747,22 +746,55 @@ def getFilteredOffers(request):
         if model != None:
             offers = offers.filter(model__modelName=model)
         #check working hours and pick up and drop off times
-        working_hours_pick_up = (WorkingHours.objects.filter(location=pick_up_location)
-        .filter(dayOfTheWeek=pick_up_date.weekday()))
-        opening_time_pick_up = working_hours_pick_up.startTime.hour
-        closing_time_pick_up = working_hours_pick_up.endTime.hour
-        if not (opening_time_pick_up <= pick_up_time <= closing_time_pick_up):
-            return Response({"error": "Pick up time is not during working hours"}, status=404)
-        if drop_off_location
-            working_hours_drop_off = (WorkingHours.objects.filter(location=drop_off_location)
-            .filter(dayOfTheWeek=drop_off_date.weekday()))
-            opening_time_drop_off = working_hours_drop_off.startTime.hour
-            closing_time_drop_off = working_hours_drop_off.endTime.hour
-            if not (opening_time_drop_off <= drop_off_time <= closing_time_drop_off):
-                return Response({"error": "Drop off time is not during working hours"}, status=404)
+       # working_hours_pick_up = (WorkingHours.objects.filter(location=pick_up_location)
+       # .filter(dayOfTheWeek=pick_up_date.weekday()))
+       # opening_time_pick_up = working_hours_pick_up.startTime.hour
+       ## closing_time_pick_up = working_hours_pick_up.endTime.hour
+       # if not (opening_time_pick_up <= pick_up_time <= closing_time_pick_up):
+       #     return Response({"error": "Pick up time is not during working hours"}, status=404)
+       # if drop_off_location:
+       #     working_hours_drop_off = (WorkingHours.objects.filter(location=drop_off_location)
+       #     .filter(dayOfTheWeek=drop_off_date.weekday()))
+        #    opening_time_drop_off = working_hours_drop_off.startTime.hour
+        #    closing_time_drop_off = working_hours_drop_off.endTime.hour
+        #    if not (opening_time_drop_off <= drop_off_time <= closing_time_drop_off):
+         #       return Response({"error": "Drop off time is not during working hours"}, status=404)
             
-        #check if any vehicles are available for the specified time period
-        response_data = {}
+        #check if any vehicles are available for the specified time period, we will get all vehicles that
+        #are parts of offers that are available for the specified time period, that are at the pick up location
+        #and that are owned by the dealers that own the pick up and drop off locations
+        model_id_list = offers.values_list('model', flat=True)
+        vehicles = Vehicle.objects.filter(model__in=model_id_list)
+        #we need to filter both by pick up locations and possible dealers. If we only filter by pick up locations
+        #we might get vehicles that do not belong to one of the dealers that own the pick up and drop off locations
+        #if we only filter by dealers, we might get vehicles that are not at the pick up location
+        vehicles = vehicles.filter(location__in=pick_up_locations).filter(dealer__in=pick_up_dealers)
+        pick_up_datetime = datetime.combine(pick_up_date, datetime.min.time()) + timedelta(hours=pick_up_time)
+        drop_off_datetime = datetime.combine(drop_off_date, datetime.min.time()) + timedelta(hours=drop_off_time)
+        active_rents = Rent.objects.filter(Q(dateTimeRented__lt=pick_up_datetime, dateTimeReturned__gt=pick_up_datetime) |
+        Q(dateTimeRented__lt=drop_off_datetime, dateTimeReturned__gt=drop_off_datetime))
+        rented_vehicles = active_rents.values_list('vehicle', flat=True)
+        available_vehicles = vehicles.exclude(vehicle_id__in=rented_vehicles)
+        #we will get all offers that are part of available vehicles
+        offers_list = []
+        for offer in offers:
+            if available_vehicles.filter(model=offer.model).filter(dealer=offer.dealer).exists():
+                offers_list.append(
+                    {
+                        #"image" : base64.b64encode(offer.image),
+                        "companyName" : offer.dealer.user.first_name,
+                        "makeName" : offer.model.makeName,
+                        "modelName" : offer.model.modelName,
+                        "noOfSeats" : offer.model.noOfSeats,
+                        "automatic" : offer.model.automatic,
+                        "price" : offer.price,
+                        "rating" : offer.rating,
+                        "noOfReviews" : offer.noOfReviews,
+                        "offer_id" : offer.offer_id 
+                    }
+                )
+        offset = (page - 1) * limit
+        response_data = {"offers" : offers_list[offset:offset+limit]}
         return JsonResponse(response_data, status=200)
     except Offer.DoesNotExist:
         return Response({"error": "Offers not found"}, status=404)
