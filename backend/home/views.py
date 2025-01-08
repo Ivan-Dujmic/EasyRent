@@ -560,7 +560,7 @@ def getCities(request):
             location=OpenApiParameter.QUERY,
             description='Format: cityName-countryName',
             required=True,
-            default='Zagreb-Hrvatska'
+            default='Obrera-Mexico'
         ),
                 OpenApiParameter(
             name='drop_off_location',
@@ -568,7 +568,7 @@ def getCities(request):
             location=OpenApiParameter.QUERY,
             description='Format: cityName-countryName',
             required=False,
-            default='Zagreb-Hrvatska'
+            default='Corbetta-Italy'
         ),
                 OpenApiParameter(
             name='pick_up_date',
@@ -608,7 +608,7 @@ def getCities(request):
             location=OpenApiParameter.QUERY,
             description='Number of seats',
             required=False,
-            default=4
+            default=5
         ),
                         OpenApiParameter(
             name='car_type',
@@ -632,7 +632,7 @@ def getCities(request):
             location=OpenApiParameter.QUERY,
             description='Min price per day',
             required=False,
-            default=0
+            default=14
         ),
                         OpenApiParameter(
             name='max_price',
@@ -640,7 +640,7 @@ def getCities(request):
             location=OpenApiParameter.QUERY,
             description='Max price per day',
             required=False,
-            default=100
+            default=15
         ),
                         OpenApiParameter(
             name='make',
@@ -648,7 +648,7 @@ def getCities(request):
             location=OpenApiParameter.QUERY,
             description='Car make',
             required=False,
-            default='Honda'
+            default='Volkswagen'
         ),
                         OpenApiParameter(
             name='model',
@@ -656,7 +656,7 @@ def getCities(request):
             location=OpenApiParameter.QUERY,
             description='Car model',
             required=False,
-            default='Civic'
+            default='Tiguain'
         )
     ]
 )
@@ -733,6 +733,7 @@ def getFilteredOffers(request):
             offers = offers.filter(model__modelType__modelTypeName=car_type)
         #filter by automatic
         if automatic != None:
+            automatic = True if automatic.lower() == "true" else False
             offers = offers.filter(model__automatic=automatic)
         #filter by price
         if min_price != None:
