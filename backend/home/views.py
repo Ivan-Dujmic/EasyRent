@@ -656,7 +656,7 @@ def getCities(request):
             location=OpenApiParameter.QUERY,
             description='Car model',
             required=False,
-            default='Tiguain'
+            default='Tiguan'
         )
     ]
 )
