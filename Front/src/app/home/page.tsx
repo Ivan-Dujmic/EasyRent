@@ -104,11 +104,15 @@ export default function HomePage() {
           gap={2}
         >
           <VehicleList
-            vehicles={data?.most_popular}
+            vehicles=/* {data?.most_popular} */ {
+              mockVehicles
+            } /* !!! izmjenjeno smao za potrebe testiranja */
             description={'Most popular:'}
           />
           <VehicleList
-            vehicles={data?.best_value}
+            vehicles=/* {data?.best_value} */ {
+              mockVehicles
+            } /* !!! izmjenjeno smao za potrebe testiranja */
             description={'Best value:'}
           />
         </Flex>

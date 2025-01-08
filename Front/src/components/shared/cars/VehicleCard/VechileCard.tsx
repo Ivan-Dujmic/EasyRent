@@ -1,4 +1,3 @@
-import { Vehicle } from '@/typings/vehicles/vehicles';
 import { StarIcon } from '@chakra-ui/icons';
 import {
   Card,
@@ -8,7 +7,7 @@ import {
   Box,
   Text,
   Image,
-  Flex
+  Flex,
 } from '@chakra-ui/react';
 import { IoPersonSharp } from 'react-icons/io5';
 import { TbManualGearboxFilled } from 'react-icons/tb';
@@ -22,8 +21,8 @@ export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
       margin={0}
       as={NextLink}
       href={`/vehicles/${vehicle.modelName}`}
-      maxW="210px"
-      minW="180px"
+      maxW="260px" // Increased width
+      minW="220px" // Increased minimum width
       borderWidth="2px"
       borderRadius="lg"
       overflow="hidden"
@@ -36,12 +35,12 @@ export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
       }}
     >
       <Image
-        src={`data:image/png;base64,${vehicle.image}`} // mozda dodat onaj neki nastavak prije
+        src={vehicle.image}
         alt={`${vehicle.modelName} car`}
         objectFit="cover"
         width="100%"
-        height="110px" // Set a fixed height to make all images uniform
-        borderRadius="md" // Optional: adds a nice rounded edge to the image
+        height="140px" // Slightly larger height for images
+        borderRadius="md"
       />
       <CardBody px={0} py={2}>
         <Stack spacing={2} height={'100%'} justify={'space-between'}>
@@ -65,18 +64,18 @@ export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
             </Flex>
 
             <Flex align="flex-start">
-              {!vehicle.automatic ? (
-                <>
-                  <TbManualGearboxFilled />
-                  <Box fontSize="xs" ml="1">
-                    M
-                  </Box>
-                </>
-              ) : (
+              {vehicle.automatic === 'true' ? (
                 <>
                   <TbAutomaticGearbox />
                   <Box fontSize="xs" ml="1">
                     A
+                  </Box>
+                </>
+              ) : (
+                <>
+                  <TbManualGearboxFilled />
+                  <Box fontSize="xs" ml="1">
+                    M
                   </Box>
                 </>
               )}
@@ -88,8 +87,7 @@ export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
               align="baseline"
               ml={Number(vehicle.noOfReviews) > 99 ? 0 : 'auto'}
             >
-              <StarIcon boxSize="3" />{' '}
-              {/* Adjusts the star icon to be slightly smaller */}
+              <StarIcon boxSize="3" />
               <Box>{vehicle.rating}</Box>
               <Text as="span">({vehicle.noOfReviews} reviews)</Text>
             </Flex>

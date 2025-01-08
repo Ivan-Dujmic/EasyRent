@@ -23,8 +23,8 @@ export default function VehicleList({
   // Dynamically determine the number of visible cards based on screen size
   const numCards = useBreakpointValue({ base: 1, sm: 2, md: 3, lg: 4 }) || 4;
 
-  const gap = 16; // Gap between cards in pixels
-  const cardWidth = `calc((100% - ${(numCards - 1) * gap}px) / ${numCards})`; // Dynamically calculate card width
+  const gap = 24; // Increased the gap for better spacing
+  const cardWidth = `calc((100% - ${(numCards - 1) * gap}px) / ${numCards})`;
 
   const [startIndex, setStartIndex] = useState(0);
 
@@ -39,9 +39,9 @@ export default function VehicleList({
   const visibleVehicles = vehicles.slice(startIndex, startIndex + numCards);
 
   return (
-    <Flex direction="column" align="center" width="100%">
+    <Flex direction="column" align="center" width="100%" gap={5}>
       {description && (
-        <Heading size="md" color="brandblack" alignSelf="flex-start">
+        <Heading fontSize="1.4rem" color="brandblack" alignSelf="flex-start">
           {description}
         </Heading>
       )}
@@ -56,7 +56,8 @@ export default function VehicleList({
         {startIndex > 0 && (
           <IconButton
             position="absolute"
-            left="1vmax"
+            left="-2rem" // Moves the arrow further left (negative value to move outside)
+            transform="translateX(-50%)"
             aria-label="Scroll left"
             icon={<FaChevronLeft />}
             onClick={() => handleScroll('left')}
@@ -70,16 +71,19 @@ export default function VehicleList({
           overflow="hidden"
           justify="center"
           align="center"
-          width="80%"
+          width="90%"
           gap={`${gap}px`}
           px={2}
+          flexGrow={1}
+          height={'fit-content'}
+          py={2}
         >
           {visibleVehicles.map((vehicle, index) => (
             <div
               key={index}
               style={{
                 flex: '0 0 auto',
-                width: cardWidth, // Dynamically calculated width
+                width: cardWidth,
                 maxWidth: cardWidth,
               }}
             >
@@ -92,7 +96,8 @@ export default function VehicleList({
         {startIndex < vehicles.length - numCards && (
           <IconButton
             position="absolute"
-            right="1vmax"
+            right="-2rem" // Moves the arrow further right
+            transform="translateX(50%)"
             aria-label="Scroll right"
             icon={<FaChevronRight />}
             onClick={() => handleScroll('right')}
