@@ -875,6 +875,49 @@ def companyEarnings(request):
 
 @login_required
 def companyInfo(request):
+    if request.method == "PUT":
+        user = request.user
+        if user.is_authenticated:
+            data = request.data
+
+            logo = data.get("companyLogo")
+            name = data.get("companyName")
+            phoneNo = data.get("phoneNo")
+            description = data.get("description")
+            if not user.check_password(data.get("password")):
+                return Response(
+                    {"success": 0, "message": "Wrong password!"}, status=401
+                )
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                if phoneNo:
+                    dealership.phoneNo = phoneNo
+                if name:
+                    dealership.companyName = name
+                if description:
+                    dealership.description = description
+                if logo:
+                    dealership.image = logo
+                dealership.save()
+                return Response(
+                    {"success": 1, "message": "Company info updated successfully"},
+                    status=200,
+                )
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no offers yet!",
+                    },
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+    else:
+        return Response({"success": 0, "message": "Method not allowed"}, status=405)
+
     if request.method == "GET":
         user = request.user
         if user.is_authenticated:
@@ -942,51 +985,6 @@ def companyPasswordChange(request):
 
 
 @login_required
-def companyUpdateInfo(request):
-    if request.method == "PUT":
-        user = request.user
-        if user.is_authenticated:
-            data = request.data
-
-            logo = data.get("companyLogo")
-            name = data.get("companyName")
-            phoneNo = data.get("phoneNo")
-            description = data.get("description")
-            if not user.check_password(data.get("password")):
-                return Response(
-                    {"success": 0, "message": "Wrong password!"}, status=401
-                )
-            try:
-                dealership = Dealership.object.filter(user_id=user)
-                if phoneNo:
-                    dealership.phoneNo = phoneNo
-                if name:
-                    dealership.companyName = name
-                if description:
-                    dealership.description = description
-                if logo:
-                    dealership.image = logo
-                dealership.save()
-                return Response(
-                    {"success": 1, "message": "Company info updated successfully"},
-                    status=200,
-                )
-            except:
-                return Response(
-                    {
-                        "success": 0,
-                        "message": "Company does not exist or has no offers yet!",
-                    },
-                    status=200,
-                )
-        else:
-            return Response(
-                {"success": 0, "message": "User not authenticated"}, status=401
-            )
-    else:
-        return Response({"success": 0, "message": "Method not allowed"}, status=405)
-
-
 def companyLocations(request):
     if request.method == "GET":
         user = request.user
@@ -1025,6 +1023,7 @@ def companyLocations(request):
         return Response({"success": 0, "message": "Method not allowed"}, status=405)
 
 
+@login_required
 def companySetHQ(request):
     if request.method == "PUT":
         user = request.user

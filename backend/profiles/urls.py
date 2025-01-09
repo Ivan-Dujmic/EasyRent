@@ -24,4 +24,11 @@ urlpatterns = [
         views.completedCompanyRents,
         name="completedCompanyRents",
     ),
+    path("company/reviews", views.companyReviews, name="companyReviews"),
+    path("company/earnings", views.companyEarnings, name="companyEarnings"),
+    path("company/info", views.companyInfo, name="companyInfo"),
+    path("company/pass", views.companyPasswordChange, name="companyPasswordChange"),
+    path("company/locations", views.companyLocations, name="companyLocations"),
+    path("company/setHQ", views.companySetHQ, name="companySetHQ"),
+    path("company/location", views.companyLocations, name="companyLocations"),
 ]
