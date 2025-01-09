@@ -872,6 +872,7 @@ def companyEarnings(request):
                 )
 
 
+# ovo je za svaku firmu kad pristupa svojoj stranici?
 def companyInfo(request):
     if request.method == "GET":
         user = request.user
@@ -900,3 +901,45 @@ def companyInfo(request):
                     },
                     status=200,
                 )
+
+
+# ne dopusta promjenu sifre
+def companyUpdateInfo(request):
+    if request.method == "PUT":
+        user = request.user
+        if user.is_authenticated:
+            data = request.data
+            # Parameters: }
+            logo = data.get("companyLogo")
+            name = data.get("companyName")
+            phoneNo = data.get("phoneNo")
+            description = data.get("description")
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                if phoneNo:
+                    dealership.phoneNo = phoneNo
+                if name:
+                    dealership.companyName = name
+                if description:
+                    dealership.description = description
+                if logo:
+                    dealership.image = logo
+                dealership.save()
+                return Response(
+                    {"success": 1, "message": "Company info updated successfully"},
+                    status=200,
+                )
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no offers yet!",
+                    },
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+    else:
+        return Response({"success": 0, "message": "Method not allowed"}, status=405)
