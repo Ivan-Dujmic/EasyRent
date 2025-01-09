@@ -62,8 +62,20 @@ def getOfferDetails(request, offer_id):
         return Response({"error": "Offer not found"}, status=404)
 
 def user_can_review(user, offer):
-    # Implement your logic to determine if the user can review the offer
-    return True  # Placeholder logic
+    # Returns true if user can review the offer which means that he has rented the vehicle and has not reviewed it yet 
+    # (at least not as many times as he rented it)
+    # we could also only allow users to review the offer if they had returned it x days ago 
+    rentoid = Rentoid.objects.get(user=user)
+    rents = (Rent.objects.filter(rentoid=rentoid).filter(dateTimeReturned__lt=now())
+             .filter(vehicle__model=offer.model).filter(vehicle__dealer=offer.dealer))
+    times_reviewed = 0
+    if rents.count() == 0:
+        return False
+    for rent in rents:
+        if Review.objects.filter(rent=rent).exists():
+            times_reviewed += 1
+    
+    return times_reviewed < rents.count()
 
 
 @extend_schema(
@@ -134,6 +146,8 @@ def getLocations(request):
             "latitude" : location.latitude,
             "longitude" : location.longitude
         })
+        if response_array.count() == 0:
+            return Response({"error": "Locations not found"}, status=404)
         response_data = {"locations" : response_array}
         return JsonResponse(response_data, status=200)
     except Location.DoesNotExist:
@@ -171,6 +185,8 @@ def getModels(request):
                 "models" : modelList 
             }
             )
+        if response_array.count() == 0:
+            return Response({"error": "Makes not found"}, status=404)
         response_data = {"makes" : response_array}
         return JsonResponse(response_data, status=200)
     except Model.DoesNotExist:
@@ -286,6 +302,8 @@ def getOffersForCompany(request, dealership_id):
             "noOfReviews" : offer.noOfReviews,
             "offer_id" : offer.offer_id 
         })
+        if offer_array.count() == 0:
+            return Response({"error": "Offers not found"}, status=404)
         response_data = {
             "offers" : offer_array
         }
@@ -335,6 +353,8 @@ def getShowcasedCompanies(request):
                 "companyLogo" : base64.b64encode(company.image),
                 "dealership_id" : company.dealership_id,
             })
+        if company_array.count() == 0:
+            return Response({"error": "Companies not found"}, status=404)
         response_data = {
             "companies" : company_array
         }
@@ -405,6 +425,9 @@ def getMostPopularOffers(request):
             "noOfReviews" : offer.noOfReviews,
             "offer_id" : offer.offer_id 
         })
+            
+        if offer_array.count() == 0:
+            return Response({"error": "Offers not found"}, status=404)
         response_data = {
             "offers" : offer_array
         }
@@ -477,6 +500,8 @@ def getBestValueOffers(request):
             "noOfReviews" : offer.noOfReviews,
             "offer_id" : offer.offer_id 
         })
+        if offer_array.count() == 0:
+            return Response({"error": "Offers not found"}, status=404)
         response_data = {
             "offers" : offer_array
         }
@@ -515,6 +540,8 @@ def getCities(request):
                 "cities" : cityList 
             }
             )
+        if response_array.count() == 0: 
+            return Response({"error": "Cities not found"}, status=404)
         response_data = {"countries" : response_array}
         return JsonResponse(response_data, status=200)
     except Location.DoesNotExist:
@@ -582,7 +609,7 @@ def getCities(request):
             name='pick_up_time',
             type=int,
             location=OpenApiParameter.QUERY,
-            description='Hour between 0-24, but will only give results if it is during the working hours of the company',
+            description='Hour between 0-23, but will only give results if it is during the working hours of the company',
             required=True,
             default=14
         ),
@@ -598,7 +625,7 @@ def getCities(request):
             name='drop_off_time',
             type=int,
             location=OpenApiParameter.QUERY,
-            description='Hour between 0-24, but will only give results if it is during the working hours of the company',
+            description='Hour between 0-23, but will only give results if it is during the working hours of the company',
             required=True,
             default=16
         ),
@@ -782,7 +809,7 @@ def getFilteredOffers(request):
             if available_vehicles.filter(model=offer.model).filter(dealer=offer.dealer).exists():
                 offers_list.append(
                     {
-                        #"image" : base64.b64encode(offer.image),
+                        "image" : base64.b64encode(offer.image),
                         "companyName" : offer.dealer.user.first_name,
                         "makeName" : offer.model.makeName,
                         "modelName" : offer.model.modelName,
@@ -794,9 +821,189 @@ def getFilteredOffers(request):
                         "offer_id" : offer.offer_id 
                     }
                 )
+        if offers_list.count() == 0:
+            return Response({"error": "Offers not found"}, status=404)
         offset = (page - 1) * limit
         response_data = {"offers" : offers_list[offset:offset+limit]}
         return JsonResponse(response_data, status=200)
     except Offer.DoesNotExist:
         return Response({"error": "Offers not found"}, status=404)
+
+
+@extend_schema(
+    tags=['home'],
+    responses={
+        200: ReviewListSerializer,
+        404: OpenApiResponse(
+            description='Reviews Not Found',
+            examples=[
+                OpenApiExample(
+                    'Reviews Not Found',
+                    value={"error": "Reviews not found"},
+                ),
+            ],
+        ),
+    },
+     parameters=[
+        OpenApiParameter(
+            name='page',
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description='Page number, starts with 1',
+            required=False,
+            default=1
+        ),
+        OpenApiParameter(
+            name='limit',
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description='Max number of reviews that will be returned',
+            required=False,
+            default=8
+        )
+     ]
+)
+#TEST
+@api_view(["GET"])
+def getReviews(request, offer_id):
+    try:
+        response_data = {}
+        limit = request.GET.get("limit")
+        if limit == None or not limit.isdigit() or int(limit) <= 0:
+            limit = 8
+        page = request.GET.get("page")
+        if page == None or not page.isdigit() or int(page) <= 0:
+            page = 1
+        page = int(page)
+        limit = int(limit)
+        offset = (page - 1) * limit
+        offer = Offer.objects.get(pk=offer_id)
+        rentals = Rent.objects.filter(vehicle__dealer=offer.dealer).filter(vehicle__model=offer.model)
+        reviews = Review.objects.filter(rent__in=rentals).all()[offset:offset+limit]
+        if reviews.count() < offset + limit + 1:
+            last = True
+        review_array = []
+        for review in reviews:
+            review_array.append({
+                "rating" : review.rating,
+                "firstName" : review.rent.rentoid.user.first_name,
+                "lastName" : review.rent.rentoid.user.last_name,
+                "reviewDate" : review.reviewDate,
+                "description" : review.description,
+            })
+        if review_array.count() == 0:
+            return Response({"error": "No reviews not found"}, status=404)
+        response_data = {
+            "reviews" : review_array,
+            "last" : last
+        }
+        return JsonResponse(response_data, status=200)
+    except Offer.DoesNotExist:
+        return Response({"error": "Offer not found"}, status=404)
     
+
+@extend_schema(
+    tags=['home'],
+    responses={
+        200: ReviewListSerializer,
+        404: OpenApiResponse(
+            description='Locations Not Found',
+            examples=[
+                OpenApiExample(
+                    'Locations Not Found',
+                    value={"error": "Locations not found"},
+                ),
+            ],
+        ),
+    },
+     parameters=[
+        OpenApiParameter(
+            name='pickUpDate',
+            type=date,
+            location=OpenApiParameter.QUERY,
+            description='Format year-month-day, zero padded, required if pickUpTime is specified',
+            required=False,
+            default='2022-05-03'
+        ),
+        OpenApiParameter(
+            name='pickUpTime',
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description='Hour between 0-23, required if pickUpDate is specified',
+            required=False,
+            default=14
+        )
+     ]
+)
+#TEST
+@api_view(["GET"])
+def getLocationsForOffer(request, offer_id):
+    try:
+        response_data = {}
+        offer = Offer.objects.get(pk=offer_id)
+        pickUpDate = request.GET.get("pickUpDate")
+        pickUpTime = request.GET.get("pickUpTime")
+        date_format = "%Y-%m-%d"
+        pickUpDateTime = None
+        #check pick up date and time
+        if pickUpDate != None:
+            try:
+                pickUpDate = datetime.strptime(pickUpDate, date_format).date()
+            except ValueError:
+                return Response({"error": "Invalid date format"}, status=404)
+            if pickUpTime  == None:
+                return Response({"error": "Pick up time not specified"}, status=404)
+            try:
+                pickUpTime = int(pickUpTime)
+            except:
+                return Response({"error": "Invalid time format"}, status=404)
+            if pickUpTime < 0 or pickUpTime > 23:
+                return Response({"error": "Invalid time format"}, status=404)
+            pickUpDateTime = datetime.combine(pickUpDate, datetime.min.time()) + timedelta(hours=pickUpTime)   
+        #get all vehicles that belong to the offer
+        vehicles = Vehicle.objects.filter(model=offer.model).filter(dealer=offer.dealer)
+        # get all active rents for the vehicles if pick up date and time are specified, exclude vehicles that are rented at that time
+        if pickUpDateTime != None:
+            active_rents = Rent.objects.filter(vehicle__in=vehicles).filter(dateTimeRented__lt=pickUpDateTime, dateTimeReturned__gt=pickUpDateTime)
+            rented_vehicles = active_rents.values_list('vehicle', flat=True)
+            vehicles = vehicles.exclude(vehicle_id__in=rented_vehicles)
+        #get all locations for the vehicles
+        location_ids = vehicles.values_list('location', flat=True)
+        locations = Location.objects.filter(location_id__in=location_ids)
+        #if pick up date and time are specified, check if the locations are open
+        locations_array = []
+        if pickUpDateTime != None:
+            for location in locations:
+                working_hours = WorkingHours.objects.filter(location=location).filter(dayOfTheWeek=pickUpDate.weekday())
+                if working_hours.count() != 0:
+                    opening_time = working_hours[0].startTime.hour
+                    closing_time = working_hours[0].endTime.hour
+                    if (opening_time <= pickUpTime <= closing_time):
+                        locations_array.append({
+                            "streetName" : location.streetName,
+                            "streetNo" : location.streetNo,
+                            "cityName" : location.cityName,
+                            "latitude" : location.latitude,
+                            "longitude" : location.longitude,
+                            "isHQ" : location.isHQ,
+                            "location_id" : location.location_id
+                        })
+        else:
+            for location in locations:
+                locations_array.append({
+                    "streetName" : location.streetName,
+                    "streetNo" : location.streetNo,
+                    "cityName" : location.cityName,
+                    "latitude" : location.latitude,
+                    "longitude" : location.longitude,
+                    "isHQ" : location.isHQ,
+                    "location_id" : location.location_id
+                })
+        if len(locations_array) == 0:
+            return Response({"error": "No locations available"}, status=404)
+        response_data = {
+            "locations" : locations_array
+        }
+        return JsonResponse(response_data, status=200)
+    except Offer.DoesNotExist:
+        return Response({"error": "Offer not found"}, status=404)

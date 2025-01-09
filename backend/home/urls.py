@@ -16,5 +16,6 @@ urlpatterns = [
     path('best-value/', views.getBestValueOffers, name='getBestValueOffers'),
     path('cities/', views.getCities, name='getCities'),
     path('search/', views.getFilteredOffers, name='getFilteredOffers'),
-    
+    path('reviews/<int:offer_id>/', views.getReviews, name='getReviews'),
+    path('offer-locations/<int:offer_id>/', views.getLocationsForOffer, name='getLocationsForOffer'),
 ]

@@ -116,6 +116,31 @@ class CountrySerializer(serializers.Serializer):
 class CountryListSerializer(serializers.Serializer):
     countries = serializers.ListField(child = CountrySerializer())
 
+# for GET api/home/reviews/:offer_id
+
+class ReviewSerializer(serializers.Serializer):
+    rating = serializers.FloatField()
+    firstName = serializers.CharField()
+    lastName = serializers.CharField()
+    reviewDate = serializers.DateField()
+    description = serializers.CharField()
+
+class ReviewListSerializer(serializers.Serializer):
+    reviews = serializers.ListField(child = ReviewSerializer())
+    last = serializers.BooleanField()
+
+#for GET api/home/offer-locations/:offer_id
+class AvailableLocationSerializer(serializers.Serializer):
+    streetName = serializers.CharField()
+    streetNo = serializers.CharField()
+    cityName = serializers.CharField()
+    latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
+    longitude = serializers.DecimalField(max_digits=9, decimal_places=6)
+    isHQ = serializers.BooleanField()
+    location_id = serializers.IntegerField()
+
+class AvailableLocationListSerializer(serializers.Serializer):
+    locations = serializers.ListField(child = AvailableLocationSerializer())
 
 class DealershipLogoSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
