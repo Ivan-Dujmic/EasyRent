@@ -180,12 +180,12 @@ def registerUser(request):
             first_name=firstName,
             last_name=lastName,
         )
-        Wallet.objects.create(user=user)
         user.is_active = False
         user.save()
         rentoid = Rentoid.objects.create(
             user=user, phoneNo=phoneNo, driversLicenseNo=driversLicense
         )
+        Wallet.objects.create(rentoid=rentoid)
         if activateEmail(request, user, email):
             return JsonResponse(
                 {"success": 1, "message": "Email confirmation request sent"}, status=200
@@ -342,7 +342,6 @@ def registerCompany(request):
             or not workingHours
             or not description
             or not password
-            or not image
             or not companyLogo
         ):
             return JsonResponse(
