@@ -5,12 +5,14 @@ from rest_framework import status
 from wallet.serializers import AddMoneySerializer, RemoveMoneySerializer
 from .models import Wallet
 from src.models import Dealership, Rentoid
-from home.models import Offer, Rent
+from home.models import Offer, Rent, Vehicle
 from .serializers import *
 from django.shortcuts import get_object_or_404, redirect
 import stripe
 from dotenv import load_dotenv
 import os
+import datetime
+from django.db.models import F, ExpressionWrapper, DecimalField, Q
 
 load_dotenv()
 
@@ -91,12 +93,14 @@ def removeMoney(request, rentoid_id):
     request=OfferSerializer,
 )
 @api_view(["POST"])
-def Rent(request, offer_id):
+def offerRent(request, offer_id):
     offer = get_object_or_404(Offer, offer_id=offer_id)
     buyer_id = request.data.get("buyer_id")
     method = request.data.get("paymentMethod")
-    dateFrom = request.data.get("dateFrom")
-    dateTo = request.data.get("dateFrom")
+    pickupDate = request.data.get("dateFrom")
+    dropoffDate = request.data.get("dateTo")
+    pickupTime = request.data.get("pickupTime")
+    dropoffTime = request.data.get("dropoffTime")
     if buyer_id is None:
         return Response(
             {"detail": "No buyer provided."}, status=status.HTTP_400_BAD_REQUEST
@@ -105,34 +109,102 @@ def Rent(request, offer_id):
         return Response(
             {"detail": "No valid method provided."}, status=status.HTTP_400_BAD_REQUEST
         )
-    if dateTo is None or dateFrom is None:
-        return Response(
-            {"detail": "No dates provided."}, status=status.HTTP_400_BAD_REQUEST
+
+    if (
+        pickupTime == None
+        or dropoffDate == None
+        or dropoffTime == None
+        or pickupDate == None
+    ):
+        return Response({"error": "Required fields not filled"}, status=404)
+    # check if times are valid
+    try:
+        pickupTime = int(pickupTime)
+        dropoffTime = int(dropoffTime)
+    except:
+        return Response({"error": "Invalid time format"}, status=404)
+    if pickupTime < 0 or pickupTime > 24 or dropoffTime < 0 or dropoffTime > 24:
+        return Response({"error": "Invalid time format"}, status=404)
+    # check if dates are valid
+    date_format = "%d-%m-%Y"
+    try:
+        pickupDate = datetime.datetime.strptime(pickupDate, date_format).date()
+        dropoffDate = datetime.datetime.strptime(dropoffDate, date_format).date()
+    except ValueError:
+        return Response({"error": "Invalid date format"}, status=404)
+
+    try:
+        pickup_datetime = datetime.datetime.combine(
+            pickupDate, datetime.time(pickupTime)
         )
+    except ValueError:
+        return Response({"error": "Invalid pickup datetime format"}, status=404)
+
+    # Combine dropoffDate + dropoffTime to create a full datetime for the dropoff
+    try:
+        dropoff_datetime = datetime.datetime.combine(
+            dropoffDate, datetime.time(dropoffTime)
+        )
+    except ValueError:
+        return Response({"error": "Invalid dropoff datetime format"}, status=404)
 
     dealer_id = offer.dealer_id
     model_id = offer.model_id
     # company = get_object_or_404(Dealership, dealership_id=dealer_id)
     wallet = get_object_or_404(Wallet, rentoid_id=buyer_id)
 
+    # Check if the vehicle is available in the given datetime range
+    available_vehicles = (
+        Vehicle.objects.filter(
+            dealer_id=dealer_id,  # Filter by dealership ID
+            model_id=model_id,  # Filter by model ID
+        )
+        .exclude(
+            Q(
+                rent__dateTimeRented__lte=dropoff_datetime
+            )  # Rent started before or during the requested period
+            & Q(
+                rent__dateTimeReturned__gte=pickup_datetime
+            )  # Rent returned after or during the requested period
+        )
+        .values("vehicle_id")
+    )
+    if len(available_vehicles) == 0:
+        return Response(
+            {"error": "No available rented vehicles for given parameters."}, status=404
+        )
+    vehicle_id = available_vehicles[0]["vehicle_id"]
+    diff = dropoff_datetime - pickup_datetime
+    totalPrice = offer.price * int(diff.days)
+    print(offer.price, totalPrice, diff.days)
     # Handle payment via Wallet
     if method == "wallet":
-        if wallet.gems < offer.price:
+        if wallet.gems < totalPrice:
             return Response(
                 {"detail": "Insufficient funds."}, status=status.HTTP_400_BAD_REQUEST
             )
 
         # Deduct the money from wallet
-        wallet.gems -= offer.price
+        wallet.gems -= totalPrice
         wallet.save()
 
-        # You can add additional logic here (e.g., create a Rent model, etc.)
+        # Create the Rent entry
+        rent = Rent.objects.create(
+            dealer_id=dealer_id,
+            rentoid_id=buyer_id,
+            dateTimeRented=pickup_datetime,
+            dateTimeReturned=dropoff_datetime,
+            vehicle_id=vehicle_id,
+            price=totalPrice,
+        )
+
         return Response(
             {
                 "detail": "Payment successful via wallet",
                 "company": dealer_id,
                 "wallet": wallet.wallet_id,
                 "new_balance": wallet.gems,
+                "rent_id": rent.rent_id,
             },
             status=status.HTTP_200_OK,
         )
