@@ -1061,3 +1061,138 @@ def companySetHQ(request):
             )
     else:
         return Response({"success": 0, "message": "Method not allowed"}, status=405)
+
+
+@login_required
+def companyLocation(request):
+    if request.method == "DELETE":
+        user = request.user
+        if user.is_authenticated:
+            data = request.data
+            if not data.get("locationId"):
+                return Response(
+                    {"success": 0, "message": "Location ID is required"}, status=200
+                )
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                location = Location.object.filter(
+                    location_id=data.get("locationId"),
+                    dealership_id=dealership.dealer_id,
+                )
+                location.delete()
+                return Response(
+                    {"success": 1, "message": "Location deleted successfully"},
+                    status=200,
+                )
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company has no locations yet or does not exist!",
+                    },
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401)
+
+
+    if request.method == "PUT":
+        user = request.user
+        if user.is_authenticated:
+            data = request.data
+            locationId = request.locationId
+            if not request.locationId:
+                return Response(
+                    {"success": 0, "message": "Location ID is required"}, status=200
+                )
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                location = Location.object.filter(
+                    location_id=locationId,
+                    dealership_id=dealership.dealer_id,
+                )
+                workingHours = data.get("workingHours")
+                for workingHour in workingHours:
+                    wh = WorkingHourse.object.filter(
+                        location_id=locationId, day=workingHour["dayOfTheWeek"]
+                    )
+                    wh.startTime = (
+                        workingHour["startTime"]
+                        if workingHour["startTime"]
+                        else wh.startTime
+                    )
+                    wh.endTime = (
+                        workingHour["endTime"] if workingHour["endTime"] else wh.endTime
+                    )
+
+                    wh.save()
+                return Response(
+                    {"success": 1, "message": "Location deleted successfully"},
+                    status=200,
+                )
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company has no locations yet or does not exist!",
+                    },
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+
+    if request.method == "POST":
+        user = request.user
+        if user.is_authenticated:
+            data = request.data
+            #  workingHours: [dayOfTheWeek, startTime, endTime]}
+            workingHours = data.get("workingHours")
+            if (
+                not data.get("streetName")
+                or not data.get("streetNo")
+                or not data.get("cityName")
+            ):
+                return Response(
+                    {"success": 0, "message": "All fields are required"}, status=400
+                )
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                location = Location.object.create(
+                    latitude=data.get("latitude"),
+                    longitude=data.get("longitude"),
+                    streetName=data.get("streetName"),
+                    countryName=data.get("countryName"),
+                    streetNo=data.get("streetNo"),
+                    cityName=data.get("cityName"),
+                    dealership_id=dealership.dealer_id,
+                    isHQ=False,
+                )
+                location.save()
+                for workingHour in workingHours:
+                    wh = WorkingHours.object.create(
+                        day=workingHour["dayOfTheWeek"],
+                        startTime=workingHour["startTime"],
+                        endTime=workingHour["endTime"],
+                        location_id=location.location_id,
+                    )
+                    wh.save()
+                return Response(
+                    {"success": 1, "message": "Location added successfully"}, status=200
+                )
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no locations yet!",
+                    },
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+    else:
+        return Response({"success": 0, "message": "Method not allowed"}, status=405)
