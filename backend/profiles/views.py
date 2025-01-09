@@ -1023,3 +1023,42 @@ def companyLocations(request):
             )
     else:
         return Response({"success": 0, "message": "Method not allowed"}, status=405)
+
+
+def companySetHQ(request):
+    if request.method == "PUT":
+        user = request.user
+        if user.is_authenticated:
+            data = request.data
+            if not data.get("locationId"):
+                return Response(
+                    {"success": 0, "message": "Location ID is required"}, status=200
+                )
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                locations = Location.object.filter(dealership_id=dealership.dealer_id)
+
+                for location in locations:
+                    location.isHQ = False
+                    location.save()
+                location = Location.object.filter(location_id=data.get("locationId"))
+                location.isHQ = True
+                location.save()
+                return Response(
+                    {"success": 1, "message": "HQ location set successfully"},
+                    status=200,
+                )
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company has no locations yet or does not exist!",
+                    },
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+    else:
+        return Response({"success": 0, "message": "Method not allowed"}, status=405)
