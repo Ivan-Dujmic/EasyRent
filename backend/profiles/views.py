@@ -993,25 +993,21 @@ def companyLocations(request):
         if user.is_authenticated:
             try:
                 dealership = Dealership.object.filter(user_id=user)
-                page = int(request.GET.get("page", 1))
-                limit = int(request.GET.get("limit", 10))
-
+                # Return: [streetName, streetNo, cityName, location_id]
                 locations = Location.object.filter(dealership_id=dealership.dealer_id)
-                res = []
+                res = [{}]
                 for location in locations:
                     current = {
-                        "latitude": location.latitude,
-                        "longitude": location.longitude,
-                        "countryName": location.countryName,
                         "cityName": location.cityName,
                         "streetName": location.streetName,
                         "streetNo": location.streetNo,
+                        "locationId": location.location_id,
                     }
-                    res.append(current)
-                retObject = {
-                    "results": res[(page - 1) * limit : page * limit],
-                    "isLastPage": True if len(res) <= page * limit else False,
-                }
+                    if location.isHQ:
+                        res[0] = current
+                    else:
+                        res.append(current)
+                retObject = {"results": res, "isLastPage": True}
                 return JsonResponse(retObject, status=200)
             except:
                 return Response(
