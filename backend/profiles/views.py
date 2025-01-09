@@ -827,3 +827,76 @@ def companyReviews(request):
                     },
                     status=200,
                 )
+
+
+def companyEarnings(request):
+    if request.method == "GET":
+        user = request.user
+        if user.is_authenticated:
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                year = int(request.GET.get("year", datetime.now().year))
+
+                # Return: {totalEarnings, yearEarnings, totalRentals, yearRentals, monthlyEarnings: [earnings..12]}
+                rents = Rent.object.filter(dealer_id=dealership.dealer_id)
+                res = []
+                totalEarnings = 0
+                monthlyEarnings = {i: 0 for i in range(1, 13)}
+                thisYearEarnings = 0
+                totalRentals = 0
+                thisYearRentals = 0
+                for rent in rents:
+                    totalEarnings += rent.price
+                    totalRentals += 1
+                    if rent.dateTimeReturned.year == year:
+                        thisYearEarnings += rent.price
+                        thisYearRentals += 1
+                        monthlyEarnings[rent.dateTimeReturned.month] += rent.price
+
+                current = {
+                    "totalEarnings": totalEarnings,
+                    "yearEarnings": thisYearEarnings,
+                    "totalRentals": totalRentals,
+                    "yearRentals": thisYearRentals,
+                    "monthlyEarnings": monthlyEarnings,
+                }
+                retObject = {"results": current, "isLastPage": True}
+                return JsonResponse(retObject, status=200)
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no offers yet!",
+                    },
+                    status=200,
+                )
+
+
+def companyInfo(request):
+    if request.method == "GET":
+        user = request.user
+        if user.is_authenticated:
+            try:
+                # Return: {companyLogo, companyName, phoneNo, description}
+                dealership = Dealership.object.filter(user_id=user)
+                workingHours = WorkingHours.object.filter(
+                    dealership_id=dealership.dealer_id
+                )
+                res = []
+                for workingHour in workingHours:
+                    current = {
+                        "day": workingHour.day,
+                        "startTime": workingHour.startTime,
+                        "endTime": workingHour.endTime,
+                    }
+                    res.append(current)
+                retObject = {"results": res, "isLastPage": True}
+                return JsonResponse(retObject, status=200)
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no offers yet!",
+                    },
+                    status=200,
+                )
