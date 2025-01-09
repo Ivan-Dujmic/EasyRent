@@ -829,6 +829,7 @@ def companyReviews(request):
                 )
 
 
+@login_required
 def companyEarnings(request):
     if request.method == "GET":
         user = request.user
@@ -872,7 +873,7 @@ def companyEarnings(request):
                 )
 
 
-# ovo je za svaku firmu kad pristupa svojoj stranici?
+@login_required
 def companyInfo(request):
     if request.method == "GET":
         user = request.user
@@ -903,17 +904,58 @@ def companyInfo(request):
                 )
 
 
-# ne dopusta promjenu sifre
+@login_required
+def companyPasswordChange(request):
+    if request.method == "PUT":
+        user = request.user
+        if user.is_authenticated:
+            data = request.data
+
+            if not data.get("oldPassword") or not data.get("newPassword"):
+                return Response(
+                    {"success": 0, "message": "All fields are required"}, status=400
+                )
+
+            if len(data.get("newPassword")) < 8:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "New password must be at least 8 characters long",
+                    },
+                    status=400,
+                )
+
+            if not user.check_password(data.get("oldPassword")):
+                return Response(
+                    {"success": 0, "message": "Incorrect password"}, status=403
+                )
+
+            user.set_password(data.get("newPassword"))
+            user.save()
+            return Response(
+                {"success": 1, "message": "Password updated successfully"}, status=200
+            )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+
+
+@login_required
 def companyUpdateInfo(request):
     if request.method == "PUT":
         user = request.user
         if user.is_authenticated:
             data = request.data
-            # Parameters: }
+
             logo = data.get("companyLogo")
             name = data.get("companyName")
             phoneNo = data.get("phoneNo")
             description = data.get("description")
+            if not user.check_password(data.get("password")):
+                return Response(
+                    {"success": 0, "message": "Wrong password!"}, status=401
+                )
             try:
                 dealership = Dealership.object.filter(user_id=user)
                 if phoneNo:
@@ -934,6 +976,48 @@ def companyUpdateInfo(request):
                     {
                         "success": 0,
                         "message": "Company does not exist or has no offers yet!",
+                    },
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+    else:
+        return Response({"success": 0, "message": "Method not allowed"}, status=405)
+
+
+def companyLocations(request):
+    if request.method == "GET":
+        user = request.user
+        if user.is_authenticated:
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                page = int(request.GET.get("page", 1))
+                limit = int(request.GET.get("limit", 10))
+
+                locations = Location.object.filter(dealership_id=dealership.dealer_id)
+                res = []
+                for location in locations:
+                    current = {
+                        "latitude": location.latitude,
+                        "longitude": location.longitude,
+                        "countryName": location.countryName,
+                        "cityName": location.cityName,
+                        "streetName": location.streetName,
+                        "streetNo": location.streetNo,
+                    }
+                    res.append(current)
+                retObject = {
+                    "results": res[(page - 1) * limit : page * limit],
+                    "isLastPage": True if len(res) <= page * limit else False,
+                }
+                return JsonResponse(retObject, status=200)
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no locations yet!",
                     },
                     status=200,
                 )
