@@ -1065,10 +1065,11 @@ def companySetHQ(request):
 
 @login_required
 def companyLocation(request):
-    if request.method == "DELETE":
+    if request.method == "GET":
         user = request.user
         if user.is_authenticated:
             data = request.data
+            locationId = request.locationId
             if not data.get("locationId"):
                 return Response(
                     {"success": 0, "message": "Location ID is required"}, status=200
@@ -1076,7 +1077,54 @@ def companyLocation(request):
             try:
                 dealership = Dealership.object.filter(user_id=user)
                 location = Location.object.filter(
-                    location_id=data.get("locationId"),
+                    location_id=locationId,
+                    dealership_id=dealership.dealer_id,
+                )
+                workingHours = WorkingHours.object.filter(
+                    location_id=location.location_id
+                )
+                retObject = {
+                    "latitude": location.latitude,
+                    "longitude": location.longitude,
+                    "streetName": location.streetName,
+                    "streetNo": location.streetNo,
+                    "cityName": location.cityName,
+                    "workingHours": [
+                        {
+                            "dayOfTheWeek": workingHour.day,
+                            "startTime": workingHour.startTime,
+                            "endTime": workingHour.endTime,
+                        }
+                        for workingHour in workingHours
+                    ],
+                    "isLastPage": True,
+                }
+                return JsonResponse(retObject, status=200)
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company has no locations yet or does not exist!",
+                    },
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+    elif request.method == "DELETE":
+        user = request.user
+        if user.is_authenticated:
+            data = request.data
+            locationId = request.locationId
+            if not data.get("locationId"):
+                return Response(
+                    {"success": 0, "message": "Location ID is required"}, status=200
+                )
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                location = Location.object.filter(
+                    location_id=locationId,
                     dealership_id=dealership.dealer_id,
                 )
                 location.delete()
@@ -1094,10 +1142,10 @@ def companyLocation(request):
                 )
         else:
             return Response(
-                {"success": 0, "message": "User not authenticated"}, status=401)
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
 
-
-    if request.method == "PUT":
+    elif request.method == "PUT":
         user = request.user
         if user.is_authenticated:
             data = request.data
@@ -1144,7 +1192,7 @@ def companyLocation(request):
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
 
-    if request.method == "POST":
+    elif request.method == "POST":
         user = request.user
         if user.is_authenticated:
             data = request.data
