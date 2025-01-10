@@ -19,7 +19,6 @@ class OfferDetailsSerializer(serializers.Serializer):
     noOfReviews = serializers.IntegerField()
     companyLogo = serializers.CharField(default="base64")
     description = serializers.CharField()
-    canReview = serializers.IntegerField()
 
 #for api/home/locations/
 class LocationSerializer(serializers.Serializer):
@@ -30,6 +29,7 @@ class LocationSerializer(serializers.Serializer):
     cityName = serializers.CharField()
     latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
     longitude = serializers.DecimalField(max_digits=9, decimal_places=6)
+    location_id = serializers.IntegerField()
 
 class LocationListSerializer(serializers.Serializer):
     locations = serializers.ListField(child = LocationSerializer())
@@ -141,6 +141,30 @@ class AvailableLocationSerializer(serializers.Serializer):
 
 class AvailableLocationListSerializer(serializers.Serializer):
     locations = serializers.ListField(child = AvailableLocationSerializer())
+
+# for GET api/home/unavailable-pick-up/:offer_id
+
+class TimeIntervalSerializer(serializers.Serializer):
+    dateTimeRented = serializers.DateTimeField()
+    dateTimeReturned = serializers.DateTimeField()
+
+class WorkingHoursSerializer(serializers.Serializer):
+    dayOfTheWeek = serializers.IntegerField()
+    openTime = serializers.IntegerField()
+    closeTime = serializers.IntegerField()
+
+class UnavailablePickupSerializer(serializers.Serializer):
+    intervals = serializers.ListField(child = TimeIntervalSerializer())
+    workingHours = serializers.ListField(child = WorkingHoursSerializer())
+
+
+# GET for api/home/available-drop-off
+
+class AvailableDropOffSerializer(serializers.Serializer):
+    returnDate = serializers.DateField()
+    returnTime = serializers.IntegerField()
+    vehicle_id = serializers.IntegerField()
+    workingHours = serializers.ListField(child = WorkingHoursSerializer())
 
 class DealershipLogoSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()

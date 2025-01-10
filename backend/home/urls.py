@@ -18,4 +18,6 @@ urlpatterns = [
     path('search/', views.getFilteredOffers, name='getFilteredOffers'),
     path('reviews/<int:offer_id>/', views.getReviews, name='getReviews'),
     path('offer-locations/<int:offer_id>/', views.getLocationsForOffer, name='getLocationsForOffer'),
+    path('available-drop-off/<int:offer_id>/', views.getLastAvailableDropOffTime, name='getLastAvailableDropOffTime'),
+    
 ]

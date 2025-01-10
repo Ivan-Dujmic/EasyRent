@@ -8,7 +8,7 @@ from .models import *
 from .serializers import *
 from src.models import *
 from src.serializers import *
-from django.db.models import F, ExpressionWrapper, DecimalField, Q
+from django.db.models import F, ExpressionWrapper, DecimalField, Q, Max
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
 from django.utils.timezone import now
@@ -38,7 +38,6 @@ def getOfferDetails(request, offer_id):
     try:
         offer = Offer.objects.get(pk=offer_id)
         dealership = offer.dealer
-        can_review = 1 if request.user.is_authenticated and user_can_review(request.user, offer) else 0
 
         response_data = {
             "image": base64.b64encode(offer.image).decode('utf-8'),  # Convert bytes to string
@@ -53,30 +52,17 @@ def getOfferDetails(request, offer_id):
             "rating": offer.rating,
             "noOfReviews": offer.noOfReviews,
             "companyLogo": base64.b64encode(dealership.image).decode('utf-8'),
-            "description": offer.description,
-            "canReview": can_review
+            "description": offer.description
         }
 
         return JsonResponse(response_data, status=200)
     except Offer.DoesNotExist:
         return Response({"error": "Offer not found"}, status=404)
-
-def user_can_review(user, offer):
-    # Returns true if user can review the offer which means that he has rented the vehicle and has not reviewed it yet 
-    # (at least not as many times as he rented it)
-    # we could also only allow users to review the offer if they had returned it x days ago 
-    rentoid = Rentoid.objects.get(user=user)
-    rents = (Rent.objects.filter(rentoid=rentoid).filter(dateTimeReturned__lt=now())
-             .filter(vehicle__model=offer.model).filter(vehicle__dealer=offer.dealer))
-    times_reviewed = 0
-    if rents.count() == 0:
-        return False
-    for rent in rents:
-        if Review.objects.filter(rent=rent).exists():
-            times_reviewed += 1
-    
-    return times_reviewed < rents.count()
-
+#Ivan Dujmić's function
+def canUserReview(user, rental):
+    oneMonthAfterExpiry = rental.dateTimeReturned + timedelta(days=30)
+    hasReviewed = Review.objects.filter(user=user, rental=rental).exists()
+    return rental.dateTimeReturned < now() and not hasReviewed and now() <= oneMonthAfterExpiry
 
 @extend_schema(
     tags=['home'],
@@ -144,9 +130,10 @@ def getLocations(request):
             "streetNo" : location.streetNo,
             "cityName" : location.cityName,
             "latitude" : location.latitude,
-            "longitude" : location.longitude
+            "longitude" : location.longitude,
+            "location_id" : location.location_id
         })
-        if response_array.count() == 0:
+        if len(response_array) == 0:
             return Response({"error": "Locations not found"}, status=404)
         response_data = {"locations" : response_array}
         return JsonResponse(response_data, status=200)
@@ -176,7 +163,7 @@ def getModels(request):
         response_array = []
         makes = Model.objects.all()
         for make in makes:
-            if not makeModel.__contains__(make.makeName):
+            if make.makeName not in makeModel:
                 makeModel[make.makeName] = []
             makeModel[make.makeName].append({"modelName" : make.modelName, "model_id" : make.model_id})
         for makeName, modelList in makeModel.items():
@@ -185,7 +172,7 @@ def getModels(request):
                 "models" : modelList 
             }
             )
-        if response_array.count() == 0:
+        if len(response_array) == 0:
             return Response({"error": "Makes not found"}, status=404)
         response_data = {"makes" : response_array}
         return JsonResponse(response_data, status=200)
@@ -302,7 +289,7 @@ def getOffersForCompany(request, dealership_id):
             "noOfReviews" : offer.noOfReviews,
             "offer_id" : offer.offer_id 
         })
-        if offer_array.count() == 0:
+        if len(offer_array) == 0:
             return Response({"error": "Offers not found"}, status=404)
         response_data = {
             "offers" : offer_array
@@ -353,7 +340,7 @@ def getShowcasedCompanies(request):
                 "companyLogo" : base64.b64encode(company.image),
                 "dealership_id" : company.dealership_id,
             })
-        if company_array.count() == 0:
+        if len(company_array) == 0:
             return Response({"error": "Companies not found"}, status=404)
         response_data = {
             "companies" : company_array
@@ -426,7 +413,7 @@ def getMostPopularOffers(request):
             "offer_id" : offer.offer_id 
         })
             
-        if offer_array.count() == 0:
+        if len(offer_array) == 0:
             return Response({"error": "Offers not found"}, status=404)
         response_data = {
             "offers" : offer_array
@@ -500,7 +487,7 @@ def getBestValueOffers(request):
             "noOfReviews" : offer.noOfReviews,
             "offer_id" : offer.offer_id 
         })
-        if offer_array.count() == 0:
+        if len(offer_array) == 0:
             return Response({"error": "Offers not found"}, status=404)
         response_data = {
             "offers" : offer_array
@@ -540,7 +527,7 @@ def getCities(request):
                 "cities" : cityList 
             }
             )
-        if response_array.count() == 0: 
+        if len(response_array) == 0: 
             return Response({"error": "Cities not found"}, status=404)
         response_data = {"countries" : response_array}
         return JsonResponse(response_data, status=200)
@@ -737,17 +724,30 @@ def getFilteredOffers(request):
         make = request.GET.get("make")
         model = request.GET.get("model")
         #get offers at the pick up location
-        pick_up_locations = Location.objects.filter(cityName=pick_up_cityName, countryName=pick_up_countryName).values_list('dealership', flat=True)    
-        pick_up_dealers = Dealership.objects.filter(dealership_id__in=pick_up_locations)
+        pick_up_locations = Location.objects.filter(cityName=pick_up_cityName, countryName=pick_up_countryName)
+        #remove locations that are closed at pick up time
+        working_hours = WorkingHours.objects.filter(location__in=pick_up_locations).filter(dayOfTheWeek=pick_up_date.weekday()) 
+        working_hours = working_hours.filter(startTime__lte=pick_up_time, endTime__gte=pick_up_time)
+        pick_up_locations = pick_up_locations.filter(location_id__in=working_hours.values_list('location_id', flat=True))
+        if pick_up_locations.count() == 0:
+            return Response({"error": "No locations are open at the specified pickup time"}, status=404) 
+        pick_up_dealers_list = pick_up_locations.distinct('dealership_id').values_list('dealership_id', flat=True)
+        pick_up_dealers = Dealership.objects.filter(dealership_id__in=pick_up_dealers_list)
         #if drop off location exists, check if it is owned by the same dealer
         if drop_off_location != None:
             if not re.match("^[a-zA-Z ]+-[a-zA-Z ]+$", drop_off_location):
                 return Response({"error": "Invalid location format"}, status=404)
             drop_off_cityName = drop_off_location.split("-")[0]
             drop_off_countryName = drop_off_location.split("-")[1]
-            drop_off_locations = Location.objects.filter(cityName=drop_off_cityName, countryName=drop_off_countryName).values_list('dealership', flat=True)
-            drop_off_dealers = Dealership.objects.filter(dealership_id__in=drop_off_locations).values_list('dealership_id', flat=True)
-            pick_up_dealers = pick_up_dealers.filter(dealership_id__in=drop_off_dealers)
+            drop_off_locations = Location.objects.filter(cityName=drop_off_cityName, countryName=drop_off_countryName)
+            # remove locations that are closed at drop off time
+            working_hours = WorkingHours.objects.filter(location__in=drop_off_locations).filter(dayOfTheWeek=drop_off_date.weekday())
+            working_hours = working_hours.filter(startTime__lte=drop_off_time, endTime__gte=drop_off_time)
+            drop_off_locations = drop_off_locations.filter(location_id__in=working_hours.values_list('location_id', flat=True))
+            if drop_off_locations.count() == 0:
+                return Response({"error": "No locations are open at the specified dropoff time"}, status=404)
+            drop_off_dealers_list = drop_off_locations.distinct('dealership_id').values_list('dealership_id', flat=True)
+            pick_up_dealers = pick_up_dealers.filter(dealership_id__in=drop_off_dealers_list)
             if pick_up_dealers.count() == 0:
                 return Response({"error": "Pick up and drop off locations are not owned by the same dealer"}, status=404)
         #get offers for specified location/dealers
@@ -773,25 +773,12 @@ def getFilteredOffers(request):
         #filter by model
         if model != None:
             offers = offers.filter(model__modelName=model)
-        #check working hours and pick up and drop off times
-       # working_hours_pick_up = (WorkingHours.objects.filter(location=pick_up_location)
-       # .filter(dayOfTheWeek=pick_up_date.weekday()))
-       # opening_time_pick_up = working_hours_pick_up.startTime.hour
-       ## closing_time_pick_up = working_hours_pick_up.endTime.hour
-       # if not (opening_time_pick_up <= pick_up_time <= closing_time_pick_up):
-       #     return Response({"error": "Pick up time is not during working hours"}, status=404)
-       # if drop_off_location:
-       #     working_hours_drop_off = (WorkingHours.objects.filter(location=drop_off_location)
-       #     .filter(dayOfTheWeek=drop_off_date.weekday()))
-        #    opening_time_drop_off = working_hours_drop_off.startTime.hour
-        #    closing_time_drop_off = working_hours_drop_off.endTime.hour
-        #    if not (opening_time_drop_off <= drop_off_time <= closing_time_drop_off):
-         #       return Response({"error": "Drop off time is not during working hours"}, status=404)
             
         #check if any vehicles are available for the specified time period, we will get all vehicles that
         #are parts of offers that are available for the specified time period, that are at the pick up location
         #and that are owned by the dealers that own the pick up and drop off locations
-        model_id_list = offers.values_list('model', flat=True)
+
+        model_id_list = offers.distinct('model_id').values_list('model_id', flat=True)
         vehicles = Vehicle.objects.filter(model__in=model_id_list)
         #we need to filter both by pick up locations and possible dealers. If we only filter by pick up locations
         #we might get vehicles that do not belong to one of the dealers that own the pick up and drop off locations
@@ -799,9 +786,9 @@ def getFilteredOffers(request):
         vehicles = vehicles.filter(location__in=pick_up_locations).filter(dealer__in=pick_up_dealers)
         pick_up_datetime = datetime.combine(pick_up_date, datetime.min.time()) + timedelta(hours=pick_up_time)
         drop_off_datetime = datetime.combine(drop_off_date, datetime.min.time()) + timedelta(hours=drop_off_time)
-        active_rents = Rent.objects.filter(Q(dateTimeRented__lt=pick_up_datetime, dateTimeReturned__gt=pick_up_datetime) |
-        Q(dateTimeRented__lt=drop_off_datetime, dateTimeReturned__gt=drop_off_datetime))
-        rented_vehicles = active_rents.values_list('vehicle', flat=True)
+        active_rents = Rent.objects.filter(Q(dateTimeRented__lte=pick_up_datetime, dateTimeReturned__gte=pick_up_datetime) |
+        Q(dateTimeRented__lte=drop_off_datetime, dateTimeReturned__gte=drop_off_datetime)).filter(vehicle__in=vehicles)
+        rented_vehicles = active_rents.distinct('vehicle_id').values_list('vehicle_id', flat=True)
         available_vehicles = vehicles.exclude(vehicle_id__in=rented_vehicles)
         #we will get all offers that are part of available vehicles
         offers_list = []
@@ -821,10 +808,14 @@ def getFilteredOffers(request):
                         "offer_id" : offer.offer_id 
                     }
                 )
-        if offers_list.count() == 0:
+        list_len = len(offers_list)
+        if list_len == 0:
             return Response({"error": "Offers not found"}, status=404)
         offset = (page - 1) * limit
-        response_data = {"offers" : offers_list[offset:offset+limit]}
+        if list_len < offset + limit + 1:
+            last = True
+        response_data = {"offers" : offers_list[offset:offset+limit],
+                         "last" : last}
         return JsonResponse(response_data, status=200)
     except Offer.DoesNotExist:
         return Response({"error": "Offers not found"}, status=404)
@@ -878,7 +869,7 @@ def getReviews(request, offer_id):
         limit = int(limit)
         offset = (page - 1) * limit
         offer = Offer.objects.get(pk=offer_id)
-        rentals = Rent.objects.filter(vehicle__dealer=offer.dealer).filter(vehicle__model=offer.model)
+        rentals = Rent.objects.filter(vehicle__dealer=offer.dealer).filter(vehicle__model=offer.model).values('rent_id')
         reviews = Review.objects.filter(rent__in=rentals).all()[offset:offset+limit]
         if reviews.count() < offset + limit + 1:
             last = True
@@ -891,7 +882,7 @@ def getReviews(request, offer_id):
                 "reviewDate" : review.reviewDate,
                 "description" : review.description,
             })
-        if review_array.count() == 0:
+        if len(review_array) == 0:
             return Response({"error": "No reviews not found"}, status=404)
         response_data = {
             "reviews" : review_array,
@@ -915,27 +906,28 @@ def getReviews(request, offer_id):
                 ),
             ],
         ),
-    },
-     parameters=[
-        OpenApiParameter(
-            name='pickUpDate',
-            type=date,
-            location=OpenApiParameter.QUERY,
-            description='Format year-month-day, zero padded, required if pickUpTime is specified',
-            required=False,
-            default='2022-05-03'
-        ),
-        OpenApiParameter(
-            name='pickUpTime',
-            type=int,
-            location=OpenApiParameter.QUERY,
-            description='Hour between 0-23, required if pickUpDate is specified',
-            required=False,
-            default=14
-        )
-     ]
+    }
+    # we probably won't need this, but I'll leave it here for now
+   #  parameters=[
+   #     OpenApiParameter(
+   #         name='pickUpDate',
+   #         type=date,
+   #         location=OpenApiParameter.QUERY,
+   #         description='Format year-month-day, zero padded, required if pickUpTime is specified',
+   #         required=False,
+   #         default='2022-05-03'
+   #     ),
+   #     OpenApiParameter(
+   #         name='pickUpTime',
+   #         type=int,
+   #         location=OpenApiParameter.QUERY,
+   #         description='Hour between 0-23, required if pickUpDate is specified',
+    #        required=False,
+    #        default=14
+    #    )
+    # ]
 )
-#TEST
+#TEST IT
 @api_view(["GET"])
 def getLocationsForOffer(request, offer_id):
     try:
@@ -964,16 +956,16 @@ def getLocationsForOffer(request, offer_id):
         vehicles = Vehicle.objects.filter(model=offer.model).filter(dealer=offer.dealer)
         # get all active rents for the vehicles if pick up date and time are specified, exclude vehicles that are rented at that time
         if pickUpDateTime != None:
-            active_rents = Rent.objects.filter(vehicle__in=vehicles).filter(dateTimeRented__lt=pickUpDateTime, dateTimeReturned__gt=pickUpDateTime)
+            active_rents = Rent.objects.filter(vehicle__in=vehicles).filter(dateTimeRented__lte=pickUpDateTime, dateTimeReturned__gte=pickUpDateTime)
             rented_vehicles = active_rents.values_list('vehicle', flat=True)
             vehicles = vehicles.exclude(vehicle_id__in=rented_vehicles)
         #get all locations for the vehicles
-        location_ids = vehicles.values_list('location', flat=True)
-        locations = Location.objects.filter(location_id__in=location_ids)
+        locations = Location.objects.filter(vehicle__in=vehicles).distinct()
         #if pick up date and time are specified, check if the locations are open
         locations_array = []
         if pickUpDateTime != None:
             for location in locations:
+                print(location)
                 working_hours = WorkingHours.objects.filter(location=location).filter(dayOfTheWeek=pickUpDate.weekday())
                 if working_hours.count() != 0:
                     opening_time = working_hours[0].startTime.hour
@@ -1007,3 +999,336 @@ def getLocationsForOffer(request, offer_id):
         return JsonResponse(response_data, status=200)
     except Offer.DoesNotExist:
         return Response({"error": "Offer not found"}, status=404)
+
+@extend_schema(
+    tags=['home'],
+    responses={
+        200: UnavailablePickupSerializer,
+        404: OpenApiResponse(
+            description='Vehicles Not Found',
+            examples=[
+                OpenApiExample(
+                    'Vehicles Not Found',
+                    value={"error": "Vehicles not found"},
+                ),
+            ],
+        ),
+    },
+     parameters=[
+        OpenApiParameter(
+            name='pickUpLocationId',
+            type=str,
+            location=OpenApiParameter.QUERY,
+            description='Id of the pick up location',
+            required=True,
+            default='2'
+        )
+     ]
+)
+@api_view(["GET"])
+def getUnavailablePickupTimes(request, offer_id):
+    response_data = {}
+    pickUpLocationId = request.GET.get("pickUpLocationId")
+    #check if required fields are filled
+    if pickUpLocationId == None:
+        return Response({"error": "Required fields not filled"}, status=404)
+    #check if locations exist
+    try:
+        pickUpLocation = Location.objects.get(pk=pickUpLocationId)
+    except Location.DoesNotExist:
+        return Response({"error": "Location not found"}, status=404)
+    try:
+        offer = Offer.objects.get(pk=offer_id)
+    except Offer.DoesNotExist:
+        return Response({"error": "Offer not found"}, status=404)
+    workingHours = WorkingHours.objects.filter(location=pickUpLocation)
+    vehicles = Vehicle.objects.filter(location=pickUpLocation).filter(dealer=offer.dealer).filter(model=offer.model)
+    all_rentals = Rent.objects.filter(vehicle__in=vehicles)
+    currentDateTime = datetime.now()
+    currentDateTime = currentDateTime.replace(hour = currentDateTime.hour + 1, minute=0, second=0, microsecond=0)
+    finalDateTime = all_rentals.aggregate(Max('dateTimeReturned'))['dateTimeReturned__max']
+    unavailable_pickup_times = []
+    interval_start = None
+    interval_end = None
+    while (currentDateTime < finalDateTime):
+        closedDay = False
+        unavailable_vehicles = 0
+        currentWorkingHours = workingHours.filter(dayOfTheWeek=currentDateTime.weekday())
+        #if there are no working hours for the current day, we will skip to the next openining hours
+        while currentWorkingHours.count() == 0:
+            closedDay = True
+            currentDateTime = currentDateTime.replace(hour=0) + timedelta(days=1)
+            currentWorkingHours = workingHours.filter(dayOfTheWeek=currentDateTime.weekday())
+        if closedDay:
+            currentDateTime = currentDateTime.replace(hour=currentWorkingHours[0].startTime.hour)
+        #if the current time is before the opening hours, we will skip to the opening hours 
+        if currentDateTime.hour < currentWorkingHours[0].startTime.hour:
+            currentDateTime = currentDateTime.replace(hour=currentWorkingHours[0].startTime.hour)
+        #if the current time is after the closing hours, we will skip to the next opening hours
+        if currentDateTime.hour > currentWorkingHours[0].endTime.hour:
+            currentDateTime = currentDateTime.replace(hour=0) + timedelta(days=1)
+            while workingHours.filter(dayOfTheWeek=currentDateTime.weekday()).count() == 0:
+                currentDateTime = currentDateTime + timedelta(days=1)
+            currentDateTime = currentDateTime.replace(hour=workingHours.filter(dayOfTheWeek=currentDateTime.weekday())[0].startTime.hour)
+        for vehicle in vehicles:
+            vehicle_rents = all_rentals.filter(vehicle=vehicle).filter(dateTimeRented__lte=currentDateTime, dateTimeReturned__gte=currentDateTime)
+            if vehicle_rents.count() != 0:
+                unavailable_vehicles += 1
+
+        if unavailable_vehicles == vehicles.count():
+            if interval_start == None:
+                interval_start = currentDateTime
+        else:
+            if interval_start != None:
+                interval_end = currentDateTime - timedelta(hours=1)
+                unavailable_pickup_times.append({
+                    "start" : interval_start,
+                    "end" : interval_end
+                })
+                interval_start = None
+        currentDateTime = currentDateTime + timedelta(hours=1)
+    if interval_start != None:
+        unavailable_pickup_times.append({
+            "start" : interval_start,
+            "end" : finalDateTime
+        })
+    # we also need to return the working hours of the pick up location
+    workingHoursArray = []
+    for workingHour in workingHours:
+        workingHoursArray.append({
+            "dayOfTheWeek" : workingHour.dayOfTheWeek,
+            "startTime" : workingHour.startTime,
+            "endTime" : workingHour.endTime
+        })
+    response_data = {
+        "unavailablePickupTimes" : unavailable_pickup_times,
+        "workingHours" : workingHoursArray
+    }
+    return JsonResponse(response_data, status=200)
+
+
+
+@extend_schema(
+    tags=['home'],
+    responses={
+        200: AvailableDropOffSerializer,
+        404: OpenApiResponse(
+            description='Vehicle Not Found',
+            examples=[
+                OpenApiExample(
+                    'Vehicle Not Found',
+                    value={"error": "Vehicle not found"},
+                ),
+            ],
+        ),
+    },
+     parameters=[
+        OpenApiParameter(
+            name='pickUpLocationId',
+            type=str,
+            location=OpenApiParameter.QUERY,
+            description='Id of the pick up location',
+            required=True,
+            default='2'
+        ),
+        OpenApiParameter(
+            name='dropOffLocationId',
+            type=str,
+            location=OpenApiParameter.QUERY,
+            description='Id of the drop off location',
+            required=True,
+            default='2'
+        ),
+        OpenApiParameter(
+            name='pickUpDate',
+            type=date,
+            location=OpenApiParameter.QUERY,
+            description='Format year-month-day, zero padded',
+            required=True,
+            default='2022-05-03'
+        ),
+        OpenApiParameter(
+            name='pickUpTime',
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description='Hour between 0-23',
+            required=True,
+            default=14
+        )
+     ]
+)
+#TEST
+@api_view(["GET"])
+def getLastAvailableDropOffTime(request, offer_id):
+    response_data = {}
+    pickUpLocationId = request.GET.get("pickUpLocationId")
+    dropOffLocationId = request.GET.get("dropOffLocationId")
+    pickUpDate = request.GET.get("pickUpDate")
+    pickUpTime = request.GET.get("pickUpTime")
+    #check if required fields are filled
+    if (pickUpLocationId == None or dropOffLocationId == None or pickUpDate == None or pickUpTime == None):
+        return Response({"error": "Required fields not filled"}, status=404)
+    date_format = "%Y-%m-%d"
+    pickUpDateTime = None
+    #check pick up date and time
+    if pickUpDate != None:
+        try:
+            pickUpDate = datetime.strptime(pickUpDate, date_format).date()
+        except ValueError:
+            return Response({"error": "Invalid date format"}, status=404)
+        if pickUpTime  == None:
+            return Response({"error": "Pick up time not specified"}, status=404)
+        try:
+            pickUpTime = int(pickUpTime)
+        except:
+            return Response({"error": "Invalid time format"}, status=404)
+        if pickUpTime < 0 or pickUpTime > 23:
+            return Response({"error": "Invalid time format"}, status=404)
+        pickUpDateTime = datetime.combine(pickUpDate, datetime.min.time()) + timedelta(hours=pickUpTime)
+    #check if locations exist
+    try:
+        pickUpLocation = Location.objects.get(pk=pickUpLocationId)
+        dropOffLocation = Location.objects.get(pk=dropOffLocationId)
+    except Location.DoesNotExist:
+        return Response({"error": "Locations not found"}, status=404)
+    offer = Offer.objects.get(pk=offer_id)
+    vehicles = Vehicle.objects.filter(location=pickUpLocation).filter(dealer=offer.dealer).filter(model=offer.model)
+    #check if vehicles are available
+    active_rents = Rent.objects.filter(vehicle__in=vehicles).filter(dateTimeRented__lte=pickUpDateTime, dateTimeReturned__gte=pickUpDateTime)
+    rented_vehicles = active_rents.values_list('vehicle', flat=True)
+    vehicles = vehicles.exclude(vehicle_id__in=rented_vehicles)
+    if vehicles.count() == 0:
+        return Response({"error": "No vehicles available"}, status=404)
+    #frontend will check if the drop off time is during working hours, we need to
+    #get the last available drop off time for any available vehicle (for each vehicle we will get the last rent that starts after the pick up time, or none if it doesn't exist)
+    vehicle_id = None
+    lastReturnDateTime = None
+    for vehicle in vehicles:
+        rentals = Rent.objects.filter(vehicle=vehicle).filter(dateTimeRented__gt=pickUpDateTime)
+        if rentals.count() == 0:
+            lastReturnDateTime = None
+            vehicle_id = vehicle.vehicle_id
+            break
+        vehicleReturnDateTime = rentals.order_by('dateTimeRented')[0].dateTimeRented
+        vehicleReturnDateTime = getFirstAvailableWorkingTime(vehicleReturnDateTime, dropOffLocation)
+        if vehicleReturnDateTime == False:
+            return Response({"error": "No working hours for drop off location"}, status=404)
+        if lastReturnDateTime == None or vehicleReturnDateTime > lastReturnDateTime:
+            lastReturnDateTime = vehicleReturnDateTime
+            vehicle_id = vehicle.vehicle_id
+
+    #we also need to return the working hours of the drop off location
+    workingHours = WorkingHours.objects.filter(location=dropOffLocation)
+    workingHoursArray = []
+    for workingHour in workingHours:
+        workingHoursArray.append({
+            "dayOfTheWeek" : workingHour.dayOfTheWeek,
+            "startTime" : workingHour.startTime,
+            "endTime" : workingHour.endTime
+        })
+
+    response_data = {
+        "lastReturnDateTime" : lastReturnDateTime, # if none, the vehicle has no upcoming rents and can be returned at any time
+        "vehicle_id" : vehicle_id, 
+        "workingHours" : workingHoursArray
+    }
+    return JsonResponse(response_data, status=200)
+
+
+
+#we have found the first upcoming rental time for a vehicle, now we need to find the actual return time
+#which will be the the first working time of the drop off location before or at the same time as returnDateTime
+def getFirstAvailableWorkingTime(returnDateTime, dropOffLocation):
+    dropOffWorkingHours = WorkingHours.objects.filter(location=dropOffLocation)
+    if dropOffWorkingHours.count() == 0:
+        return False
+    workingHours = dropOffWorkingHours.filter(dayOfTheWeek=returnDateTime.weekday())
+    wrongDay = False
+    #if the location is closed on the specified day, we will get the last working day before returnDateTime
+    while workingHours.count() == 0:
+        wrongDay = True
+        returnDateTime -= timedelta(days=1)
+        workingHours = dropOffWorkingHours.filter(dayOfTheWeek=returnDateTime.weekday())
+    #if we picked a closed day we will get the end time of the last working day
+    if wrongDay:
+        returnDateTime = returnDateTime.replace(hour=workingHours[0].endTime.hour, minute=0, second=0)
+    else:
+        # if we got a working day we have 3 possibilities
+        # 1. returnDateTime is after closing time and we have to return it at the endtime of the current day
+        # 2. returnDateTime is before opening time and we have to return it at the endtime of the last working day
+        # 3. returnDateTime is during working hours and we can return it normally
+        if returnDateTime.hour > workingHours[0].endTime:
+            returnDateTime = returnDateTime.replace(hour=workingHours[0].endTime.hour, minute=0, second=0)
+        elif returnDateTime.hour < workingHours[0].startTime:
+            returnDateTime -= timedelta(days=1)
+            #find first previous working day
+            while workingHours.count() == 0:
+                returnDateTime -= timedelta(days=1)
+                workingHours = dropOffWorkingHours.filter(dayOfTheWeek=returnDateTime.weekday())
+            returnDateTime = returnDateTime.replace(hour=workingHours[0].endTime.hour, minute=0, second=0)
+
+    return returnDateTime
+
+#FOR IVAN'S PROFILE VIEWS
+@api_view(["POST"])
+def postReview(request, rent_id):
+    try:
+        rent = Rent.objects.get(pk=rent_id)
+        user = request.user
+        if (not user.is_authenticated or not canUserReview(user, rent)):
+            return Response({"error": "User can't review"}, status=404)
+        rentoid = Rentoid.objects.get(user=user)
+        if Review.objects.filter(rent=rent).exists():
+            return Response({"error": "Review already exists"}, status=404)
+        rating = request.POST.get("rating")
+        description = request.POST.get("description")
+        if rating == None:
+            return Response({"error": "Rating not specified"}, status=404)
+        try:
+            rating = int(rating)
+        except:
+            return Response({"error": "Invalid rating format"}, status=404)
+        if rating < 1 or rating > 5:
+            return Response({"error": "Invalid rating format"}, status=404)
+        review = Review(rent=rent, rating=rating, description=description, reviewDate=datetime.now())
+        review.save()
+        offer = Offer.objects.get(model=rent.vehicle.model, dealer=rent.vehicle.dealer)
+        calculateReviewsForOffer(offer)
+        vehicle = Vehicle.objects.get(pk=rent.vehicle.vehicle_id)
+        calculateReviewsForVehicle(vehicle)
+        return Response({"message": "Review added"}, status=200)
+    except Rent.DoesNotExist:
+        return Response({"error": "Rent not found"}, status=404)
+
+#Some helpful functons, calculate and update noOfReviews and rating for offers and vehicles
+def calculateReviewsForOffer(offer):
+    rentals = Rent.objects.filter(vehicle__dealer=offer.dealer).filter(vehicle__model=offer.model).values('rent_id')
+    reviews = Review.objects.filter(rent__in=rentals).all()
+    rating = 0
+    for review in reviews:
+        rating += review.rating
+    offer.rating = rating / reviews.count()
+    offer.noOfReviews = reviews.count()
+    offer.save()
+
+def calculateReviewsForVehicle(vehicle):
+    rentals = Rent.objects.filter(vehicle=vehicle).values('rent_id')
+    reviews = Review.objects.filter(rent__in=rentals).all()
+    rating = 0
+    for review in reviews:
+        rating += review.rating
+    vehicle.rating = rating / reviews.count()
+    vehicle.noOfReviews = reviews.count()
+    vehicle.save()
+#FOR IVAN'S PROFILE VIEWS
+
+#these two will be called only when we fill the database with mock data
+def calculateReviewsForAllOffers():
+    offers = Offer.objects.all()
+    for offer in offers:
+        calculateReviewsForOffer(offer)
+
+def calculateReviewsForAllVehicles():
+    vehicles = Vehicle.objects.all()
+    for vehicle in vehicles:
+        calculateReviewsForVehicle(vehicle)
