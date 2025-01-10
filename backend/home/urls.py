@@ -19,5 +19,5 @@ urlpatterns = [
     path('reviews/<int:offer_id>/', views.getReviews, name='getReviews'),
     path('offer-locations/<int:offer_id>/', views.getLocationsForOffer, name='getLocationsForOffer'),
     path('available-drop-off/<int:offer_id>/', views.getLastAvailableDropOffTime, name='getLastAvailableDropOffTime'),
-    
+    path('unavailable-pick-up/<int:offer_id>/', views.getUnavailablePickupTimes, name='getUnavailablePickUpTimes')
 ]
