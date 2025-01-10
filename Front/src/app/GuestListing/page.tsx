@@ -8,7 +8,7 @@ import Footer from '@/components/shared/Footer/Footer';
 import Header from '@/components/shared/Header/Header';
 import { useCarContext } from '@/context/CarContext';
 import { mockVehicles } from '@/mockData/mockVehicles';
-import { Box, Text, Image, Flex, useBreakpointValue } from '@chakra-ui/react';
+import { Box, Text, Flex, useBreakpointValue } from '@chakra-ui/react';
 import {
   FaCcMastercard,
   FaCcStripe,
@@ -43,16 +43,7 @@ const ListinGuestFooterLinks = {
 export default function ResultsPage() {
   const { cars } = useCarContext();
 
-  const gapSize = useBreakpointValue({
-    base: 8, // Small gap for small screens (mobile)
-    md: 10, // Slightly larger gap for medium screens (laptop/tablet)
-    lg: 10, // Largest gap for large screens (desktop)
-    xl: 10,
-  });
-
-  /*   if (!cars) {
-    return <Text>No results found.</Text>;
-  } */
+  const isSmallScreen = useBreakpointValue({ base: true, md: false });
 
   return (
     <Flex direction="column" grow={1} align={'center'} width={'100%'}>
@@ -65,8 +56,8 @@ export default function ResultsPage() {
         direction={'column'}
         align={'center'}
         justify={'center'}
-        py={gapSize}
-        gap={gapSize}
+        py={8}
+        gap={8}
         width={'100%'}
       >
         <EasyRentMoto />
@@ -74,14 +65,29 @@ export default function ResultsPage() {
       </Flex>
 
       <Flex
-        direction={'row'}
+        direction={{ base: 'column', md: 'row' }}
         py={10}
         gap={10}
         width={'80vw'}
-        align={'flex-start'}
+        align={{ base: 'center', md: 'flex-start' }}
+        justify={{ base: 'center', md: 'space-between' }}
       >
-        <SideFilter />
-        <VehicleGrid vehicles={mockVehicles} />
+        <Box
+          flexShrink={0}
+          width={{ base: '100%', md: '25%' }}
+          display="flex"
+          justifyContent="center"
+        >
+          <SideFilter />
+        </Box>
+        <Box
+          flexGrow={1}
+          width={{ base: '100%', md: '75%' }}
+          display={{ base: 'flex', md: 'block' }}
+          justifyContent={{ base: 'center', md: 'flex-start' }}
+        >
+          <VehicleGrid vehicles={mockVehicles} />
+        </Box>
       </Flex>
 
       <Footer links={ListinGuestFooterLinks} />
