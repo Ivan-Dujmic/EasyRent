@@ -15,6 +15,21 @@ export interface ICar {
   price: string;
   rating: string;
   noOfReviews: string;
+  registration: string;
+}
+
+export interface ILog {
+  
+  image: string;
+  companyName: string;
+  modelName: string;
+  makeName: string;
+  customerName: string;
+  customerSurame: string;
+  price: string;
+  registration: string;
+  pickupp: string;
+  dropoff: string;
 }
 
 export interface IShowcased {

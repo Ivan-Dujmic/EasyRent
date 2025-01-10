@@ -20,8 +20,8 @@ export default function CompanyProfileHeader() {
             bg={'brandmiddlegray'}
             color={'brandblack'}
             fontWeight={'semibold'}
-            fontSize="sm"
-            size="sm"
+            fontSize="md"
+            size="md"
             borderWidth="2px"
             borderColor="brandwhite"
             _hover={{

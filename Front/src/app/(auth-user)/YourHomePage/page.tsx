@@ -5,7 +5,7 @@ import MainFilter from '@/components/shared/filter/MainFilter/MainFilter';
 import CompanyList from '@/components/shared/company/CompanyList/CompanyList';
 import { Flex, Heading, useBreakpointValue } from '@chakra-ui/react';
 import { mockVehicles } from '@/mockData/mockVehicles';
-import VehicleList from '@/components/shared/cars/VechileList/VechileList';
+import VehicleList from '@/components/shared/cards/VechileList/VechileList';
 import { AuthRedirect } from '@/components/shared/auth/AuthRedirect/AuthRedirect';
 import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
