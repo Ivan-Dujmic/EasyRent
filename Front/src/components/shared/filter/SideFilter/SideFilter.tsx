@@ -11,6 +11,7 @@ import {
   Checkbox,
   CheckboxGroup,
   Button,
+  Heading,
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import Select, { MultiValue, GroupBase, components } from 'react-select';
@@ -66,12 +67,13 @@ export default function SideFilter() {
       bg="brandblue"
       color="white"
       px={2}
-      py={1}
+      py={0}
       borderRadius="full"
       display="inline-flex"
       alignItems="center"
-      mr={2}
-      mb={1}
+      mr={1}
+      mt={1}
+      mb={0.5}
     >
       {props.data.label}
       <Box
@@ -95,10 +97,14 @@ export default function SideFilter() {
       width="300px"
       bg="brandlightgray"
       p={5}
-      borderRadius="md"
+      borderRadius="lg"
       boxShadow="lg"
       color="brandblack"
     >
+      <Heading size="md" mb={4} textAlign="center" color="brandblue">
+        Filters
+      </Heading>
+
       {/* Seats Filter */}
       <Box mb={6}>
         <Text fontSize="lg" mb={2} fontWeight="bold">

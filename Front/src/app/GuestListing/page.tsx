@@ -40,7 +40,7 @@ export default function ResultsPage() {
         <MainFilter />
       </Flex>
 
-      <Flex direction={'row'}>
+      <Flex direction={'row'} py={10}>
         <SideFilter />
       </Flex>
     </Flex>
