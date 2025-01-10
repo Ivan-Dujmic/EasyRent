@@ -1,63 +1,105 @@
-import { Flex, Heading, IconButton } from '@chakra-ui/react';
+'use client';
+
+import {
+  Flex,
+  Heading,
+  IconButton,
+  useBreakpointValue,
+} from '@chakra-ui/react';
 import { FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import React, { useState } from 'react';
 import VehicleCard from '../VehicleCard/VechileCard';
-import { useBreakpointValue } from '@chakra-ui/react';
 import { ICar } from '@/fetchers/homeData';
 
 interface VehicleListProps {
-  vehicles: Array<ICar> | undefined;
-  description: string;
-  useDescription: Boolean;
+  vehicles?: Array<ICar>;
+  description?: string;
 }
 
 export default function VehicleList({
-  vehicles,
-  description,
-  useDescription,
+  vehicles = [],
+  description = undefined,
 }: VehicleListProps) {
+  // Dynamically determine the number of visible cards based on screen size
+  const numCards = useBreakpointValue({ base: 1, sm: 2, md: 3, lg: 4 }) || 4;
+
+  const gap = 16; // Gap between cards in pixels
+  const cardWidth = `calc((100% - ${(numCards - 1) * gap}px) / ${numCards})`; // Dynamically calculate card width
+
   const [startIndex, setStartIndex] = useState(0);
-  const sliceSize = useBreakpointValue({ base: 4, xl: 5 });
 
   const handleScroll = (direction: 'left' | 'right') => {
-    const totalVehicles = vehicles?.length;
-    const maxIndex = totalVehicles ? totalVehicles - 5 : 5; // Maksimalni početni indeks za prikaz 5 vozila; !!! nes sam bezvze dodo projmejnit ako treba
-    if (direction === 'right') {
-      setStartIndex((prevIndex) =>
-        prevIndex + 2 <= maxIndex ? prevIndex + 2 : maxIndex
-      );
-    } else {
-      setStartIndex((prevIndex) => (prevIndex - 2 >= 0 ? prevIndex - 2 : 0));
+    if (direction === 'right' && startIndex < vehicles.length - numCards) {
+      setStartIndex((prev) => prev + 1);
+    } else if (direction === 'left' && startIndex > 0) {
+      setStartIndex((prev) => prev - 1);
     }
   };
 
+  const visibleVehicles = vehicles.slice(startIndex, startIndex + numCards);
+
   return (
-    <Flex direction="column" align="center" width="75%">
-      {useDescription && (
+    <Flex direction="column" align="center" width="100%">
+      {description && (
         <Heading size="md" color="brandblack" alignSelf="flex-start">
           {description}
         </Heading>
       )}
-      <Flex justify="space-between" align="center" width="100%" mb={2}>
-        <IconButton
-          aria-label="Scroll left"
-          icon={<FaChevronLeft />}
-          onClick={() => handleScroll('left')}
-          isRound
-        />
-        <Flex overflow="hidden" gap={3} maxWidth="100%" px={2} py={3}>
-          {vehicles
-            ?.slice(startIndex, startIndex + (sliceSize || 4))
-            .map((vehicle, index) => (
-              <VehicleCard key={index} vehicle={vehicle} />
-            ))}
+      <Flex
+        position="relative"
+        justify="center"
+        align="center"
+        width="100%"
+        mb={4}
+      >
+        {/* Left Scroll Button */}
+        {startIndex > 0 && (
+          <IconButton
+            position="absolute"
+            left="1vmax"
+            aria-label="Scroll left"
+            icon={<FaChevronLeft />}
+            onClick={() => handleScroll('left')}
+            isRound
+            zIndex="1"
+          />
+        )}
+
+        {/* Vehicle Cards */}
+        <Flex
+          overflow="hidden"
+          justify="center"
+          align="center"
+          width="80%"
+          gap={`${gap}px`}
+          px={2}
+        >
+          {visibleVehicles.map((vehicle, index) => (
+            <div
+              key={index}
+              style={{
+                flex: '0 0 auto',
+                width: cardWidth, // Dynamically calculated width
+                maxWidth: cardWidth,
+              }}
+            >
+              <VehicleCard vehicle={vehicle} />
+            </div>
+          ))}
         </Flex>
-        <IconButton
-          aria-label="Scroll right"
-          icon={<FaChevronRight />}
-          onClick={() => handleScroll('right')}
-          isRound
-        />
+
+        {/* Right Scroll Button */}
+        {startIndex < vehicles.length - numCards && (
+          <IconButton
+            position="absolute"
+            right="1vmax"
+            aria-label="Scroll right"
+            icon={<FaChevronRight />}
+            onClick={() => handleScroll('right')}
+            isRound
+            zIndex="1"
+          />
+        )}
       </Flex>
     </Flex>
   );

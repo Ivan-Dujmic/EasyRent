@@ -25,9 +25,13 @@ export default function LocationDDM({
   const ref = useRef(null);
 
   const inputTextSize = useBreakpointValue({
-    md: 'xs',
-    lg: 'sm',
-    xl: 'md',
+    base: 'sm', // Manji tekst za male ekrane
+    md: 'md', // Normalan tekst za srednje i velike ekrane
+  });
+
+  const inputWidth = useBreakpointValue({
+    base: '100%', // Zauzima ceo prostor na manjim ekranima
+    md: '100%', // Automatski zauzima prostor na većim ekranima
   });
 
   useOutsideClick({
@@ -50,7 +54,7 @@ export default function LocationDDM({
   };
 
   return (
-    <Stack gap={0} position={'relative'} ref={ref}>
+    <Stack gap={0} position={'relative'} ref={ref} width="100%">
       <Menu isOpen={isOpen}>
         <Text fontSize={'0.8rem'} color={'brandblue'}>
           {description}
@@ -60,14 +64,13 @@ export default function LocationDDM({
           borderWidth={'2px'}
           borderRadius="md"
           borderColor={'brandblue'}
-          width={'fit-content'}
+          width={inputWidth} // Omogućava maksimalno širenje
           bg={'brandlightgray'}
           _focusWithin={{
             bg: 'brandwhite',
             borderColor: 'brandblack',
             color: 'brandblack',
           }}
-          maxWidth={'14rem'}
         >
           <InputLeftElement pointerEvents="none" color="brandblack">
             <FaCarAlt />
