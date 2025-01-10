@@ -21,8 +21,9 @@ export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
       margin={0}
       as={NextLink}
       href={`/vehicles/${vehicle.modelName}`}
-      maxW="260px" // Increased width
-      minW="220px" // Increased minimum width
+      maxW="260px"
+      minW="260px"
+      height="250px" // Fixed height for consistency
       borderWidth="2px"
       borderRadius="lg"
       overflow="hidden"
@@ -39,21 +40,27 @@ export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
         alt={`${vehicle.modelName} car`}
         objectFit="cover"
         width="100%"
-        height="140px" // Slightly larger height for images
+        height="160px" // Fixed height for images
         borderRadius="md"
       />
-      <CardBody px={0} py={2}>
+      <CardBody
+        px={0}
+        py={2}
+        display="flex"
+        flexDirection="column"
+        justifyContent="space-between"
+      >
         <Stack spacing={2} height={'100%'} justify={'space-between'}>
           <Flex direction={'column'}>
             <Flex gap={1} align={'baseline'} justify={'space-between'}>
-              <Heading size="xs">
+              <Heading size="xs" noOfLines={1}>
                 {vehicle.makeName} {vehicle.modelName}
               </Heading>
               <Text fontSize="xs">€{vehicle.price}/day</Text>
             </Flex>
 
             {/* Kompanija koja nudi vozilo */}
-            <Text color="brandgray" fontSize="xs">
+            <Text color="brandgray" fontSize="xs" noOfLines={1}>
               {vehicle.companyName}
             </Text>
           </Flex>

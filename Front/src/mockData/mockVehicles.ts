@@ -1,11 +1,11 @@
 import { ICar } from '@/fetchers/homeData';
 
-export const mockVehicles: ICar[] = [
+export const mockVehicles0: ICar[] = [
   {
     image:
       'https://content.r9cdn.net/rimg/car-images/generic/04_premium.png?height=116',
     companyName: 'Enterprise Rent-A-Car',
-    makeName: 'Mercedes-Benz',
+    makeName: 'Mercedes-Benz 1',
     modelName: 'A-Class',
     noOfSeats: '5',
     automatic: 'true',
@@ -18,7 +18,7 @@ export const mockVehicles: ICar[] = [
     image:
       'https://content.r9cdn.net/rimg/car-images/generic/01_mini_white.png?height=116',
     companyName: 'Budget',
-    makeName: 'Volkswagen',
+    makeName: 'Volkswagen 1',
     modelName: 'up!',
     noOfSeats: '5',
     automatic: 'false',
@@ -31,7 +31,7 @@ export const mockVehicles: ICar[] = [
     image:
       'https://content.r9cdn.net/rimg/car-images/generic/05_suv-small_white.png?height=116',
     companyName: 'Payless',
-    makeName: 'Volkswagen',
+    makeName: 'Volkswagen 1',
     modelName: 'T-Cross',
     noOfSeats: '5',
     automatic: 'false',
@@ -44,7 +44,7 @@ export const mockVehicles: ICar[] = [
     image:
       'https://content.r9cdn.net/rimg/car-images/generic/06_suv-medium_white.png?height=116',
     companyName: 'National',
-    makeName: 'Mazda',
+    makeName: 'Mazda 1',
     modelName: 'CX-5',
     noOfSeats: '5',
     automatic: 'true',
@@ -57,7 +57,7 @@ export const mockVehicles: ICar[] = [
     image:
       'https://content.r9cdn.net/rimg/car-images/generic/05_suv-small_black.png?height=116',
     companyName: 'Budget',
-    makeName: 'Volkswagen',
+    makeName: 'Volkswagen 1',
     modelName: 'Taigo',
     noOfSeats: '5',
     automatic: 'false',
@@ -70,7 +70,7 @@ export const mockVehicles: ICar[] = [
     image:
       'https://content.r9cdn.net/rimg/car-images/generic/06_suv-medium_warmgrey.png?height=116',
     companyName: 'Budget',
-    makeName: 'Volkswagen',
+    makeName: 'Volkswagen 1',
     modelName: 'Tiguan',
     noOfSeats: '5',
     automatic: 'true',
@@ -83,7 +83,7 @@ export const mockVehicles: ICar[] = [
     image:
       'https://content.r9cdn.net/rimg/car-images/generic/05_suv-small_white.png?height=116',
     companyName: 'SURPRICE CAR RENTAL',
-    makeName: 'Nissan',
+    makeName: 'Nissan 1',
     modelName: 'Qashqai',
     noOfSeats: '5',
     automatic: 'true',
@@ -96,7 +96,7 @@ export const mockVehicles: ICar[] = [
     image:
       'https://content.r9cdn.net/rimg/car-images/generic/07_suv-large_white.png?height=116',
     companyName: 'Alamo',
-    makeName: 'Land Rover',
+    makeName: 'Land Rover 1',
     modelName: 'Discovery Sport',
     noOfSeats: '5',
     automatic: 'true',
@@ -105,4 +105,16 @@ export const mockVehicles: ICar[] = [
     noOfReviews: 3,
     offer_id: '8',
   },
+];
+
+export const mockVehicles: ICar[] = [
+  ...Array.from({ length: 48 }, (_, index) => {
+    const baseVehicle = mockVehicles0[Math.floor(Math.random() * 8)];
+    return {
+      ...baseVehicle,
+      makeName: `${baseVehicle.makeName.split(' ')[0]} ${Math.ceil((index + 1) / 8)}`,
+      modelName: `${baseVehicle.modelName} Copy ${index + 1}`,
+      offer_id: `${index + 9}`,
+    };
+  }),
 ];

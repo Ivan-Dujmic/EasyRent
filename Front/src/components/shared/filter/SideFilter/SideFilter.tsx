@@ -94,11 +94,11 @@ export default function SideFilter() {
 
   return (
     <Box
-      width="300px"
+      width="400px"
       bg="brandlightgray"
       p={5}
       borderRadius="lg"
-      boxShadow="lg"
+      boxShadow="0px 4px 12px rgba(0, 0, 0, 0.1)"
       color="brandblack"
     >
       <Heading size="md" mb={4} textAlign="center" color="brandblue">
@@ -153,6 +153,7 @@ export default function SideFilter() {
         <Text fontSize="lg" mb={2} fontWeight="bold">
           Price Range (€ / day):
         </Text>
+        <Text mb={1}>min price:</Text>
         <Flex alignItems="center" gap={4} mb={4} style={{ width: '100%' }}>
           <Text style={{ width: '50px', textAlign: 'right' }}>{minPrice}€</Text>
           <Slider
@@ -170,6 +171,7 @@ export default function SideFilter() {
             <SliderThumb boxSize={4} />
           </Slider>
         </Flex>
+        <Text mb={1}>max price:</Text>
         <Flex alignItems="center" gap={4} style={{ width: '100%' }}>
           <Text style={{ width: '50px', textAlign: 'right' }}>{maxPrice}€</Text>
           <Slider

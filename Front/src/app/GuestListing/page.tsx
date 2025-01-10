@@ -1,11 +1,44 @@
 'use client';
 
 import EasyRentMoto from '@/components/core/EasyRentMoto/EasyRentMoto';
+import { VehicleGrid } from '@/components/shared/cars/VehicleGrid/VehicleGrid';
 import MainFilter from '@/components/shared/filter/MainFilter/MainFilter';
 import SideFilter from '@/components/shared/filter/SideFilter/SideFilter';
+import Footer from '@/components/shared/Footer/Footer';
 import Header from '@/components/shared/Header/Header';
 import { useCarContext } from '@/context/CarContext';
+import { mockVehicles } from '@/mockData/mockVehicles';
 import { Box, Text, Image, Flex, useBreakpointValue } from '@chakra-ui/react';
+import {
+  FaCcMastercard,
+  FaCcStripe,
+  FaCcVisa,
+  FaFacebookF,
+  FaInstagram,
+  FaLinkedinIn,
+  FaTwitter,
+} from 'react-icons/fa';
+
+const ListinGuestFooterLinks = {
+  quickLinks: [
+    { label: 'Home', href: '/home' },
+    { label: 'About Us', href: '/home' },
+    { label: 'FAQ', href: '/home#faq-section' },
+    { label: 'Contact Us', href: '/TalkToUs' },
+  ],
+  contactInfo: {
+    phone: '+385 95 517 1890',
+    email: 'support@easyrent.com',
+    address: 'Unska ul. 3, 10000, Zagreb',
+  },
+  socialLinks: [
+    { label: 'Facebook', href: 'https://facebook.com', icon: FaFacebookF },
+    { label: 'Instagram', href: 'https://instagram.com', icon: FaInstagram },
+    { label: 'Twitter', href: 'https://twitter.com', icon: FaTwitter },
+    { label: 'LinkedIn', href: 'https://linkedin.com', icon: FaLinkedinIn },
+  ],
+  paymentIcons: [FaCcVisa, FaCcMastercard, FaCcStripe],
+};
 
 export default function ResultsPage() {
   const { cars } = useCarContext();
@@ -40,9 +73,18 @@ export default function ResultsPage() {
         <MainFilter />
       </Flex>
 
-      <Flex direction={'row'} py={10}>
+      <Flex
+        direction={'row'}
+        py={10}
+        gap={10}
+        width={'80vw'}
+        align={'flex-start'}
+      >
         <SideFilter />
+        <VehicleGrid vehicles={mockVehicles} />
       </Flex>
+
+      <Footer links={ListinGuestFooterLinks} />
     </Flex>
   );
 }

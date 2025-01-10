@@ -21,7 +21,8 @@ export default function VehicleList({
   description = undefined,
 }: VehicleListProps) {
   // Dynamically determine the number of visible cards based on screen size
-  const numCards = useBreakpointValue({ base: 1, sm: 2, md: 3, lg: 4 }) || 4;
+  const numCards =
+    useBreakpointValue({ base: 1, sm: 1, md: 2, lg: 3, xl: 4 }) || 4;
 
   const gap = 24; // Increased the gap for better spacing
   const cardWidth = `calc((100% - ${(numCards - 1) * gap}px) / ${numCards})`;
