@@ -10,4 +10,5 @@ urlpatterns = [
     path("addMoney/<rentoid_id>/", views.addMoney, name="addMoney"),
     path("removeMoney/<rentoid_id>/", views.removeMoney, name="removeMoney"),
     path("rentOffer/<offer_id>/", views.offerRent, name="rentOffer"),
+    path("webhook", views.stripe_webhook, name="webhook"),
 ]

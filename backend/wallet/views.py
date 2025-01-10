@@ -1,4 +1,5 @@
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
+import time
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -12,7 +13,9 @@ import stripe
 from dotenv import load_dotenv
 import os
 import datetime
+from django.utils.dateparse import parse_datetime
 from django.db.models import F, ExpressionWrapper, DecimalField, Q
+from django.views.decorators.csrf import csrf_exempt
 
 load_dotenv()
 
@@ -171,7 +174,7 @@ def offerRent(request, offer_id):
     )
     if len(available_vehicles) == 0:
         return Response(
-            {"error": "No available rented vehicles for given parameters."}, status=404
+            {"error": "No available vehicles for given parameters."}, status=404
         )
     vehicle_id = available_vehicles[0]["vehicle_id"]
     diff = dropoff_datetime - pickup_datetime
@@ -219,15 +222,24 @@ def offerRent(request, offer_id):
                     {
                         "price_data": {
                             "currency": "eur",
-                            "product_data": {"name": "My Product"},
-                            "unit_amount": offer.price * 100,
+                            "product_data": {"name": offer.description},
+                            "unit_amount": int(totalPrice * 100),
                         },
                         "quantity": 1,
                     }
                 ],
                 mode="payment",
-                success_url=request.build_absolute_uri("/success/"),
-                cancel_url=request.build_absolute_uri("/cancel/"),
+                success_url="http://localhost:3000/success/",
+                cancel_url="http://localhost:3000/cancel/",
+                expires_at=int(time.time()) + 1800,
+                metadata={
+                    "dealer_id": dealer_id,
+                    "rentoid_id": buyer_id,
+                    "dateTimeRented": f"{pickup_datetime}",
+                    "dateTimeReturned": f"{dropoff_datetime}",
+                    "vehicle_id": vehicle_id,
+                    "price": totalPrice,
+                },
             )
             # Return the checkout_url to frontend to initiate immediate redirect
             return Response({"detail": checkout_session.url}, status=status.HTTP_200_OK)
@@ -240,3 +252,78 @@ def offerRent(request, offer_id):
         {"detail": "Invalid payment method."},
         status=status.HTTP_400_BAD_REQUEST,
     )
+
+
+@api_view(["POST"])
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META["HTTP_STRIPE_SIGNATURE"]
+    endpoint_secret = os.getenv("STRIPE_WH")
+
+    event = None
+    print("in webhook")
+    try:
+        # Verify the webhook signature
+        event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+    except ValueError as e:
+        # Invalid payload
+        return Response({"error": "Invalid payload"}, status=400)
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return Response({"error": "Invalid signature"}, status=400)
+
+    # Handle the checkout.session.completed event
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]  # contains a stripe.checkout.Session object
+        print("Checkout session was successfully completed!")
+
+        # Payment status and customer details can be retrieved from the session object
+        payment_status = session.get("payment_status")
+
+        # If payment is successful, you can process the order
+        if payment_status == "paid":
+            print("payment paid")
+            metadata = session.get("metadata", {})
+            metadata = session.get("metadata", {})
+
+            # Extract metadata values and convert them back to their original variable types
+            # Convert the ID values into integers (with error handling)
+            dealer_id = metadata.get("dealer_id")
+            rentoid_id = metadata.get("rentoid_id")
+            vehicle_id = metadata.get("vehicle_id")
+
+            # Convert metadata fields to integers if they exist, else handle the error
+            try:
+                dealer_id = int(dealer_id) if dealer_id else None
+                rentoid_id = int(rentoid_id) if rentoid_id else None
+                vehicle_id = int(vehicle_id) if vehicle_id else None
+            except ValueError as e:
+                return Respose(
+                    {"error": "Invalid metadata value for ID fields"}, status=400
+                )
+
+            # Convert datetime strings back to datetime objects
+            dateTimeRented = parse_datetime(metadata.get("dateTimeRented"))
+            dateTimeReturned = parse_datetime(metadata.get("dateTimeReturned"))
+
+            # Convert price back to float (if necessary)
+            price = float(metadata.get("price", 0))
+            Rent.objects.create(
+                dealer_id=dealer_id,
+                rentoid_id=rentoid_id,
+                dateTimeRented=dateTimeRented,
+                dateTimeReturned=dateTimeReturned,
+                vehicle_id=vehicle_id,
+                price=price,
+            )
+            return Response({"paymentStatus": "payment paid"})
+
+        else:
+            print("failed to pay")
+            return Response({"paymentStatus": "unsuccessfull payment"})
+
+    else:
+        print(f"Unhandled event type: {event['type']}")
+
+    # Respond with a success status
+    return Response({"status": "success"})
