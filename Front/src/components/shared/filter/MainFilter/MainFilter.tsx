@@ -68,7 +68,7 @@ export default function MainFilter() {
     {
       onSuccess: (data: ICar[]) => {
         setCars(data); // Spremanje automobila u globalni kontekst
-        router.push('/results'); // Preusmjeravanje na novu stranicu
+        router.push('/GuestListing'); // Preusmjeravanje na novu stranicu
       },
       onError: (error) => {
         console.error('Error fetching data:', error);
