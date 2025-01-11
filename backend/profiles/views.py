@@ -1606,3 +1606,266 @@ def companyOffer(request):
                     },
                     status=200,
                 )
+
+
+def companyVehicleLog(request):
+    if request.method == "GET":
+        user = request.user
+        if user.is_authenticated():
+            try:
+                vehicle_id = request.GET.get("vehicleId")
+                dealership = Dealership.object.filter(user_id=user)
+                vehicle = Vehicle.object.filter(vehicle_id=vehicle_id)
+                model = Model.object.filter(model_id=vehicle.model_id)
+                location = Location.object.filter(location_id=vehicle.location_id)
+                rents = Rent.object.filter(vehicle_id=vehicle_id)
+                rentCount = 0
+                rentTime = 0
+                moneyMade = 0
+                onGoing = {}
+                for rent in rents:
+                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
+                    rentUser = User.object.filter(id=rentoid.user_id)
+                    rentLocation = Location.object.filter(
+                        location_id=rent.rentedLocation_id
+                    )
+                    returnLocation = Location.object.filter(
+                        location_id=rent.returnLocation_id
+                    )
+                    if rent.dateTimeReturned >= datetime.now():
+                        onGoing = {
+                            "pickUpDateTime": rent.dateTimeRented,
+                            "dropOffDateTime": rent.dateTimeReturned,
+                            "firstName": rentUser.first_name,
+                            "lastName": rentUser.last_name,
+                            "price": rent.price,
+                            "pickUpLocationId": rent.rentedLocation_id,
+                            "dropOffLocationId": rent.returnLocation_id,
+                            "pickUpLocation": rentLocation.streetName
+                            + " "
+                            + rentLocation.streetNo,
+                            "dropOffLocation": returnLocation.streetName
+                            + " "
+                            + returnLocation.streetNo,
+                        }
+                    rentTime += (
+                        rent.dateTimeReturned - rent.dateTimeRented
+                    ).total_seconds()
+                    rentCount += 1
+                    moneyMade += rent.price
+
+                retObject = {
+                    "makeName": model.makeName,
+                    "modelName": model.modelName,
+                    "registration": vehicle.registration,
+                    "streetName": location.streetName,
+                    "streetNo": location.streetNo,
+                    "cityName": location.cityName,
+                    "timesRented": rentCount,
+                    "moneyMade": moneyMade,
+                    "rentedTime": rentTime,
+                    "onGoing": onGoing,
+                }
+
+                return JsonResponse(retObject, status=200)
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no vehicles yet!",
+                    },
+                    status=200,
+                )
+
+
+def companyLogUpcoming(request):
+    if request.method == "GET":
+        user = request.user
+        if user.is_authenticated():
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                rents = Rent.object.filter(dealer_id=dealership.dealer_id,vehicle_id=request.GET.get("vehicleId"))
+                page = int(request.GET.get("page", 1))
+                limit = int(request.GET.get("limit", 10))
+                vehicle_id = request.GET.get("vehicleId")
+                res = []
+                for rent in rents:
+                    if (
+                        rent.vehicle_id != vehicle_id
+                        or rent.dateTimeRented < datetime.now()
+                    ):
+                        continue
+                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
+                    rentUser = User.object.filter(id=rentoid.user_id)
+                    if rent.dateTimeRented >= datetime.now():
+                        item = {
+                            "dateTimePickup": rent.dateTimeRented,
+                            "dateTimeReturned": rent.dateTimeReturned,
+                            "firstName": rentUser.first_name,
+                            "lastName": rentUser.last_name,
+                            "price": rent.price,
+                            "pickUpLocation": rent.rentedLocation_id,
+                            "dropOffLocation": rent.returnLocation_id,
+                        }
+                        res.append(item)
+                retObject = {
+                    "results": res[(page - 1) * limit : page * limit],
+                    "isLastPage": True if len(res) <= page * limit else False,
+                }
+
+                return JsonResponse(retObject, status=200)
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no offers yet!",
+                    },
+                    status=200,
+                )
+
+
+def companyLogOngoing(request):
+    if request.method == "GET":
+        user = request.user
+        if user.is_authenticated():
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                rents = Rent.object.filter(dealer_id=dealership.dealer_id),vehicle_id=request.GET.get("vehicleId")
+                page = int(request.GET.get("page", 1))
+                limit = int(request.GET.get("limit", 10))
+                vehicle_id = request.GET.get("vehicleId")
+                res = []
+                for rent in rents:
+                    if (
+                        rent.vehicle_id != vehicle_id
+                        or rent.dateTimeRented > datetime.now()
+                        or (
+                            rent.dateTimeReturned < datetime.now()
+                            and rent.DateTimeRented >= datetime.now()
+                        )
+                    ):
+                        continue
+                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
+                    rentUser = User.object.filter(id=rentoid.user_id)
+                    if rent.dateTimeRented >= datetime.now():
+                        item = {
+                            "dateTimePickup": rent.dateTimeRented,
+                            "dateTimeReturned": rent.dateTimeReturned,
+                            "firstName": rentUser.first_name,
+                            "lastName": rentUser.last_name,
+                            "price": rent.price,
+                            "pickUpLocation": rent.rentedLocation_id,
+                            "dropOffLocation": rent.returnLocation_id,
+                        }
+                        res.append(item)
+                retObject = {
+                    "results": res[(page - 1) * limit : page * limit],
+                    "isLastPage": True if len(res) <= page * limit else False,
+                }
+
+                return JsonResponse(retObject, status=200)
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no offers yet!",
+                    },
+                    status=200,
+                )
+
+
+def companyLogCompleted(request):
+    if request.method == "GET":
+        user = request.user
+        if user.is_authenticated():
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                rents = Rent.object.filter(
+                    dealer_id=dealership.dealer_id,
+                    vehicle_id=request.GET.get("vehicleId"),
+                )
+                page = int(request.GET.get("page", 1))
+                limit = int(request.GET.get("limit", 10))
+                vehicle_id = request.GET.get("vehicleId")
+                res = []
+                for rent in rents:
+                    if (
+                        rent.vehicle_id != vehicle_id
+                        or rent.dateTimeReturned > datetime.now()
+                        or rent.dateTimeRented > datetime.now()
+                    ):
+                        continue
+                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
+                    rentUser = User.object.filter(id=rentoid.user_id)
+                    if rent.dateTimeRented >= datetime.now():
+                        item = {
+                            "dateTimePickup": rent.dateTimeRented,
+                            "dateTimeReturned": rent.dateTimeReturned,
+                            "firstName": rentUser.first_name,
+                            "lastName": rentUser.last_name,
+                            "price": rent.price,
+                            "pickUpLocation": rent.rentedLocation_id,
+                            "dropOffLocation": rent.returnLocation_id,
+                        }
+                        res.append(item)
+                retObject = {
+                    "results": res[(page - 1) * limit : page * limit],
+                    "isLastPage": True if len(res) <= page * limit else False,
+                }
+
+                return JsonResponse(retObject, status=200)
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no offers yet!",
+                    },
+                    status=200,
+                )
+
+
+def companyLogReviews(request):
+    if request.method == "GET":
+        user = request.user
+        if user.is_authenticated():
+            try:
+                # Return: date, rating, description]
+                page = int(request.GET.get("page", 1))
+                limit = int(request.GET.get("limit", 10))
+                dealership = Dealership.object.filter(user_id=user)
+                vehicle_id = request.GET.get("vehicleId")
+                rents = Rent.object.filter(
+                    dealer_id=dealership.dealer_id,
+                    vehicle_id=vehicle_id)
+                page = int(request.GET.get("page", 1))
+                limit = int(request.GET.get("limit", 10))
+                res = []
+                for rent in rents:
+                    if rent.vehicle_id != vehicle_id:
+                        continue
+                    review = Review.object.filter(rent_id=rent.rent_id)
+                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
+                    rentUser = User.object.filter(id=rentoid.user_id)
+
+                    item = {
+                        "firstName": rentUser.first_name,
+                        "lastName": rentUser.last_name,
+                        "date" : review.reviewDate,
+                        "description": review.description,
+                        "rating": review.rating
+                    }
+                    res.append(item)
+                retObject = {
+                    "results": res[(page - 1) * limit : page * limit],
+                    "isLastPage": True if len(res) <= page * limit else False,
+                }
+
+                return JsonResponse(retObject, status=200)
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no offers yet!",
+                    },
+                    status=200,
+                )
