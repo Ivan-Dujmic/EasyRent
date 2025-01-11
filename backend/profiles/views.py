@@ -1244,3 +1244,39 @@ def companyLocation(request):
             )
     else:
         return Response({"success": 0, "message": "Method not allowed"}, status=405)
+
+
+@login_required
+def deleteCompany(request):
+    if request.method == "DELETE":
+        user = request.user
+        if user.is_authenticated:
+            data = request.data
+            if not data.get("password"):
+                return Response(
+                    {"success": 0, "message": "Password is required"}, status=400
+                )
+            try:
+                if not user.check_password(data.get("password")):
+                    return Response(
+                        {"success": 0, "message": "Incorrect password"}, status=403
+                    )
+                user.delete()
+                return Response(
+                    {"success": 1, "message": "Company deleted successfully"},
+                    status=200,
+                )
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no locations yet!",
+                    },
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+    else:
+        return Response({"success": 0, "message": "Method not allowed"}, status=405)
