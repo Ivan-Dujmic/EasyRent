@@ -78,6 +78,7 @@ class OfferSerializer(serializers.Serializer):
 
 class OfferListSerializer(serializers.Serializer):
     offers = serializers.ListField(child = OfferSerializer())
+    last = serializers.BooleanField()
 
 #for GET api/home/showcased-companies
 class ShowcasedCompanySerializer(serializers.Serializer):
@@ -101,9 +102,11 @@ class SearchedOffersSerializer(serializers.Serializer):
     rating = serializers.FloatField(default=0.1)
     noOfReviews = serializers.IntegerField()
     offer_id = serializers.IntegerField()
+    last = serializers.BooleanField()
 
 class SearchedOffersListSerializer(serializers.Serializer):
     offers = serializers.ListField(child = SearchedOffersSerializer())
+    last = serializers.BooleanField()
 
 #for GET api/home/cities
 class CitySerializer(serializers.Serializer):

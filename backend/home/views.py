@@ -264,19 +264,23 @@ def getCompany(request, dealership_id):
 def getOffersForCompany(request, dealership_id):
     try:
         page = request.GET.get("page")
-        if page == None or not page.isdigit() or int(page) <= 0:
+        if page == None or int(page) <= 0:
             page = 1
         limit = request.GET.get("limit")
-        if limit == None or not limit.isdigit() or int(limit) <= 0:
+        if limit == None or int(limit) <= 0:
             limit = 10
-        if (dealership_id == None or not dealership_id.isdigit()):
+        if (dealership_id == None):
             return Response({"error": "Offers not found"}, status=404)
         page = int(page)
         limit = int(limit)
         response_data = {}
         offer_array = []
         offset = (page - 1) * limit
-        offers = Offer.objects.filter(dealer = dealership_id).all()[offset:offset+limit]
+        offers = Offer.objects.filter(dealer = dealership_id).all()
+        last = False
+        if offers.count() < offset + limit + 1:
+            last = True
+        offers = offers[offset:offset+limit]
         for offer in offers:
             offer_array.append({
             "image" : base64.b64encode(offer.image),
@@ -287,12 +291,13 @@ def getOffersForCompany(request, dealership_id):
             "price" : offer.price,
             "rating" : offer.rating,
             "noOfReviews" : offer.noOfReviews,
-            "offer_id" : offer.offer_id 
+            "offer_id" : offer.offer_id
         })
         if len(offer_array) == 0:
             return Response({"error": "Offers not found"}, status=404)
         response_data = {
-            "offers" : offer_array
+            "offers" : offer_array,
+            "last" : last
         }
         return JsonResponse(response_data, status=200)
     except Offer.DoesNotExist:
@@ -330,7 +335,7 @@ def getShowcasedCompanies(request):
     try:
         response_data = {}
         limit = request.GET.get("limit")
-        if limit == None or not limit.isdigit() or int(limit) <= 0:
+        if limit == None or  int(limit) <= 0:
             limit = 8
         companies = Dealership.objects.all()[:int(limit)]
         company_array = []
@@ -388,17 +393,21 @@ def getShowcasedCompanies(request):
 def getMostPopularOffers(request):
     try:
         page = request.GET.get("page")
-        if page == None or not page.isdigit() or int(page) <= 0:
+        if page == None or int(page) <= 0:
             page = 1
         limit = request.GET.get("limit")
-        if limit == None or not limit.isdigit() or int(limit) <= 0:
+        if limit == None or int(limit) <= 0:
             limit = 10
         page = int(page)
         limit = int(limit)
         response_data = {}
         offer_array = []
         offset = (page - 1) * limit
-        offers = Offer.objects.order_by('-noOfReviews').all()[offset:offset+limit]
+        offers = Offer.objects.order_by('-noOfReviews').all()
+        last = False
+        if len(offers) < offset + limit + 1:
+            last = True
+        offers = offers[offset:offset+limit]
         for offer in offers:
             offer_array.append({
             "image" : base64.b64encode(offer.image),
@@ -410,13 +419,14 @@ def getMostPopularOffers(request):
             "price" : offer.price,
             "rating" : offer.rating,
             "noOfReviews" : offer.noOfReviews,
-            "offer_id" : offer.offer_id 
+            "offer_id" : offer.offer_id
         })
             
         if len(offer_array) == 0:
             return Response({"error": "Offers not found"}, status=404)
         response_data = {
-            "offers" : offer_array
+            "offers" : offer_array,
+            "last" : last
         }
         return JsonResponse(response_data, status=200)
     except Offer.DoesNotExist:
@@ -462,10 +472,10 @@ def getMostPopularOffers(request):
 def getBestValueOffers(request):
     try:
         page = request.GET.get("page")
-        if page == None or not page.isdigit() or int(page) <= 0:
+        if page == None or int(page) <= 0:
             page = 1
         limit = request.GET.get("limit")
-        if limit == None or not limit.isdigit() or int(limit) <= 0:
+        if limit == None or int(limit) <= 0:
             limit = 10
         page = int(page)
         limit = int(limit)
@@ -473,7 +483,11 @@ def getBestValueOffers(request):
         offer_array = []
         offset = (page - 1) * limit
         offers = Offer.objects.annotate(value=ExpressionWrapper(F('rating') / F('price'), output_field=DecimalField()
-    )).order_by("-value").all()[offset:offset+limit]
+    )).order_by("-value").all()
+        last = False
+        if len(offers) < offset + limit + 1:
+            last = True
+        offers = offers[offset:offset+limit]
         for offer in offers:
             offer_array.append({
             "image" : base64.b64encode(offer.image),
@@ -485,12 +499,13 @@ def getBestValueOffers(request):
             "price" : offer.price,
             "rating" : offer.rating,
             "noOfReviews" : offer.noOfReviews,
-            "offer_id" : offer.offer_id 
+            "offer_id" : offer.offer_id
         })
         if len(offer_array) == 0:
             return Response({"error": "Offers not found"}, status=404)
         response_data = {
-            "offers" : offer_array
+            "offers" : offer_array,
+            "last" : last
         }
         return JsonResponse(response_data, status=200)
     except Offer.DoesNotExist:
@@ -679,10 +694,10 @@ def getFilteredOffers(request):
     try:
         #check page and limit
         page = request.GET.get("page")
-        if page == None or not page.isdigit() or int(page) <= 0:
+        if page == None or int(page) <= 0:
             page = 1
         limit = request.GET.get("limit")
-        if limit == None or not limit.isdigit() or int(limit) <= 0:
+        if limit == None or int(limit) <= 0:
             limit = 10
         page = int(page)
         limit = int(limit)
@@ -812,6 +827,7 @@ def getFilteredOffers(request):
         if list_len == 0:
             return Response({"error": "Offers not found"}, status=404)
         offset = (page - 1) * limit
+        last = False
         if list_len < offset + limit + 1:
             last = True
         response_data = {"offers" : offers_list[offset:offset+limit],
@@ -860,19 +876,21 @@ def getReviews(request, offer_id):
     try:
         response_data = {}
         limit = request.GET.get("limit")
-        if limit == None or not limit.isdigit() or int(limit) <= 0:
+        if limit == None or int(limit) <= 0:
             limit = 8
         page = request.GET.get("page")
-        if page == None or not page.isdigit() or int(page) <= 0:
+        if page == None or int(page) <= 0:
             page = 1
         page = int(page)
         limit = int(limit)
         offset = (page - 1) * limit
         offer = Offer.objects.get(pk=offer_id)
         rentals = Rent.objects.filter(vehicle__dealer=offer.dealer).filter(vehicle__model=offer.model).values('rent_id')
-        reviews = Review.objects.filter(rent__in=rentals).all()[offset:offset+limit]
+        reviews = Review.objects.filter(rent__in=rentals).all()
+        last = False
         if reviews.count() < offset + limit + 1:
             last = True
+        reviews = reviews[offset:offset+limit]
         review_array = []
         for review in reviews:
             review_array.append({
