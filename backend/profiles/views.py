@@ -1467,3 +1467,142 @@ def companyVehicle(request):
             return Response(
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
+
+
+def companyOffer(request):
+    if request.method == "PUT":
+        user = request.user
+        if user.is_authenticated:
+            data = request.data
+            if not data.get("offerId"):
+                return Response(
+                    {"success": 0, "message": "Offer ID is required"}, status=400
+                )
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                offer = Offer.objects.get(
+                    offer_id=request.GET.get("offerId"),
+                )
+                if data.get("price"):
+                    offer.price = data.get("price")
+                if data.get("image"):
+                    offer.image = data.get("image")
+                if data.get("description"):
+                    offer.description = data.get("description")
+                offer.save()
+                return Response(
+                    {"success": 1, "message": "Offer updated successfully"}, status=200
+                )
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no offers yet!",
+                    },
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+
+    if request.method == "POST":
+        user = request.user
+        if user.is_authenticated:
+            data = request.data
+            if (
+                not data.get("price")
+                or not data.get("image")
+                or not data.get("description")
+                or not data.get("model_id")
+            ):
+                return Response(
+                    {"success": 0, "message": "All fields are required"}, status=400
+                )
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                model = Model.object.filter(model_id=data.get("model_id"))
+                offer = Offer.object.create(
+                    model_id=model.model_id,
+                    dealer_id=dealership.dealer_id,
+                    price=data.get("price"),
+                    image=data.get("image"),
+                    description=data.get("description"),
+                    noOfReviews=0,
+                    rating=0,
+                )
+                offer.save()
+                return Response(
+                    {"success": 1, "message": "Offer added successfully"}, status=200
+                )
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or wronge vehicle id!",
+                    },
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+
+    if request.method == "DELETE":
+        user = request.user
+        if user.is_authenticated:
+            data = request.data
+            if not data.get("offerId"):
+                return Response(
+                    {"success": 0, "message": "Offer ID is required"}, status=400
+                )
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                offer = Offer.objects.get(
+                    offer_id=request.GET.get("offerId"),
+                )
+                offer.delete()
+                return Response(
+                    {"success": 1, "message": "Offer deleted successfully"}, status=200
+                )
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no offers yet!",
+                    },
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+
+    if request.method == "GET":
+        user = request.user
+        if user.is_authenticated:
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                # , makeName, modelName,
+                offer = Offer.objects.filter(
+                    # dealer_id=dealership.dealer_id,
+                    offer_id=request.GET.get("offerId"),
+                )
+                model = Model.object.filter(model_id=offer.model_id)
+                retObject = {
+                    "price": offer.price,
+                    "image": offer.image,
+                    "description": offer.description,
+                    "model_id": model.model_id,
+                    "makeName": model.makeName,
+                    "modelName": model.modelName,
+                }
+                return JsonResponse(retObject, status=200)
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no offers yet!",
+                    },
+                    status=200,
+                )
