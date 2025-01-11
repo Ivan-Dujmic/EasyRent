@@ -1364,7 +1364,7 @@ def companyVehicleEdit(request):
                     status=200,
                 )
 
-
+@login_required
 def companyVehicle(request):
     if request.method == "DELETE":
         user = request.user
@@ -1468,7 +1468,7 @@ def companyVehicle(request):
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
 
-
+@login_required
 def companyOffer(request):
     if request.method == "PUT":
         user = request.user
@@ -1607,7 +1607,7 @@ def companyOffer(request):
                     status=200,
                 )
 
-
+@login_required
 def companyVehicleLog(request):
     if request.method == "GET":
         user = request.user
@@ -1677,7 +1677,7 @@ def companyVehicleLog(request):
                     status=200,
                 )
 
-
+@login_required
 def companyLogUpcoming(request):
     if request.method == "GET":
         user = request.user
@@ -1723,7 +1723,7 @@ def companyLogUpcoming(request):
                     status=200,
                 )
 
-
+@login_required
 def companyLogOngoing(request):
     if request.method == "GET":
         user = request.user
@@ -1773,7 +1773,7 @@ def companyLogOngoing(request):
                     status=200,
                 )
 
-
+@login_required
 def companyLogCompleted(request):
     if request.method == "GET":
         user = request.user
@@ -1823,7 +1823,7 @@ def companyLogCompleted(request):
                     status=200,
                 )
 
-
+@login_required
 def companyLogReviews(request):
     if request.method == "GET":
         user = request.user
