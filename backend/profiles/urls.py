@@ -31,4 +31,7 @@ urlpatterns = [
     path("company/locations", views.companyLocations, name="companyLocations"),
     path("company/setHQ", views.companySetHQ, name="companySetHQ"),
     path("company/location", views.companyLocations, name="companyLocations"),
+    path("company/delete", views.deleteCompany, name="companyDelete"),
+    path("company/vehicles/edit-vehicle", views.companyVehicleEdit, name="editVehicle"),
+    path("company/vehicle", views.companyVehicle, name="companyVehicle"),
 ]

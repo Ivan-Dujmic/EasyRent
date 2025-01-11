@@ -1280,3 +1280,190 @@ def deleteCompany(request):
             )
     else:
         return Response({"success": 0, "message": "Method not allowed"}, status=405)
+
+
+@login_required
+def companyVehicleEdit(request):
+    if request.method == "PUT":
+        user = request.user
+        if user.is_authenticated:
+            data = request.data
+            if not request.GET.get("vehicleId"):
+                return Response(
+                    {"success": 0, "message": "Vehicle ID is required"}, status=400
+                )
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                vehicle = Vehicle.objects.get(
+                    vehicle_id=request.GET.get("vehicleId"),
+                    dealer_id=dealership.dealer_id,
+                )
+                hasUpcomingRental = False
+                upcoming_rental = Rent.objects.filter(
+                    vehicle_id=vehicle.vehicle_id,
+                )
+                for rental in upcoming_rental:
+                    if rental.dateTimeRented >= datetime.now():
+                        hasUpcomingRental = True
+                        break
+                if hasUpcomingRental:
+                    return Response(
+                        {
+                            "success": 0,
+                            "message": "Vehicle has upcoming rentals, cannot change location!",
+                        },
+                        status=200,
+                    )
+                if data.get("registration"):
+                    vehicle.registration = data.get("registration")
+                if data.get("locationId"):
+                    vehicle.location_id = data.get("locationId")
+                vehicle.save()
+                return Response(
+                    {"success": 1, "message": "Vehicle updated successfully"},
+                    status=200,
+                )
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no vehicles yet!",
+                    },
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+
+    if request.method == "GET":
+        user = request.user
+        if user.is_authenticated:
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                # Return: {registration, streetName, streetNo, cityName, location_id}
+                vehicle = Vehicle.objects.filter(
+                    dealer_id=dealership.dealer_id,
+                    vehicle_id=request.GET.get("vehicleId"),
+                )
+                location = location.object.filter(location_id=vehicle.location_id)
+                retObject = {
+                    "registration": vehicle.registration,
+                    "streetName": location.streetName,
+                    "streetNo": location.streetNo,
+                    "cityName": location.cityName,
+                    "locationId": location.location_id,
+                }
+                return JsonResponse(retObject, status=200)
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no vehicles yet!",
+                    },
+                    status=200,
+                )
+
+
+def companyVehicle(request):
+    if request.method == "DELETE":
+        user = request.user
+        if user.is_authenticated:
+            data = request.data
+            if not request.GET.get("vehicleId"):
+                return Response(
+                    {"success": 0, "message": "Vehicle ID is required"}, status=400
+                )
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                vehicle = Vehicle.objects.get(
+                    vehicle_id=request.GET.get("vehicleId"),
+                    dealer_id=dealership.dealer_id,
+                )
+                vehicles = Vehicle.object.get(
+                    dealer_id=dealership.dealer_id, model_id=vehicle.model_id
+                )
+                hasUpcomingRental = False
+                upcoming_rental = Rent.objects.filter(
+                    vehicle_id=vehicle.vehicle_id,
+                )
+                for rental in upcoming_rental:
+                    if rental.dateTimeRented >= datetime.now():
+                        hasUpcomingRental = True
+                        break
+                if hasUpcomingRental:
+                    return Response(
+                        {
+                            "success": 0,
+                            "message": "Vehicle has upcoming rentals, cannot delete!",
+                        },
+                        status=200,
+                    )
+                if len(vehicles) == 1:
+                    offer = Offer.objects.filter(
+                        model=vehicle.model_id, dealer_id=dealership.dealer_id
+                    )
+                    offer.delete()
+                vehicle.delete()
+                return Response(
+                    {"success": 1, "message": "Vehicle deleted successfully"},
+                    status=200,
+                )
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no vehicles yet!",
+                    },
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
+
+    if request.method == "POST":
+        user = request.user
+        if user.is_authenticated:
+            data = request.data
+            if (
+                not data.get("registration")
+                or not data.get("model_id")
+                or not data.get("location_id")
+            ):
+                return Response(
+                    {"success": 0, "message": "All fields are required"}, status=400
+                )
+            try:
+                dealership = Dealership.object.filter(user_id=user)
+                model = Model.object.filter(model_id=data.get("model_id"))
+                location = Location.object.filter(
+                    location_id=data.get("locationId"),
+                    dealership_id=dealership.dealer_id,
+                )
+                vehicle = Vehicle.object.create(
+                    model_id=model.model_id,
+                    location_id=location.location_id,
+                    dealer_id=dealership.dealer_id,
+                    registration=data.get("registration"),
+                    noOfReviews=0,
+                    isVisible=True,
+                    timesRented=0,
+                    rating=0,
+                )
+                vehicle.save()
+                return Response(
+                    {"success": 1, "message": "Vehicle added successfully"}, status=200
+                )
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or wronge vehicle id!",
+                    },
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
