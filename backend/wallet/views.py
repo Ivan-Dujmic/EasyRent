@@ -16,27 +16,38 @@ import datetime
 from django.utils.dateparse import parse_datetime
 from django.db.models import F, ExpressionWrapper, DecimalField, Q
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt
 
 load_dotenv()
 
 stripe.api_key = os.getenv("STRIPE_SK")
 
 
+@csrf_exempt
 @extend_schema(
     tags=["wallet"],  # Group under "wallet" tag
 )
 @api_view(["GET"])
-def getBalance(request, rentoid_id):
+def getBalance(request):
+    if request.user.is_authenticated:
+        rentoid = get_object_or_404(Rentoid, user=request.user.id)
+    else:
+        return Response({"error": "No user authenticated"}, status=404)
+    rentoid_id = rentoid.rentoid_id
     wallet = get_object_or_404(Wallet, rentoid_id=rentoid_id)
     return Response({"Balance": wallet.gems}, status=status.HTTP_200_OK)
 
 
+@csrf_exempt
 @extend_schema(
     tags=["wallet"],  # Group under "wallet" tag
     request=AddMoneySerializer,
 )
 @api_view(["POST"])
 def addMoney(request, rentoid_id):
+    if not (request.user.is_authenticated and request.user.is_superuser):
+        return Response({"error": "No super user authenticated"}, status=404)
+
     wallet = get_object_or_404(Wallet, rentoid_id=rentoid_id)
     amount = request.data.get("amount")
 
@@ -59,12 +70,15 @@ def addMoney(request, rentoid_id):
 
 
 # Remove money from an existing wallet
+@csrf_exempt
 @extend_schema(
     tags=["wallet"],  # Group under "wallet" tag
     request=RemoveMoneySerializer,
 )
 @api_view(["POST"])
 def removeMoney(request, rentoid_id):
+    if not (request.user.is_authenticated and request.user.is_superuser):
+        return Response({"error": "No super user authenticated"}, status=404)
     wallet = get_object_or_404(Wallet, rentoid_id=rentoid_id)
     amount = request.data.get("amount")
 
@@ -91,6 +105,7 @@ def removeMoney(request, rentoid_id):
     )
 
 
+@csrf_exempt
 @extend_schema(
     tags=["wallet"],  # Group under "wallet" tag
     request=OfferSerializer,
@@ -98,16 +113,16 @@ def removeMoney(request, rentoid_id):
 @api_view(["POST"])
 def offerRent(request, offer_id):
     offer = get_object_or_404(Offer, offer_id=offer_id)
-    buyer_id = request.data.get("buyer_id")
     method = request.data.get("paymentMethod")
     pickupDate = request.data.get("dateFrom")
     dropoffDate = request.data.get("dateTo")
     pickupTime = request.data.get("pickupTime")
     dropoffTime = request.data.get("dropoffTime")
-    if buyer_id is None:
-        return Response(
-            {"detail": "No buyer provided."}, status=status.HTTP_400_BAD_REQUEST
-        )
+    if request.user.is_authenticated:
+        rentoid = get_object_or_404(Rentoid, user=request.user.id)
+    else:
+        return Response({"error": "No user authenticated"}, status=404)
+    buyer_id = rentoid.rentoid_id
     if (method is None) or (method != "stripe" and method != "wallet"):
         return Response(
             {"detail": "No valid method provided."}, status=status.HTTP_400_BAD_REQUEST
@@ -179,7 +194,7 @@ def offerRent(request, offer_id):
     vehicle_id = available_vehicles[0]["vehicle_id"]
     diff = dropoff_datetime - pickup_datetime
     totalPrice = offer.price * int(diff.days)
-    print(offer.price, totalPrice, diff.days)
+    print(offer.price, totalPrice, diff.days, buyer_id)
     # Handle payment via Wallet
     if method == "wallet":
         if wallet.gems < totalPrice:
@@ -254,6 +269,7 @@ def offerRent(request, offer_id):
     )
 
 
+@csrf_exempt
 @api_view(["POST"])
 def stripe_webhook(request):
     payload = request.body
@@ -298,7 +314,7 @@ def stripe_webhook(request):
                 rentoid_id = int(rentoid_id) if rentoid_id else None
                 vehicle_id = int(vehicle_id) if vehicle_id else None
             except ValueError as e:
-                return Respose(
+                return Response(
                     {"error": "Invalid metadata value for ID fields"}, status=400
                 )
 

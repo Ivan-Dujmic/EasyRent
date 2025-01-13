@@ -10,7 +10,7 @@ class Rentoid(models.Model):
     driversLicenseNo = models.CharField(max_length=16, default=None)
 
     def __str__(self):
-        return f"{self.firstName} {self.lastName}"
+        return f"{self.user.first_name} {self.user.last_name}"
 
 
 class Dealership(models.Model):
