@@ -2,6 +2,7 @@
 
 import EasyRentMoto from '@/components/core/EasyRentMoto/EasyRentMoto';
 import MainFilter from '@/components/shared/filter/MainFilter/MainFilter';
+import ChatbotWidget from '@/components/shared/ChatbotWidget/ChatbotWidget';
 import Header from '@/components/shared/Header/Header';
 import CompanyList from '@/components/shared/company/CompanyList/CompanyList';
 import { Flex, Heading, useBreakpointValue } from '@chakra-ui/react';
@@ -104,15 +105,11 @@ export default function HomePage() {
           gap={2}
         >
           <VehicleList
-            vehicles=/* {data?.most_popular} */ {
-              mockVehicles
-            } /* !!! izmjenjeno smao za potrebe testiranja */
+            vehicles={data?.most_popular}
             description={'Most popular:'}
           />
           <VehicleList
-            vehicles=/* {data?.best_value} */ {
-              mockVehicles
-            } /* !!! izmjenjeno smao za potrebe testiranja */
+            vehicles={data?.best_value}
             description={'Best value:'}
           />
         </Flex>
@@ -147,7 +144,7 @@ export default function HomePage() {
         >
           <FQA />
         </Flex>
-
+        <ChatbotWidget />
         {/* footer */}
         <Footer links={homeGuestFooterLinks} />
       </Flex>
