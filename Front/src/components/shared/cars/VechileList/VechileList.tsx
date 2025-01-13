@@ -10,6 +10,7 @@ import { FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import React, { useState } from 'react';
 import VehicleCard from '../VehicleCard/VechileCard';
 import { ICar } from '@/fetchers/homeData';
+import { mockVehicles } from '@/mockData/mockVehicles';
 
 interface VehicleListProps {
   vehicles?: Array<ICar>;
@@ -17,7 +18,7 @@ interface VehicleListProps {
 }
 
 export default function VehicleList({
-  vehicles = [],
+  vehicles = mockVehicles,
   description = undefined,
 }: VehicleListProps) {
   // Dynamically determine the number of visible cards based on screen size
