@@ -9,21 +9,23 @@ import {
   InputLeftElement,
   InputRightElement,
   IconButton,
-  useBreakpointValue,
   useOutsideClick,
   Box,
+  Select,
+  Flex,
 } from '@chakra-ui/react';
 import { CalendarIcon, CloseIcon } from '@chakra-ui/icons';
 import Calendar, { CalendarProps } from 'react-calendar';
-import 'react-calendar/dist/Calendar.css'; // Import default styles
-import './custom-calendar.css'; // Import custom styles
+import 'react-calendar/dist/Calendar.css';
+import './custom-calendar.css';
 
 interface DateTimeDDMProps {
   description: string;
   placeHolder: string;
-  minDate?: Date; // Earliest selectable date
-  maxDate?: Date; // Latest selectable date
-  onDateChange?: (date: Date | null) => void; // Callback for date selection
+  minDate?: Date;
+  maxDate?: Date;
+  minTime?: string; // New prop to restrict time
+  onDateTimeChange?: (dateTime: Date | null) => void;
 }
 
 export default function DateTimeDDM({
@@ -31,10 +33,14 @@ export default function DateTimeDDM({
   placeHolder,
   minDate,
   maxDate,
-  onDateChange,
+  minTime,
+  onDateTimeChange,
 }: DateTimeDDMProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+
   const ref = useRef(null);
 
   useOutsideClick({
@@ -44,92 +50,141 @@ export default function DateTimeDDM({
 
   const handleDateChange: CalendarProps['onChange'] = (value) => {
     if (value instanceof Date) {
-      setSelectedDate(value); // Set selected date
-      setIsOpen(false); // Close calendar dropdown
-      onDateChange?.(value); // Notify parent of date change
+      setSelectedDate(value);
+      setIsOpen(false);
+      if (selectedTime) {
+        const [hours, minutes] = selectedTime.split(':').map(Number);
+        const dateTime = new Date(value);
+        dateTime.setHours(hours);
+        dateTime.setMinutes(minutes);
+        setError(false);
+        onDateTimeChange?.(dateTime);
+      } else {
+        setError(true);
+      }
     }
   };
 
-  const handleClearDate = () => {
-    setSelectedDate(null); // Clear the selected date
-    onDateChange?.(null); // Notify parent of date reset
+  const handleTimeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const time = event.target.value;
+    setSelectedTime(time);
+    if (selectedDate) {
+      const [hours, minutes] = time.split(':').map(Number);
+      const dateTime = new Date(selectedDate);
+      dateTime.setHours(hours);
+      dateTime.setMinutes(minutes);
+      setError(false);
+      onDateTimeChange?.(dateTime);
+    } else {
+      setError(true);
+    }
   };
 
-  const descriptionFontSize = useBreakpointValue({
-    base: '0.75rem', // Smaller text on mobile devices
-    md: '0.8rem', // Slightly larger text for medium screens
-    lg: '0.8rem', // Even larger for larger screens
-  });
+  const handleClearDateTime = () => {
+    setSelectedDate(null);
+    setSelectedTime(null);
+    setError(true);
+    onDateTimeChange?.(null);
+  };
+
+  const isTimeDisabled = (time: string) => {
+    if (!minTime) return false;
+    const [minHours, minMinutes] = minTime.split(':').map(Number);
+    const [currentHours, currentMinutes] = time.split(':').map(Number);
+
+    return (
+      currentHours < minHours ||
+      (currentHours === minHours && currentMinutes < minMinutes)
+    );
+  };
 
   return (
-    <Stack gap={0} position="relative" ref={ref} width="100%">
-      <Text fontSize={descriptionFontSize} color="brandblue">
+    <Stack gap={0} ref={ref} position="relative" flexGrow={1}>
+      <Text fontSize="sm" color="brandblue">
         {description}
       </Text>
-      <InputGroup
-        height="fit-content"
-        borderWidth="2px"
-        borderRadius="md"
-        borderColor="brandblue"
-        width="100%"
-        bg="brandlightgray"
-        _focusWithin={{
-          bg: 'brandwhite',
-          borderColor: 'brandblack',
-          color: 'brandblack',
-        }}
+      <Flex
+        gap={2}
+        direction={{ base: 'row', md: 'column', lg: 'row' }}
+        align="center"
       >
-        <InputLeftElement pointerEvents="none" color="brandblack">
-          <CalendarIcon />
-        </InputLeftElement>
-        <Input
-          onClick={() => setIsOpen(!isOpen)} // Toggle calendar dropdown
-          cursor="pointer"
-          placeholder={placeHolder}
-          value={selectedDate ? selectedDate.toLocaleDateString() : ''} // Display selected date
-          readOnly // Prevent text input
-          color="brandblack"
-          border="none"
-          _focus={{ borderColor: 'none', boxShadow: 'none' }}
-        />
-        {selectedDate && (
-          <InputRightElement>
-            <IconButton
-              aria-label="Clear date"
-              icon={<CloseIcon />}
-              size="sm"
-              onClick={handleClearDate} // Clear date on click
-              variant="ghost"
-              color="brandblack"
-            />
-          </InputRightElement>
-        )}
-      </InputGroup>
+        {/* Date Input */}
+        <InputGroup width={{ base: '80%', md: '100%', lg: '70%' }}>
+          <InputLeftElement pointerEvents="none">
+            <CalendarIcon color={'brandblack'} />
+          </InputLeftElement>
+          <Input
+            placeholder={placeHolder}
+            value={selectedDate ? selectedDate.toLocaleDateString() : ''}
+            readOnly
+            onClick={() => setIsOpen(!isOpen)}
+            borderWidth={'2px'}
+            borderRadius="md"
+            borderColor={error ? 'brandyellow' : 'brandblue'}
+            bg={'brandlightgray'}
+            color="brandblack"
+            _focusWithin={{
+              bg: 'brandwhite',
+              borderColor: error ? 'brandyellow' : 'brandblack',
+            }}
+          />
+          {selectedDate && (
+            <InputRightElement>
+              <IconButton
+                aria-label="Clear date"
+                icon={<CloseIcon />}
+                size="sm"
+                onClick={handleClearDateTime}
+              />
+            </InputRightElement>
+          )}
+        </InputGroup>
 
-      {isOpen && (
-        <Box
-          position="absolute"
-          top="100%"
-          zIndex="10"
-          mt={2}
-          boxShadow="lg"
+        {/* Time Dropdown */}
+        <Select
+          placeholder="Select"
+          value={selectedTime || ''}
+          onChange={handleTimeChange}
+          width={{ base: '110px', md: '100%', lg: '110px' }}
+          borderWidth={'2px'}
           borderRadius="md"
-          bg="white"
-          p={0}
+          borderColor={error ? 'brandyellow' : 'brandblue'}
+          bg={'brandlightgray'}
+          color="brandblack"
+          _focusWithin={{
+            bg: 'brandwhite',
+            borderColor: error ? 'brandyellow' : 'brandblack',
+          }}
         >
+          {Array.from({ length: 24 }, (_, hour) => (
+            <option
+              key={hour}
+              value={`${hour}:00`}
+              disabled={isTimeDisabled(`${hour}:00`)}
+            >
+              {`${hour}:00`}
+            </option>
+          ))}
+          {Array.from({ length: 24 }, (_, hour) => (
+            <option
+              key={`${hour}:30`}
+              value={`${hour}:30`}
+              disabled={isTimeDisabled(`${hour}:30`)}
+            >
+              {`${hour}:30`}
+            </option>
+          ))}
+        </Select>
+      </Flex>
+
+      {/* Calendar */}
+      {isOpen && (
+        <Box position="absolute" top="100%" zIndex="10">
           <Calendar
-            onChange={handleDateChange} // Handle date change
-            value={selectedDate} // Current selected date
-            minDate={minDate || new Date()} // Disable past dates or use provided minDate
-            maxDate={maxDate} // Use provided maxDate
-            view="month" // Limit view to month only
-            tileClassName={({ date, view }) =>
-              view === 'month' &&
-              date.toDateString() === new Date().toDateString()
-                ? 'react-calendar__tile--now' // Highlight today's date
-                : undefined
-            }
-            className="custom-calendar" // Apply custom styles
+            onChange={handleDateChange}
+            value={selectedDate}
+            minDate={minDate || new Date()}
+            maxDate={maxDate}
           />
         </Box>
       )}

@@ -4,7 +4,7 @@ import './style.css';
 import VehicleList from '@/components/shared/cars/VechileList/VechileList';
 import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
-import { get, IRentals } from '@/fetchers/homeData';
+import { CustomGet, IRentals } from '@/fetchers/homeData';
 import { FaComments } from 'react-icons/fa';
 import React, { useState } from 'react';
 import {
@@ -21,7 +21,7 @@ import CustomHeader from '@/components/shared/Header/CustomHeader/CustomHeader';
 
 export default function UserProfilePage() {
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const { data } = useSWR(swrKeys.registerUser, get<IRentals>); // Placeholder for rentals fetcher
+  const { data } = useSWR(swrKeys.registerUser, CustomGet<IRentals>); // Placeholder for rentals fetcher
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);

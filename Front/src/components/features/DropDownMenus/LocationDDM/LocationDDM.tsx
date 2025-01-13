@@ -18,9 +18,10 @@ export default function LocationDDM({
   options,
   description,
   placeHolder,
+  onLocationChange,
 }: LocationDDMProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState<string | null>(null);
 
   const ref = useRef(null);
 
@@ -40,17 +41,25 @@ export default function LocationDDM({
   });
 
   const handleSelectLocation = (location: string) => {
-    setSearch(location); // Prikaz odabrane lokacije u Input
-    setIsOpen(false); // Zatvori menu
+    setSearch(location);
+    onLocationChange?.(location); // Obavijesti roditelja o odabiru lokacije
+    setIsOpen(false);
   };
 
   const handleInputClick = () => {
-    if (!isOpen) setIsOpen(true); // otvori menu samo ako do sada nije vec otvoren
+    if (!isOpen) setIsOpen(true); // Otvori menu samo ako nije već otvoren
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
-    if (!isOpen) setIsOpen(true); // osigurava da meni ostaje otvoren dok tipkamo
+    const value = e.target.value;
+    setSearch(value);
+
+    if (value.trim() === '') {
+      setSearch(null); // Postavi vrijednost na null kad se polje izbriše
+      onLocationChange?.(''); // Obavijesti roditelja o brisanju lokacije
+    }
+
+    if (!isOpen) setIsOpen(true); // Osigurava da menu ostaje otvoren dok tipkamo
   };
 
   return (
@@ -71,6 +80,10 @@ export default function LocationDDM({
             borderColor: 'brandblack',
             color: 'brandblack',
           }}
+          _hover={{
+            borderColor: '#cbd5e0',
+            transition: 'border-color 0.2s ease-in-out',
+          }}
         >
           <InputLeftElement pointerEvents="none" color="brandblack">
             <FaCarAlt />
@@ -79,7 +92,7 @@ export default function LocationDDM({
             onClick={handleInputClick}
             cursor="pointer"
             placeholder={placeHolder}
-            value={search}
+            value={search || ''} // Prikaži prazan string ako je null
             onChange={handleInputChange}
             color={'brandblack'}
             border={'none'}
@@ -99,7 +112,7 @@ export default function LocationDDM({
           <LocationDDMGroups
             options={options}
             handleSelectLocation={handleSelectLocation}
-            search={search}
+            search={search || ''} // Proslijedi prazan string ako je null
             setSearch={() => {
               return;
             }}

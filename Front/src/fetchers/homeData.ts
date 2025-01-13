@@ -8,13 +8,14 @@ export interface IDealership {
 export interface ICar {
   image: string;
   companyName: string;
-  modelName: string;
   makeName: string;
+  modelName: string;
   noOfSeats?: string;
   automatic?: string;
-  price?: string;
-  rating?: string;
-  noOfReviews?: string;
+  price?: number;
+  rating?: number;
+  noOfReviews?: number;
+  offer_id?: string;
 }
 
 export interface IShowcased {
@@ -44,7 +45,7 @@ export async function getShowCaseds(
   return result;
 }
 
-export async function get<T>(
+export async function CustomGet<T>(
   url: string,
   { arg }: { arg?: any } = {}
 ): Promise<T> {
