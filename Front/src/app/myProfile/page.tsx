@@ -1,7 +1,7 @@
 'use client';
 
 import './style.css';
-import VehicleList from '@/components/shared/cars/VechileList/VechileList';
+import VehicleList from '@/components/shared/cards/VechileList/VechileList';
 import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { get, IRentals } from '@/fetchers/homeData';

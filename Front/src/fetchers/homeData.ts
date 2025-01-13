@@ -25,11 +25,24 @@ export interface ILog {
   modelName: string;
   makeName: string;
   customerName: string;
-  customerSurame: string;
+  customerSurname: string;
   price: string;
   registration: string;
   pickupp: string;
   dropoff: string;
+}
+
+export interface IReview{  
+  companyName: string;
+  modelName: string;
+  makeName: string;
+  customerName: string;
+  customerSurname: string;
+  registration: string;
+  date: string;
+  description: string;
+  rating: string;
+
 }
 
 export interface IShowcased {
