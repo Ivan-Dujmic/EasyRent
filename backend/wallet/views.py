@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from wallet.serializers import AddMoneySerializer, RemoveMoneySerializer
-from .models import Wallet
+from .models import Wallet, Transactions
 from src.models import Dealership, Rentoid
 from home.models import Offer, Rent, Vehicle
 from .serializers import *
@@ -194,16 +194,17 @@ def offerRent(request, offer_id):
     vehicle_id = available_vehicles[0]["vehicle_id"]
     diff = dropoff_datetime - pickup_datetime
     totalPrice = offer.price * int(diff.days)
+    gemPrice = int(totalPrice * 100)
     print(offer.price, totalPrice, diff.days, buyer_id)
     # Handle payment via Wallet
     if method == "wallet":
-        if wallet.gems < totalPrice:
+        if wallet.gems < gemPrice:
             return Response(
                 {"detail": "Insufficient funds."}, status=status.HTTP_400_BAD_REQUEST
             )
 
         # Deduct the money from wallet
-        wallet.gems -= totalPrice
+        wallet.gems -= gemPrice
         wallet.save()
 
         # Create the Rent entry
@@ -231,6 +232,7 @@ def offerRent(request, offer_id):
     elif method == "stripe":
         try:
             # Create a Stripe Checkout session
+            trans = Transactions.objects.create(status="unfinished")
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=["card"],
                 line_items=[
@@ -248,12 +250,14 @@ def offerRent(request, offer_id):
                 cancel_url="http://localhost:3000/cancel/",
                 expires_at=int(time.time()) + 1800,
                 metadata={
+                    "payment": "offer",
                     "dealer_id": dealer_id,
                     "rentoid_id": buyer_id,
                     "dateTimeRented": f"{pickup_datetime}",
                     "dateTimeReturned": f"{dropoff_datetime}",
                     "vehicle_id": vehicle_id,
                     "price": totalPrice,
+                    "trans_id": trans.id,
                 },
             )
             # Return the checkout_url to frontend to initiate immediate redirect
@@ -267,6 +271,64 @@ def offerRent(request, offer_id):
         {"detail": "Invalid payment method."},
         status=status.HTTP_400_BAD_REQUEST,
     )
+
+
+@csrf_exempt
+@extend_schema(
+    tags=["wallet"],  # Group under "wallet" tag
+    request=BuyGemsSerializer,
+)
+@api_view(["POST"])
+def buyGems(request):
+    if request.user.is_authenticated:
+        rentoid = get_object_or_404(Rentoid, user=request.user.id)
+    else:
+        return Response({"error": "No user authenticated"}, status=404)
+    amount = request.data.get("amount")
+    try:
+        amount = int(amount) if amount else None
+    except ValueError as e:
+        return Response({"error": "Nan provided"}, status=status.HTTP_404_NOT_FOUND)
+    print(amount)
+    buy = 0
+    if amount is not None:
+        buy = amount
+    rentoid_id = rentoid.rentoid_id
+    wallet = get_object_or_404(Wallet, rentoid_id=rentoid_id)
+    try:
+        # Create a Stripe Checkout session
+        trans = Transactions.objects.create(status="unfinished")
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[
+                {
+                    "price_data": {
+                        "currency": "eur",
+                        "product_data": {"name": "Buying Gems"},
+                        "unit_amount": buy,
+                    },
+                    "quantity": 1,
+                }
+            ],
+            mode="payment",
+            success_url="http://localhost:3000/success/",
+            cancel_url="http://localhost:3000/cancel/",
+            expires_at=int(time.time()) + 1800,
+            metadata={
+                "payment": "buyGems",
+                "rentoid_id": rentoid_id,
+                "gems": amount,
+                "trans_id": trans.id,
+            },
+        )
+        # Return the checkout_url to frontend to initiate immediate redirect
+        return Response(
+            {"detail": checkout_session.url, "transaction_id": trans.id},
+            status=status.HTTP_200_OK,
+        )
+
+    except stripe.error.StripeError as e:
+        return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @csrf_exempt
@@ -304,42 +366,80 @@ def stripe_webhook(request):
 
             # Extract metadata values and convert them back to their original variable types
             # Convert the ID values into integers (with error handling)
-            dealer_id = metadata.get("dealer_id")
-            rentoid_id = metadata.get("rentoid_id")
-            vehicle_id = metadata.get("vehicle_id")
+            pay_type = metadata.get("payment")
+            if pay_type == "offer":
+                dealer_id = metadata.get("dealer_id")
+                rentoid_id = metadata.get("rentoid_id")
+                vehicle_id = metadata.get("vehicle_id")
+                trans_id = metadata.get("trans_id")
 
-            # Convert metadata fields to integers if they exist, else handle the error
-            try:
-                dealer_id = int(dealer_id) if dealer_id else None
-                rentoid_id = int(rentoid_id) if rentoid_id else None
-                vehicle_id = int(vehicle_id) if vehicle_id else None
-            except ValueError as e:
-                return Response(
-                    {"error": "Invalid metadata value for ID fields"}, status=400
+                # Convert metadata fields to integers if they exist, else handle the error
+                try:
+                    dealer_id = int(dealer_id) if dealer_id else None
+                    rentoid_id = int(rentoid_id) if rentoid_id else None
+                    vehicle_id = int(vehicle_id) if vehicle_id else None
+                    trans_id = int(trans_id) if trans_id else None
+                except ValueError as e:
+                    return Response(
+                        {"error": "Invalid metadata value for ID fields"}, status=400
+                    )
+
+                # Convert datetime strings back to datetime objects
+                dateTimeRented = parse_datetime(metadata.get("dateTimeRented"))
+                dateTimeReturned = parse_datetime(metadata.get("dateTimeReturned"))
+
+                # Convert price back to float (if necessary)
+                price = float(metadata.get("price", 0))
+                Rent.objects.create(
+                    dealer_id=dealer_id,
+                    rentoid_id=rentoid_id,
+                    dateTimeRented=dateTimeRented,
+                    dateTimeReturned=dateTimeReturned,
+                    vehicle_id=vehicle_id,
+                    price=price,
                 )
-
-            # Convert datetime strings back to datetime objects
-            dateTimeRented = parse_datetime(metadata.get("dateTimeRented"))
-            dateTimeReturned = parse_datetime(metadata.get("dateTimeReturned"))
-
-            # Convert price back to float (if necessary)
-            price = float(metadata.get("price", 0))
-            Rent.objects.create(
-                dealer_id=dealer_id,
-                rentoid_id=rentoid_id,
-                dateTimeRented=dateTimeRented,
-                dateTimeReturned=dateTimeReturned,
-                vehicle_id=vehicle_id,
-                price=price,
-            )
-            return Response({"paymentStatus": "payment paid"})
+                return Response({"paymentStatus": "payment paid"})
+            elif pay_type == "buyGems":
+                print("in Buy Gems")
+                rentoid_id = metadata.get("rentoid_id")
+                amount = metadata.get("gems")
+                trans_id = metadata.get("trans_id")
+                try:
+                    rentoid_id = int(rentoid_id) if rentoid_id else None
+                    amount = int(amount) if amount else None
+                    trans_id = int(trans_id) if trans_id else None
+                except ValueError as e:
+                    return Response(
+                        {"error": "Invalid metadata value for ID fields"}, status=400
+                    )
+                wallet = get_object_or_404(Wallet, rentoid_id=rentoid_id)
+                wallet.gems += amount
+                wallet.save()
+                print(wallet.gems, amount)
+                trans = get_object_or_404(Transactions, id=trans_id)
+                trans.status = "finished"
+                trans.save()
+                return Response({"paymentStatus": "payment paid"})
 
         else:
             print("failed to pay")
-            return Response({"paymentStatus": "unsuccessfull payment"})
+            return Response({"paymentStatus": "unsuccessful payment"})
 
     else:
         print(f"Unhandled event type: {event['type']}")
 
     # Respond with a success status
     return Response({"status": "success"})
+
+
+@csrf_exempt
+@extend_schema(
+    tags=["wallet"],  # Group under "wallet" tag
+)
+@api_view(["GET"])
+def check_transaction(request, transaction_id):
+    trans = get_object_or_404(Transactions, id=transaction_id)
+    if trans.status == "finished":
+        return Response({"paymentStatus": "successful payment"})
+    else:
+        return Response({"paymentStatus": "unsuccessful payment"})

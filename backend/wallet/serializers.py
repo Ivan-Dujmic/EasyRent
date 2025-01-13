@@ -17,3 +17,7 @@ class OfferSerializer(serializers.Serializer):
     dateTo = serializers.DateField(default="23-01-2025")
     pickupTime = serializers.IntegerField(default=0)
     dropoffTime = serializers.IntegerField(default=0)
+
+
+class BuyGemsSerializer(serializers.Serializer):
+    amount = serializers.IntegerField(default=0)
