@@ -261,7 +261,10 @@ def offerRent(request, offer_id):
                 },
             )
             # Return the checkout_url to frontend to initiate immediate redirect
-            return Response({"detail": checkout_session.url}, status=status.HTTP_200_OK)
+            return Response(
+                {"detail": checkout_session.url, "trans_id": trans.id},
+                status=status.HTTP_200_OK,
+            )
 
         except stripe.error.StripeError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
