@@ -24,6 +24,7 @@ urlpatterns = [
         views.completedCompanyRents,
         name="completedCompanyRents",
     ),
+    path("company/offers", views.companyOffers, name="companyOffers"),
     path("company/reviews/", views.companyReviews, name="companyReviews"),
     path("company/earnings/", views.companyEarnings, name="companyEarnings"),
     path("company/info/", views.companyInfo, name="companyInfo"),

@@ -410,7 +410,16 @@ def userDelete(request):
             )
 
 
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_company_vehicles",
+    tags=["profile"],
+    responses={
+        200: GetCompanyVehicles(many=True),
+    },
+)
 @login_required
+@api_view(["GET"])
 def companyVehicles(request):
     if request.method == "GET":
         company = request.user
@@ -482,6 +491,7 @@ def companyVehicles(request):
 
 
 @login_required
+@api_view(["PUT"])
 def toogleVehicleVisibility(request):
     if request.method == "PUT":
         user = request.user
@@ -515,7 +525,16 @@ def toogleVehicleVisibility(request):
         return Response({"success": 0, "message": "Method not allowed"}, status=405)
 
 
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_company_offers",
+    tags=["profile"],
+    responses={
+        200: GetCompanyOffers(many=True),
+    },
+)
 @login_required
+@api_view(["GET"])
 def companyOffers(request):
     if request.method == "GET":
         company = request.user
@@ -581,6 +600,7 @@ def companyOffers(request):
 
 
 @login_required
+@api_view(["PUT"])
 def toggleOfferVisibility(request):
     if request.method == "PUT":
         user = request.user
@@ -621,7 +641,16 @@ def toggleOfferVisibility(request):
         return Response({"success": 0, "message": "Method not allowed"}, status=405)
 
 
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_company_offers",
+    tags=["profile"],
+    responses={
+        200: GetCompanyRents(many=True),
+    },
+)
 @login_required
+@api_view(["GET"])
 def upcomingCompanyRents(request):
     if request.method == "GET":
         user = request.user
@@ -673,7 +702,16 @@ def upcomingCompanyRents(request):
             )
 
 
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_company_offers",
+    tags=["profile"],
+    responses={
+        200: GetCompanyRents(many=True),
+    },
+)
 @login_required
+@api_view(["GET"])
 def ongoingCompanyRents(request):
     if request.method == "GET":
         user = request.user
@@ -728,7 +766,16 @@ def ongoingCompanyRents(request):
             )
 
 
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_company_offers",
+    tags=["profile"],
+    responses={
+        200: GetCompanyRents(many=True),
+    },
+)
 @login_required
+@api_view(["GET"])
 def completedCompanyRents(request):
     if request.method == "GET":
         user = request.user
@@ -780,7 +827,16 @@ def completedCompanyRents(request):
             )
 
 
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_company_offers",
+    tags=["profile"],
+    responses={
+        200: GetCompanyReviews(many=True),
+    },
+)
 @login_required
+@api_view(["GET"])
 def companyReviews(request):
     if request.method == "GET":
         user = request.user
@@ -829,7 +885,16 @@ def companyReviews(request):
                 )
 
 
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_company_offers",
+    tags=["profile"],
+    responses={
+        200: GetCompanyEarnings(),
+    },
+)
 @login_required
+@api_view(["GET"])
 def companyEarnings(request):
     if request.method == "GET":
         user = request.user
@@ -838,9 +903,7 @@ def companyEarnings(request):
                 dealership = Dealership.object.filter(user_id=user)
                 year = int(request.GET.get("year", datetime.now().year))
 
-                # Return: {totalEarnings, yearEarnings, totalRentals, yearRentals, monthlyEarnings: [earnings..12]}
                 rents = Rent.object.filter(dealer_id=dealership.dealer_id)
-                res = []
                 totalEarnings = 0
                 monthlyEarnings = {i: 0 for i in range(1, 13)}
                 thisYearEarnings = 0
@@ -873,7 +936,16 @@ def companyEarnings(request):
                 )
 
 
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_company_offers",
+    tags=["profile"],
+    responses={
+        200: GetCompanyInfo(),
+    },
+)
 @login_required
+@api_view(["PUT", "GET"])
 def companyInfo(request):
     if request.method == "PUT":
         user = request.user
@@ -948,6 +1020,7 @@ def companyInfo(request):
 
 
 @login_required
+@api_view(["PUT"])
 def companyPasswordChange(request):
     if request.method == "PUT":
         user = request.user
@@ -983,8 +1056,16 @@ def companyPasswordChange(request):
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
 
-
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_company_offers",
+    tags=["profile"],
+    responses={
+        200: GetCompanyInfo(),
+    },
+)
 @login_required
+@api_view(["GET"])
 def companyLocations(request):
     if request.method == "GET":
         user = request.user
@@ -1024,6 +1105,7 @@ def companyLocations(request):
 
 
 @login_required
+@api_view(["PUT"])
 def companySetHQ(request):
     if request.method == "PUT":
         user = request.user
@@ -1064,6 +1146,7 @@ def companySetHQ(request):
 
 
 @login_required
+@api_view(["GET", "POST", "PUT", "DELETE"])
 def companyLocation(request):
     if request.method == "GET":
         user = request.user
@@ -1247,6 +1330,7 @@ def companyLocation(request):
 
 
 @login_required
+@api_view(["DELETE"])
 def deleteCompany(request):
     if request.method == "DELETE":
         user = request.user
@@ -1283,6 +1367,7 @@ def deleteCompany(request):
 
 
 @login_required
+@api_view(["PUT", "GET"])
 def companyVehicleEdit(request):
     if request.method == "PUT":
         user = request.user
@@ -1336,7 +1421,7 @@ def companyVehicleEdit(request):
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
 
-    if request.method == "GET":
+    elif request.method == "GET":
         user = request.user
         if user.is_authenticated:
             try:
@@ -1364,7 +1449,9 @@ def companyVehicleEdit(request):
                     status=200,
                 )
 
+
 @login_required
+@api_view(["DELETE", "POST"])
 def companyVehicle(request):
     if request.method == "DELETE":
         user = request.user
@@ -1468,7 +1555,9 @@ def companyVehicle(request):
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
 
+
 @login_required
+@api_view(["GET", "POST", "PUT", "DELETE"])
 def companyOffer(request):
     if request.method == "PUT":
         user = request.user
@@ -1506,7 +1595,7 @@ def companyOffer(request):
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
 
-    if request.method == "POST":
+    elif request.method == "POST":
         user = request.user
         if user.is_authenticated:
             data = request.data
@@ -1548,7 +1637,7 @@ def companyOffer(request):
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
 
-    if request.method == "DELETE":
+    elif request.method == "DELETE":
         user = request.user
         if user.is_authenticated:
             data = request.data
@@ -1578,7 +1667,7 @@ def companyOffer(request):
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
 
-    if request.method == "GET":
+    elif request.method == "GET":
         user = request.user
         if user.is_authenticated:
             try:
@@ -1607,7 +1696,9 @@ def companyOffer(request):
                     status=200,
                 )
 
+
 @login_required
+@api_view(["GET"])
 def companyVehicleLog(request):
     if request.method == "GET":
         user = request.user
@@ -1677,14 +1768,19 @@ def companyVehicleLog(request):
                     status=200,
                 )
 
+
 @login_required
+@api_view(["GET"])
 def companyLogUpcoming(request):
     if request.method == "GET":
         user = request.user
         if user.is_authenticated():
             try:
                 dealership = Dealership.object.filter(user_id=user)
-                rents = Rent.object.filter(dealer_id=dealership.dealer_id,vehicle_id=request.GET.get("vehicleId"))
+                rents = Rent.object.filter(
+                    dealer_id=dealership.dealer_id,
+                    vehicle_id=request.GET.get("vehicleId"),
+                )
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
                 vehicle_id = request.GET.get("vehicleId")
@@ -1723,14 +1819,19 @@ def companyLogUpcoming(request):
                     status=200,
                 )
 
+
 @login_required
+@api_view(["GET"])
 def companyLogOngoing(request):
     if request.method == "GET":
         user = request.user
         if user.is_authenticated():
             try:
                 dealership = Dealership.object.filter(user_id=user)
-                rents = Rent.object.filter(dealer_id=dealership.dealer_id),vehicle_id=request.GET.get("vehicleId")
+                rents = Rent.object.filter(
+                    dealer_id=dealership.dealer_id,
+                    vehicle_id=request.GET.get("vehicleId"),
+                )
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
                 vehicle_id = request.GET.get("vehicleId")
@@ -1773,7 +1874,9 @@ def companyLogOngoing(request):
                     status=200,
                 )
 
+
 @login_required
+@api_view(["GET"])
 def companyLogCompleted(request):
     if request.method == "GET":
         user = request.user
@@ -1823,20 +1926,21 @@ def companyLogCompleted(request):
                     status=200,
                 )
 
+
 @login_required
-def companyLogReviews(request):
+@api_view(["GET"])
+def companyLogReviews(request, query):
     if request.method == "GET":
         user = request.user
         if user.is_authenticated():
             try:
-                # Return: date, rating, description]
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
                 dealership = Dealership.object.filter(user_id=user)
                 vehicle_id = request.GET.get("vehicleId")
                 rents = Rent.object.filter(
-                    dealer_id=dealership.dealer_id,
-                    vehicle_id=vehicle_id)
+                    dealer_id=dealership.dealer_id, vehicle_id=vehicle_id
+                )
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
                 res = []
@@ -1850,9 +1954,9 @@ def companyLogReviews(request):
                     item = {
                         "firstName": rentUser.first_name,
                         "lastName": rentUser.last_name,
-                        "date" : review.reviewDate,
+                        "date": review.reviewDate,
                         "description": review.description,
-                        "rating": review.rating
+                        "rating": review.rating,
                     }
                     res.append(item)
                 retObject = {

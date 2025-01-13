@@ -119,7 +119,7 @@ paths:
           description: No rentoid or dealership to match user
   /api/home/offer/{offer_id}/:
     get:
-      operationId: api_home_offer_retrieve
+      operationId: home_offer_retrieve
       parameters:
       - in: path
         name: offer_id
@@ -143,9 +143,333 @@ paths:
           description: Offer Not Found
   /api/home/showcased/:
     get:
-      operationId: api_home_showcased_retrieve
+      operationId: home_showcased_retrieve
       tags:
       - home
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/delete/:
+    delete:
+      operationId: profile_company_delete_destroy
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/profile/company/earnings/:
+    get:
+      operationId: profile_company_earnings_retrieve
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/info/:
+    get:
+      operationId: profile_company_info_retrieve
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: profile_company_info_update
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/location/:
+    get:
+      operationId: profile_company_location_retrieve
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/locations/:
+    get:
+      operationId: profile_company_locations_retrieve
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/log-completed/:
+    get:
+      operationId: profile_company_log_completed_retrieve
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/log-ongoing/:
+    get:
+      operationId: profile_company_log_ongoing_retrieve
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/log-reviews/:
+    get:
+      operationId: profile_company_log_reviews_retrieve
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/log-upcoming/:
+    get:
+      operationId: profile_company_log_upcoming_retrieve
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/log/completed/:
+    get:
+      operationId: profile_company_log_completed_retrieve_2
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/log/ongoing/:
+    get:
+      operationId: profile_company_log_ongoing_retrieve_2
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/log/upcoming/:
+    get:
+      operationId: profile_company_log_upcoming_retrieve_2
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/offer/:
+    get:
+      operationId: profile_company_offer_retrieve
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: profile_company_offer_create
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: profile_company_offer_update
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: profile_company_offer_destroy
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/profile/company/pass/:
+    put:
+      operationId: profile_company_pass_update
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/reviews/:
+    get:
+      operationId: profile_company_reviews_retrieve
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/setHQ/:
+    put:
+      operationId: profile_company_setHQ_update
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/toggle-vehicle-visibility/:
+    put:
+      operationId: profile_company_toggle_vehicle_visibility_update
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/vehicle/:
+    post:
+      operationId: profile_company_vehicle_create
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: profile_company_vehicle_destroy
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/profile/company/vehicle-log/:
+    get:
+      operationId: profile_company_vehicle_log_retrieve
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/vehicles/:
+    get:
+      operationId: get_company_vehicles
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyVehicles'
+          description: ''
+  /api/profile/company/vehicles/edit-vehicle/:
+    get:
+      operationId: profile_company_vehicles_edit_vehicle_retrieve
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: profile_company_vehicles_edit_vehicle_update
+      tags:
+      - profile
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -270,7 +594,7 @@ paths:
           description: User not authenticated
   /api/schema/:
     get:
-      operationId: api_schema_retrieve
+      operationId: schema_retrieve
       description: |-
         OpenApi3 schema for this API. Format can be selected via content negotiation.
 
@@ -389,7 +713,7 @@ paths:
           - zh-hans
           - zh-hant
       tags:
-      - api
+      - schema
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -416,6 +740,40 @@ paths:
           description: ''
 components:
   schemas:
+    GetCompanyVehicles:
+      type: object
+      properties:
+        image:
+          type: string
+          format: uri
+          default: null
+        makeName:
+          type: string
+        registration:
+          type: string
+        modelName:
+          type: string
+        isVisible:
+          type: boolean
+        price:
+          type: number
+          format: double
+          default: 0.1
+        rating:
+          type: number
+          format: double
+          default: 0.1
+        noOfReviews:
+          type: integer
+        offer_id:
+          type: integer
+      required:
+      - isVisible
+      - makeName
+      - modelName
+      - noOfReviews
+      - offer_id
+      - registration
     GetUserInfo:
       type: object
       properties:
