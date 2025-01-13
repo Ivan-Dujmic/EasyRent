@@ -1,6 +1,5 @@
 'use client';
 
-import './style.css';
 import VehicleList from '@/components/shared/cars/VechileList/VechileList';
 import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
@@ -9,6 +8,7 @@ import { FaComments } from 'react-icons/fa';
 import React, { useState } from 'react';
 import {
   Flex,
+  Box,
   IconButton,
   Heading,
   Text,
@@ -36,14 +36,19 @@ export default function UserProfilePage() {
   });
 
   const headingSize = useBreakpointValue({
-    base: '1xl', // Default heading size for laptop/tablet
-    sm: '2xl', // Larger heading for desktop
+    base: '2xl', // Default heading size for laptop/tablet ????? IDK
+    lg: '2xl', // Larger heading for desktop
   });
 
   const rentalswidth = useBreakpointValue({
     base: '100%', // Širina mape za mobilne uređaje i male ekrane
-    md: '80vw', // Širina mape za srednje i velike ekrane
+    lg: '80%', // Širina mape za srednje i velike ekrane
   });
+
+  const rentalAllignment = useBreakpointValue({
+    base: 'center',
+    lg: 'space-between'
+  })
 
 
   return (
@@ -70,63 +75,62 @@ export default function UserProfilePage() {
 
         <LoginButton log='out'/>
       </Header>
-
       {/* Main Content */}
-      <Flex
-        mx="auto"
-        justify="space-between"
-        align="stretch"
-        width={{ base: '90vw', lg: '100%' }}
-        height="auto"
-        p="2vmax"
-        gap={gapSize}
-        direction={{ base: 'column', lg: 'row' }}
-      >
-        {/* Rentals Section */}
+      <Box position = "relative" width = "100vw">
+        {/* Rentals */}
         <Flex
-          direction="column"
-          width={rentalswidth}
-          bg="brandwhite"
-          boxShadow="base"
-          borderRadius="md"
-          p={5}
+          mx="auto"
+          justify={isChatOpen ? {rentalAllignment} : "center"}
+          align="stretch"
+          width={{ base: '80vw', lg: '100vw' }}
+          p={gapSize}
           gap={gapSize}
+          wrap={"nowrap"}
+          direction={{ base: 'column', lg: 'row' }}
         >
-          <Heading size={headingSize} color="brandblue" textAlign="center">
-            Your Profile
-          </Heading>
-          <Divider />
-          <VehicleList description="Ongoing rentals:" />
-          <VehicleList description="Previously rented:" />
-        </Flex>
+          {/* Rentals Section */}
+          <Flex
+            direction="column"
+            width={rentalswidth}
+            bg="brandwhite"
+            boxShadow="base"
+            borderRadius="md"
+            p={gapSize}
+            gap={gapSize}
+          >
+            <Heading size={headingSize} color="brandblue" textAlign="center">
+              Your Profile
+            </Heading>
+            <Divider />
+            <VehicleList description="Ongoing rentals:" />
+            <VehicleList description="Previously rented:" />
+          </Flex>
 
-        {/* Chats Section */}
-        {isChatOpen ? (
-          <Chat onClose={toggleChat} />
-        ) : (
-          <IconButton
-            aria-label="Open chat"
-            icon={<FaComments />}
-            onClick={toggleChat}
-            isRound
-            size="lg"
-            bg="brandblue"
-            color="brandwhite"
-            _hover={{ bg: 'brandyellow', color: 'brandblack' }}
-            alignSelf={{ base: 'center', lg: 'flex-start' }}
-          />
-        )}
-      </Flex>
+          {/* Chats Section */}
+          {isChatOpen ? (
+            <Chat onClose={toggleChat} />
+          ) : (
+            <IconButton
+              position="absolute"
+              right={gapSize}
+              top={gapSize}
+              aria-label="Open chat"
+              icon={<FaComments />}
+              onClick={toggleChat}
+              isRound
+              size="lg"
+              bg="brandblue"
+              color="brandwhite"
+              _hover={{ bg: 'brandyellow', color: 'brandblack' }}
+            />
+          )}
+        </Flex>
+      </Box>
     </Flex>
   );
 }
 
 function Chat({ onClose }: { onClose: () => void }) {
-
-  const width = useBreakpointValue({
-    base: '80vw', // Širina mape za mobilne uređaje i male ekrane
-    md: '33vw', // Širina mape za srednje i velike ekrane
-  });
 
   const gapSize = useBreakpointValue({
     base: 8, // Small gap for small screens (mobile)
@@ -138,7 +142,7 @@ function Chat({ onClose }: { onClose: () => void }) {
   return (
     <Flex
       direction="column"
-      width={width}
+      width="33%"
       bg="brandwhite"
       boxShadow="base"
       borderRadius="md"
