@@ -167,7 +167,7 @@ paths:
           description: No response body
   /api/profile/company/earnings/:
     get:
-      operationId: profile_company_earnings_retrieve
+      operationId: get_company_earnings
       tags:
       - profile
       security:
@@ -176,10 +176,14 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCompanyEarnings'
+          description: ''
   /api/profile/company/info/:
     get:
-      operationId: profile_company_info_retrieve
+      operationId: get_company_info
       tags:
       - profile
       security:
@@ -188,7 +192,13 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyInfo'
+          description: ''
     put:
       operationId: profile_company_info_update
       tags:
@@ -202,7 +212,7 @@ paths:
           description: No response body
   /api/profile/company/location/:
     get:
-      operationId: profile_company_location_retrieve
+      operationId: get_company_locations
       tags:
       - profile
       security:
@@ -211,10 +221,16 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyLocations'
+          description: ''
   /api/profile/company/locations/:
     get:
-      operationId: profile_company_locations_retrieve
+      operationId: get_company_locations_2
       tags:
       - profile
       security:
@@ -223,7 +239,13 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyLocations'
+          description: ''
   /api/profile/company/log-completed/:
     get:
       operationId: profile_company_log_completed_retrieve
@@ -274,7 +296,7 @@ paths:
           description: No response body
   /api/profile/company/log/completed/:
     get:
-      operationId: profile_company_log_completed_retrieve_2
+      operationId: get_company_rents
       tags:
       - profile
       security:
@@ -283,10 +305,16 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyRents'
+          description: ''
   /api/profile/company/log/ongoing/:
     get:
-      operationId: profile_company_log_ongoing_retrieve_2
+      operationId: get_company_rents_2
       tags:
       - profile
       security:
@@ -295,10 +323,16 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyRents'
+          description: ''
   /api/profile/company/log/upcoming/:
     get:
-      operationId: profile_company_log_upcoming_retrieve_2
+      operationId: get_company_rentss
       tags:
       - profile
       security:
@@ -307,10 +341,16 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyRents'
+          description: ''
   /api/profile/company/offer/:
     get:
-      operationId: profile_company_offer_retrieve
+      operationId: get_company_offer
       tags:
       - profile
       security:
@@ -319,7 +359,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCompanyOffer'
+          description: ''
     post:
       operationId: profile_company_offer_create
       tags:
@@ -353,6 +397,24 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/profile/company/offers:
+    get:
+      operationId: get_company_offers
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyOffers'
+          description: ''
   /api/profile/company/pass/:
     put:
       operationId: profile_company_pass_update
@@ -367,7 +429,7 @@ paths:
           description: No response body
   /api/profile/company/reviews/:
     get:
-      operationId: profile_company_reviews_retrieve
+      operationId: get_company_reviews
       tags:
       - profile
       security:
@@ -376,7 +438,13 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyReviews'
+          description: ''
   /api/profile/company/setHQ/:
     put:
       operationId: profile_company_setHQ_update
@@ -456,7 +524,7 @@ paths:
           description: ''
   /api/profile/company/vehicles/edit-vehicle/:
     get:
-      operationId: profile_company_vehicles_edit_vehicle_retrieve
+      operationId: get_company_vehicle_id
       tags:
       - profile
       security:
@@ -465,7 +533,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCompanyVehicleEdit'
+          description: ''
     put:
       operationId: profile_company_vehicles_edit_vehicle_update
       tags:
@@ -740,6 +812,206 @@ paths:
           description: ''
 components:
   schemas:
+    GetCompanyEarnings:
+      type: object
+      properties:
+        totalEarnings:
+          type: number
+          format: double
+          default: 0.1
+        yearEarnings:
+          type: number
+          format: double
+          default: 0.1
+        totalRentals:
+          type: integer
+        yearRentals:
+          type: integer
+        monthlyEarnings:
+          type: array
+          items:
+            type: number
+            format: double
+            default: 0.1
+      required:
+      - monthlyEarnings
+      - totalRentals
+      - yearRentals
+    GetCompanyInfo:
+      type: object
+      properties:
+        day:
+          type: string
+        startTime:
+          type: string
+          format: time
+        endTime:
+          type: string
+          format: time
+      required:
+      - day
+      - endTime
+      - startTime
+    GetCompanyLocations:
+      type: object
+      properties:
+        cityName:
+          type: string
+        streetName:
+          type: string
+        streetNo:
+          type: string
+        locationId:
+          type: integer
+      required:
+      - cityName
+      - locationId
+      - streetName
+      - streetNo
+    GetCompanyOffer:
+      type: object
+      properties:
+        price:
+          type: number
+          format: double
+          default: 0.1
+        image:
+          type: string
+          format: uri
+          default: null
+        description:
+          type: string
+        model_id:
+          type: integer
+        makeName:
+          type: string
+        modelName:
+          type: string
+      required:
+      - description
+      - makeName
+      - modelName
+      - model_id
+    GetCompanyOffers:
+      type: object
+      properties:
+        offerId:
+          type: integer
+        price:
+          type: number
+          format: double
+          default: 0.1
+        rating:
+          type: number
+          format: double
+          default: 0.1
+        noOfReviews:
+          type: integer
+        makeName:
+          type: string
+        modelName:
+          type: string
+        image:
+          type: string
+          format: uri
+          default: null
+        isVisible:
+          type: boolean
+      required:
+      - isVisible
+      - makeName
+      - modelName
+      - noOfReviews
+      - offerId
+    GetCompanyRents:
+      type: object
+      properties:
+        makeName:
+          type: string
+        modelName:
+          type: string
+        registration:
+          type: string
+        vehicleId:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        noOfReviews:
+          type: integer
+        dateTimePickup:
+          type: string
+          format: date-time
+        dateTimeReturned:
+          type: string
+          format: date-time
+        image:
+          type: string
+          format: uri
+          default: null
+      required:
+      - dateTimePickup
+      - dateTimeReturned
+      - firstName
+      - lastName
+      - makeName
+      - modelName
+      - noOfReviews
+      - registration
+      - vehicleId
+    GetCompanyReviews:
+      type: object
+      properties:
+        image:
+          type: string
+          format: uri
+          default: null
+        makeName:
+          type: string
+        modelName:
+          type: string
+        registration:
+          type: string
+        vehicleId:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        rating:
+          type: number
+          format: double
+          default: 0.1
+        descriptions:
+          type: string
+      required:
+      - descriptions
+      - firstName
+      - lastName
+      - makeName
+      - modelName
+      - registration
+      - vehicleId
+    GetCompanyVehicleEdit:
+      type: object
+      properties:
+        registration:
+          type: string
+        streetName:
+          type: string
+        streetNo:
+          type: string
+        cityName:
+          type: string
+        locationId:
+          type: integer
+      required:
+      - cityName
+      - locationId
+      - registration
+      - streetName
+      - streetNo
     GetCompanyVehicles:
       type: object
       properties:
@@ -755,6 +1027,8 @@ components:
           type: string
         isVisible:
           type: boolean
+        vehicleId:
+          type: integer
         price:
           type: number
           format: double
@@ -765,15 +1039,16 @@ components:
           default: 0.1
         noOfReviews:
           type: integer
-        offer_id:
+        offerId:
           type: integer
       required:
       - isVisible
       - makeName
       - modelName
       - noOfReviews
-      - offer_id
+      - offerId
       - registration
+      - vehicleId
     GetUserInfo:
       type: object
       properties:

@@ -643,7 +643,7 @@ def toggleOfferVisibility(request):
 
 @extend_schema(
     methods=["GET"],
-    operation_id="get_company_offers",
+    operation_id="get_company_rentss",
     tags=["profile"],
     responses={
         200: GetCompanyRents(many=True),
@@ -704,7 +704,7 @@ def upcomingCompanyRents(request):
 
 @extend_schema(
     methods=["GET"],
-    operation_id="get_company_offers",
+    operation_id="get_company_rents",
     tags=["profile"],
     responses={
         200: GetCompanyRents(many=True),
@@ -768,7 +768,7 @@ def ongoingCompanyRents(request):
 
 @extend_schema(
     methods=["GET"],
-    operation_id="get_company_offers",
+    operation_id="get_company_rents",
     tags=["profile"],
     responses={
         200: GetCompanyRents(many=True),
@@ -829,7 +829,7 @@ def completedCompanyRents(request):
 
 @extend_schema(
     methods=["GET"],
-    operation_id="get_company_offers",
+    operation_id="get_company_reviews",
     tags=["profile"],
     responses={
         200: GetCompanyReviews(many=True),
@@ -887,7 +887,7 @@ def companyReviews(request):
 
 @extend_schema(
     methods=["GET"],
-    operation_id="get_company_offers",
+    operation_id="get_company_earnings",
     tags=["profile"],
     responses={
         200: GetCompanyEarnings(),
@@ -938,10 +938,10 @@ def companyEarnings(request):
 
 @extend_schema(
     methods=["GET"],
-    operation_id="get_company_offers",
+    operation_id="get_company_info",
     tags=["profile"],
     responses={
-        200: GetCompanyInfo(),
+        200: GetCompanyInfo(many=True),
     },
 )
 @login_required
@@ -1056,12 +1056,13 @@ def companyPasswordChange(request):
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
 
+
 @extend_schema(
     methods=["GET"],
-    operation_id="get_company_offers",
+    operation_id="get_company_locations",
     tags=["profile"],
     responses={
-        200: GetCompanyInfo(),
+        200: GetCompanyLocations(many=True),
     },
 )
 @login_required
@@ -1145,6 +1146,14 @@ def companySetHQ(request):
         return Response({"success": 0, "message": "Method not allowed"}, status=405)
 
 
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_company_location",
+    tags=["profile"],
+    responses={
+        200: GetCompanyLocation(),
+    },
+)
 @login_required
 @api_view(["GET", "POST", "PUT", "DELETE"])
 def companyLocation(request):
@@ -1366,6 +1375,14 @@ def deleteCompany(request):
         return Response({"success": 0, "message": "Method not allowed"}, status=405)
 
 
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_company_vehicle_id",
+    tags=["profile"],
+    responses={
+        200: GetCompanyVehicleEdit(),
+    },
+)
 @login_required
 @api_view(["PUT", "GET"])
 def companyVehicleEdit(request):
@@ -1556,6 +1573,14 @@ def companyVehicle(request):
             )
 
 
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_company_offer",
+    tags=["profile"],
+    responses={
+        200: GetCompanyOffer(),
+    },
+)
 @login_required
 @api_view(["GET", "POST", "PUT", "DELETE"])
 def companyOffer(request):
@@ -1697,6 +1722,14 @@ def companyOffer(request):
                 )
 
 
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_company_vehicle_log",
+    tags=["profile"],
+    responses={
+        200: GetCompanyVehicleLog(),
+    },
+)
 @login_required
 @api_view(["GET"])
 def companyVehicleLog(request):
@@ -1769,6 +1802,14 @@ def companyVehicleLog(request):
                 )
 
 
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_company_log_upcoming",
+    tags=["profile"],
+    responses={
+        200: GetCompanyLog(many=True),
+    },
+)
 @login_required
 @api_view(["GET"])
 def companyLogUpcoming(request):
@@ -1820,6 +1861,14 @@ def companyLogUpcoming(request):
                 )
 
 
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_company_log_ongoing",
+    tags=["profile"],
+    responses={
+        200: GetCompanyLog(many=True),
+    },
+)
 @login_required
 @api_view(["GET"])
 def companyLogOngoing(request):
@@ -1875,6 +1924,14 @@ def companyLogOngoing(request):
                 )
 
 
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_company_log_ongoing",
+    tags=["profile"],
+    responses={
+        200: GetCompanyLog(many=True),
+    },
+)
 @login_required
 @api_view(["GET"])
 def companyLogCompleted(request):
@@ -1927,6 +1984,14 @@ def companyLogCompleted(request):
                 )
 
 
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_company_log_reviews",
+    tags=["profile"],
+    responses={
+        200: GetCompanyLogReviews(many=True),
+    },
+)
 @login_required
 @api_view(["GET"])
 def companyLogReviews(request, query):

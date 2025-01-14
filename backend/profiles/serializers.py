@@ -106,3 +106,90 @@ class GetCompanyInfo(serializers.Serializer):
     day = serializers.CharField()
     startTime = serializers.TimeField()
     endTime = serializers.TimeField()
+
+
+class GetCompanyLocations(serializers.Serializer):
+    cityName = serializers.CharField()
+    streetName = serializers.CharField()
+    streetNo = serializers.CharField()
+    locationId = serializers.IntegerField()
+
+
+class GetCompanyLocations(serializers.Serializer):
+    cityName = serializers.CharField()
+    streetName = serializers.CharField()
+    streetNo = serializers.CharField()
+    locationId = serializers.IntegerField()
+
+
+class GetCompanyLocation(serializers.Serializer):
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()
+    streetName = serializers.CharField()
+    streetNo = serializers.CharField()
+    cityName = serializers.CharField()
+    workingHours = serializers.ListField(
+        child=serializers.DictField(child=serializers.CharField())
+    )
+
+
+class GetCompanyVehicleEdit(serializers.Serializer):
+    registration = serializers.CharField()
+    streetName = serializers.CharField()
+    streetNo = serializers.CharField()
+    cityName = serializers.CharField()
+    locationId = serializers.IntegerField()
+
+
+class GetCompanyOffer(serializers.Serializer):
+    price = serializers.FloatField(default=0.1)
+    image = serializers.ImageField(default="IMAGE")
+    description = serializers.CharField()
+    model_id = serializers.IntegerField()
+    makeName = serializers.CharField()
+    modelName = serializers.CharField()
+
+
+class OnGoing(serializers.Serializer):
+    pickUpDateTime = serializers.DateTimeField()
+    dropOffDateTime = serializers.DateTimeField()
+    firstName = serializers.CharField()
+    lastName = serializers.CharField()
+    price = serializers.FloatField()
+    pickUpLocationId = serializers.IntegerField()
+    dropOffLocationId = serializers.IntegerField()
+    pickUpLocation = serializers.CharField()
+    dropOffLocation = serializers.CharField()
+
+
+class GetCompanyVehicleLog(serializers.Serializer):
+    makeName = serializers.CharField()
+    modelName = serializers.CharField()
+    registration = serializers.CharField()
+    streetName = serializers.CharField()
+    streetNo = serializers.CharField()
+    cityName = serializers.CharField()
+    timesRented = serializers.IntegerField()
+    moneyMade = serializers.FloatField()
+    timesRented = serializers.IntegerField()
+    moneyMade = serializers.FloatField()
+    rentedTime = serializers.DateTimeField()
+    onGoing = OnGoing(many=True)
+
+
+class GetCompanyLog(serializers.Serializer):
+    dateTimePickup = serializers.DateTimeField()
+    dateTimeReturned = serializers.DateTimeField()
+    firstName = serializers.CharField()
+    lastName = serializers.CharField()
+    price = serializers.FloatField()
+    pickUpLocation = serializers.CharField()
+    dropOffLocation = serializers.CharField()
+
+
+class GetCompanyLogReviews(serializers.Serializer):
+    firstName = serializers.CharField()
+    lastName = serializers.CharField()
+    date = serializers.DateTimeField()
+    description = serializers.CharField()
+    rating = serializers.FloatField()
