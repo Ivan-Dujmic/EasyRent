@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from wallet.serializers import AddMoneySerializer, RemoveMoneySerializer
 from .models import Wallet, Transactions
-from src.models import Dealership, Rentoid
+from src.models import Dealership, Rentoid, Location, WorkingHours
 from home.models import Offer, Rent, Vehicle
 from .serializers import *
 from django.shortcuts import get_object_or_404, redirect
@@ -118,6 +118,9 @@ def offerRent(request, offer_id):
     dropoffDate = request.data.get("dateTo")
     pickupTime = request.data.get("pickupTime")
     dropoffTime = request.data.get("dropoffTime")
+    pickup_locid = request.data.get("pickLocId")
+    dropoff_locid = request.data.get("dropLocId")
+
     if request.user.is_authenticated:
         rentoid = get_object_or_404(Rentoid, user=request.user.id)
     else:
@@ -176,6 +179,7 @@ def offerRent(request, offer_id):
         Vehicle.objects.filter(
             dealer_id=dealer_id,  # Filter by dealership ID
             model_id=model_id,  # Filter by model ID
+            location_id=pickup_locid,
         )
         .exclude(
             Q(
@@ -191,10 +195,30 @@ def offerRent(request, offer_id):
         return Response(
             {"error": "No available vehicles for given parameters."}, status=404
         )
+
     vehicle_id = available_vehicles[0]["vehicle_id"]
     diff = dropoff_datetime - pickup_datetime
     totalPrice = offer.price * int(diff.days)
     gemPrice = int(totalPrice * 100)
+    vehDropoff = Dealership.objects.filter(
+        location__location_id=dropoff_locid, dealership_id=dealer_id
+    )
+    if not vehDropoff.exists():
+        return Response({"error": "No dropoff location for given company"}, status=404)
+    pickupHour = pickup_datetime.time()
+    pickDay = pickup_datetime.weekday()
+    dropDay = dropoff_datetime.weekday()
+    dropoffHour = dropoff_datetime.time()
+    workingHpick = WorkingHours.objects.filter(
+        location_id=pickup_locid, dayOfTheWeek=pickDay
+    ).exclude(Q(startTime__gte=pickupHour) | Q(endTime__lte=pickupHour))
+    if not workingHpick.exists():
+        return Response({"error": "Pickuptime outside off working hours."}, status=404)
+    workingHdrop = WorkingHours.objects.filter(
+        location_id=dropoff_locid, dayOfTheWeek=dropDay
+    ).exclude(Q(startTime__gte=dropoffHour) | Q(endTime__lte=dropoffHour))
+    if not workingHdrop.exists():
+        return Response({"error": "Dropoff outside off working hours."}, status=404)
     print(offer.price, totalPrice, diff.days, buyer_id)
     # Handle payment via Wallet
     if method == "wallet":
@@ -214,6 +238,8 @@ def offerRent(request, offer_id):
             dateTimeRented=pickup_datetime,
             dateTimeReturned=dropoff_datetime,
             vehicle_id=vehicle_id,
+            rentedLocation_id=pickup_locid,
+            returnLocation_id=dropoff_locid,
             price=totalPrice,
         )
 
@@ -255,6 +281,8 @@ def offerRent(request, offer_id):
                     "rentoid_id": buyer_id,
                     "dateTimeRented": f"{pickup_datetime}",
                     "dateTimeReturned": f"{dropoff_datetime}",
+                    "pickup_locid": pickup_locid,
+                    "dropoff_locid": dropoff_locid,
                     "vehicle_id": vehicle_id,
                     "price": totalPrice,
                     "trans_id": trans.id,
@@ -375,13 +403,16 @@ def stripe_webhook(request):
                 rentoid_id = metadata.get("rentoid_id")
                 vehicle_id = metadata.get("vehicle_id")
                 trans_id = metadata.get("trans_id")
-
+                pickup_locid = metadata.get("pickup_locid")
+                dropoff_locid = metadata.get("dropoff_locid")
                 # Convert metadata fields to integers if they exist, else handle the error
                 try:
                     dealer_id = int(dealer_id) if dealer_id else None
                     rentoid_id = int(rentoid_id) if rentoid_id else None
                     vehicle_id = int(vehicle_id) if vehicle_id else None
                     trans_id = int(trans_id) if trans_id else None
+                    pickup_locid = int(pickup_locid) if pickup_locid else None
+                    dropoff_locid = int(dropoff_locid) if dropoff_locid else None
                 except ValueError as e:
                     return Response(
                         {"error": "Invalid metadata value for ID fields"}, status=400
@@ -399,8 +430,13 @@ def stripe_webhook(request):
                     dateTimeRented=dateTimeRented,
                     dateTimeReturned=dateTimeReturned,
                     vehicle_id=vehicle_id,
+                    rentedLocation_id=pickup_locid,
+                    returnLocation_id=dropoff_locid,
                     price=price,
                 )
+                trans = get_object_or_404(Transactions, id=trans_id)
+                trans.status = "finished"
+                trans.save()
                 return Response({"paymentStatus": "payment paid"})
             elif pay_type == "buyGems":
                 print("in Buy Gems")

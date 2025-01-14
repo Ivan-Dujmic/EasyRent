@@ -15,6 +15,8 @@ class OfferSerializer(serializers.Serializer):
     paymentMethod = serializers.CharField(default="stripe/wallet")
     dateFrom = serializers.DateField(default="21-01-2025")
     dateTo = serializers.DateField(default="23-01-2025")
+    pickLocId = serializers.IntegerField(default=0)
+    dropLocId = serializers.IntegerField(default=0)
     pickupTime = serializers.IntegerField(default=0)
     dropoffTime = serializers.IntegerField(default=0)
 

@@ -1,6 +1,6 @@
-INSERT INTO auth_user ("password", "last_login", "is_superuser", "username", "first_name", 
+INSERT INTO auth_user ("password", "last_login", "is_superuser", "username", "first_name",
 			"last_name", "email", "is_staff", "is_active", "date_joined")
-VALUES 
+VALUES
 ('naksdcpwenifonaosdnf','2024-11-14 17:43:17', false, 'company_jaka@gmail.com','jaka kompanija', '', 'jaka@gmail.com', false, true, '2024-11-14 17:42:20'),
 ('nsksdcpweniforrosdnf','2024-11-14 17:43:17', false, 'company_slaba@gmail.com','slaba kompanija', '', 'slaba@gmail.com', false, true, '2024-11-14 17:42:20'),
 ('naksdcpaefagnifonaosdnf','2024-11-14 17:43:17', false, 'company_bogata@gmail.com','bogata kompanija', '', 'bogata@gmail.com', false, true, '2024-11-14 17:42:20'),
@@ -37,28 +37,28 @@ VALUES ('Compact');
 
 commit;
 
-INSERT INTO home_model ("noOfSeats", "automatic", "fuelType", 
+INSERT INTO home_model ("noOfSeats", "automatic", "fuelType",
 					   "modelName", "makeName", "modelType_id")
 VALUES (5, false, 'G', 'T-cross', 'Volkswagen', 1);
-INSERT INTO home_model ("noOfSeats", "automatic", "fuelType", 
+INSERT INTO home_model ("noOfSeats", "automatic", "fuelType",
 					   "modelName", "makeName", "modelType_id")
 VALUES (5, true, 'E', 'CX-5', 'Mazda', 1);
-INSERT INTO home_model ("noOfSeats", "automatic", "fuelType", 
+INSERT INTO home_model ("noOfSeats", "automatic", "fuelType",
 					   "modelName", "makeName", "modelType_id")
 VALUES (5, false, 'G', 'Taigo', 'Volkswagen', 1);
-INSERT INTO home_model ("noOfSeats", "automatic", "fuelType", 
+INSERT INTO home_model ("noOfSeats", "automatic", "fuelType",
 					   "modelName", "makeName", "modelType_id")
 VALUES (5, true, 'G', 'Tiguan', 'Volkswagen', 1);
-INSERT INTO home_model ("noOfSeats", "automatic", "fuelType", 
+INSERT INTO home_model ("noOfSeats", "automatic", "fuelType",
 					   "modelName", "makeName", "modelType_id")
 VALUES (5, true, 'G', 'Quashqai', 'Nissan', 1);
-INSERT INTO home_model ("noOfSeats", "automatic", "fuelType", 
+INSERT INTO home_model ("noOfSeats", "automatic", "fuelType",
 					   "modelName", "makeName", "modelType_id")
 VALUES (4, true, 'G', '500', 'Fiat', 3);
-INSERT INTO home_model ("noOfSeats", "automatic", "fuelType", 
+INSERT INTO home_model ("noOfSeats", "automatic", "fuelType",
 					   "modelName", "makeName", "modelType_id")
 VALUES (4, false, 'D', 'Golf', 'Volkswagen', 2);
-INSERT INTO home_model ("noOfSeats", "automatic", "fuelType", 
+INSERT INTO home_model ("noOfSeats", "automatic", "fuelType",
 					   "modelName", "makeName", "modelType_id")
 VALUES (5, true, 'G', 'X5', 'BMW', 1);
 
@@ -119,7 +119,7 @@ insert into src_location ("location_id", "countryName", "cityName", "streetName"
 
 commit;
 INSERT INTO home_vehicle ("registration", "model_id", "dealer_id", "timesRented", "location_id", "isVisible", "noOfReviews", "rating")
-VALUES 
+VALUES
   ('ABC1234', 1, 1, 200, 1, TRUE, 150, 3.50),  -- timesRented is ~1.33x noOfReviews
   ('XYZ5678', 2, 3, 450, 3, TRUE, 300, 4.00),  -- timesRented is 1.5x noOfReviews
   ('LMN4321', 3, 2, 55, 2, TRUE, 50, 2.75),    -- timesRented is 1.1x noOfReviews
@@ -136,10 +136,10 @@ VALUES
   ('YZA3456', 6, 1, 500, 1, TRUE, 220, 3.00),  -- timesRented is 2.27x noOfReviews
   ('BCD7890', 7, 6, 750, 6, TRUE, 400, 4.50);  -- timesRented is 1.88x noOfReviews
   commit;
-  
+
 INSERT INTO home_offer ("model_id", "dealer_id", "price", "rating", "noOfReviews", "description", "image")
 
-VALUES 
+VALUES
   (1, 1, 12, 4.23, 3, 'VW T-cross is a great car', 'offers/1.png'),
   (2, 3, 19, 3.56, 7, 'Mazda CX-5 is a great car', 'offers/2.png'),
   (3, 2, 15, 4.89, 1, 'VW Taigo is a great car', 'offers/3.png'),
@@ -155,3 +155,13 @@ VALUES
   (5, 2, 17, 4.65, 2, 'Nissan Quashqai is a great car', 'offers/5.png'),
   (6, 3, 8, 1.80, 4, 'Fiat 500 is a great car', 'offers/6.png'),
   (7, 6, 13, 3.90, 5, 'VW Golf is a great car', 'offers/7.png');
+
+INSERT INTO public.src_workinghours --(dayOfTheWeek, startTime, endTime, location_id)
+VALUES
+    (1,0, '09:00:00', '17:00:00', 1),  -- Monday
+    (2,1, '09:00:00', '17:00:00', 1),  -- Tuesday
+    (3,2, '09:00:00', '17:00:00', 1),  -- Wednesday
+    (4,3, '09:00:00', '17:00:00', 1),  -- Thursday
+    (5,4, '09:00:00', '17:00:00', 1),  -- Friday
+    (6,5, '09:00:00', '17:00:00', 1),  -- Saturday
+    (7,6, '09:00:00', '17:00:00', 1);  -- Sunday
