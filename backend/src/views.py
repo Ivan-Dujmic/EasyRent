@@ -70,7 +70,6 @@ def activateEmail(request, user, toEmail):
         return 0
 
 
-
 @extend_schema(
     methods=["POST"],
     operation_id="register_user",
@@ -200,7 +199,6 @@ def registerUser(request):
                 {"success": 0, "message": "Email confirmation request failed"},
                 status=500,
             )
-
 
 
 @csrf_exempt
@@ -566,6 +564,7 @@ def logoutUser(request):
     },
 )
 @api_view(["POST"])
+@csrf_exempt
 def loginUser(request):
     if request.method == "POST":
         data = request.data
