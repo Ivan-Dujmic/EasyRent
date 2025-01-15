@@ -19,20 +19,24 @@ const CarContext = createContext<CarContextType | undefined>(undefined);
 
 // Provider za wrapanje aplikacije
 export const CarProvider = ({ children }: { children: ReactNode }) => {
-  const [cars, setCarsState] = useState<ICar[] | null>(() => {
-    // Prilikom inicijalizacije pokušaj dohvatiti automobile iz localStorage
-    const savedCars = localStorage.getItem('cars');
-    return savedCars ? JSON.parse(savedCars) : null;
-  });
+  const [cars, setCarsState] = useState<ICar[] | null>(null);
 
   // Funkcija koja ažurira stanje i localStorage
   const setCars = (newCars: ICar[]) => {
     setCarsState(newCars);
-    localStorage.setItem('cars', JSON.stringify(newCars)); // Spremi automobile u localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cars', JSON.stringify(newCars)); // Spremi automobile u localStorage
+    }
   };
 
   useEffect(() => {
-    // Ovdje možeš postaviti dodatnu logiku ako je potrebno pri učitavanju komponenti
+    // Prilikom inicijalizacije pokušaj dohvatiti automobile iz localStorage
+    if (typeof window !== 'undefined') {
+      const savedCars = localStorage.getItem('cars');
+      if (savedCars) {
+        setCarsState(JSON.parse(savedCars));
+      }
+    }
   }, []);
 
   return (

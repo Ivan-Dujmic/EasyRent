@@ -21,16 +21,30 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // Provider komponenta
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User>(() => {
-    if (typeof window !== 'undefined') {
-      // Dohvati podatke iz localStorage ili postavi na default (guest)
-      const savedUser = localStorage.getItem('user');
-      return savedUser ? JSON.parse(savedUser) : { role: 'guest' };
-    }
-    return { role: 'guest' }; // Default vrijednost za SSR okruženje
-  });
+  const [user, setUser] = useState<User>({ role: 'guest' }); // Default vrijednost
 
-  // Kad god se podaci o korisniku promijene, spremi ih u localStorage
+  // Dohvati podatke pri inicijalizaciji komponente
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        setUser(JSON.parse(savedUser)); // Postavi korisnika iz localStorage
+      } else {
+        // Možeš ovdje pozvati API ako želiš dohvatiti podatke s backend-a
+        fetch('/api/user') // Primjer API poziva
+          .then((res) => res.json())
+          .then((data) => {
+            setUser(data);
+            localStorage.setItem('user', JSON.stringify(data)); // Spremi podatke u localStorage
+          })
+          .catch(() => {
+            console.error('Failed to fetch user data');
+          });
+      }
+    }
+  }, []); // Pokreće se samo jednom nakon montaže komponente
+
+  // Kad god se podaci o korisniku promijene, ažuriraj localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('user', JSON.stringify(user));
