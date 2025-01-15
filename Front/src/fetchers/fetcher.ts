@@ -5,10 +5,13 @@ const getCsrfToken = async () => {
     const data = await response.json();
     return data.csrfToken;
 };
-const getCookie = (name) => {
+const getCookie = (name: string): string | undefined => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
+    if (parts.length === 2) {
+        return parts.pop()?.split(';').shift();
+    }
+    return undefined;
 };
 
 export async function fetcher<T>(
@@ -19,6 +22,10 @@ export async function fetcher<T>(
 
     try {
         const csrfToken = getCookie('csrftoken');
+        if (!csrfToken) {
+            throw new Error('CSRF token not found in cookies.');
+        }
+
         console.log(csrfToken);
         const response = await fetch(input, {
             headers: {
