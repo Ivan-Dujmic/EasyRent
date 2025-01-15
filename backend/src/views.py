@@ -8,6 +8,8 @@ from django.db.models import Max
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.contrib.auth import logout, authenticate, login, get_user_model
+
+from backend.settings import DEFAULT_FROM_EMAIL
 from .models import *
 from wallet.models import Wallet
 import json
@@ -47,6 +49,8 @@ def activate(request, uidb64, token):
 
 
 def activateEmail(request, user, toEmail):
+    print("nigga")
+    print(toEmail)
     subject = "Activate EasyRent account"
     message = render_to_string(
         "templateActivateAccount.html",
@@ -57,7 +61,7 @@ def activateEmail(request, user, toEmail):
             "protocol": "https" if request.is_secure() else "http",
         },
     )
-    email = EmailMessage(subject, message, to=[toEmail])
+    email = EmailMessage(subject, message, from_email=DEFAULT_FROM_EMAIL, to=[toEmail])
 
     try:
         email.send()
@@ -68,7 +72,7 @@ def activateEmail(request, user, toEmail):
         return 0
 
 
-@csrf_exempt
+
 @extend_schema(
     methods=["POST"],
     operation_id="register_user",
@@ -130,6 +134,7 @@ def activateEmail(request, user, toEmail):
     },
 )
 @api_view(["POST"])
+@csrf_exempt
 def registerUser(request):
     if request.method == "POST":
         data = request.data
