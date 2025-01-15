@@ -50,7 +50,6 @@ export default function UserProfilePage() {
     lg: 'space-between'
   })
 
-
   return (
     <Flex direction="column" grow={1} bg="brandlightgray" minH="100vh">
       {/* Header */}
