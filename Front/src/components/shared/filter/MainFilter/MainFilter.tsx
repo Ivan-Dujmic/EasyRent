@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import useSWRMutation from 'swr/mutation';
 import { CustomGet, ICar } from '@/fetchers/homeData';
 import { swrKeys } from '@/fetchers/swrKeys';
+import { useFilterContext } from '@/context/FilterContext/FilterContext';
 
 const options: { [key: string]: string[] } = {
   'Cities (including airports)': [
@@ -35,6 +36,7 @@ const options: { [key: string]: string[] } = {
 export default function MainFilter() {
   const router = useRouter();
   const { setCars } = useCarContext();
+  const { setFilterData } = useFilterContext();
 
   // LocalStorage za inicijalne vrijednosti
   const [pickupLocation, setPickupLocation] = useState(
@@ -147,6 +149,16 @@ export default function MainFilter() {
     const formattedPickupLocation = formatLocation(pickupLocation);
     const formattedDropoffLocation = formatLocation(dropoffLocation);
 
+    // sprmei mi te podatke u konteskt da se mogu korsititi i u sidefilter-u
+    setFilterData({
+      pick_up_location: formattedPickupLocation,
+      drop_off_location: formattedDropoffLocation,
+      pick_up_date: pickup.date,
+      pick_up_time: pickup.time,
+      drop_off_date: dropoff.date,
+      drop_off_time: dropoff.time,
+    });
+
     // Kreiranje URL-a sa query parametrima
     const queryParams = new URLSearchParams({
       pick_up_location: formattedPickupLocation,
@@ -158,6 +170,7 @@ export default function MainFilter() {
     });
 
     const fullUrl = `/api/home/search?${queryParams.toString()}`;
+    console.log(fullUrl);
     setUrl(fullUrl); // Postavljamo URL u state
   };
 
