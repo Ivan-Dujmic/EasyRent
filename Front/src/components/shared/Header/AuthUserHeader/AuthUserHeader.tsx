@@ -2,7 +2,6 @@
 
 import {
   Box,
-  Button,
   Flex,
   Text,
   IconButton,
@@ -15,35 +14,17 @@ import {
   Divider,
   Stack,
   useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
+  Button,
 } from '@chakra-ui/react';
-import NextLink from 'next/link';
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
+import NextLink from 'next/link';
 import EasyRentLogo from '@/components/core/EasyRentLogo/EasyRentLogo';
 import { AnimatedMyProfile } from '../../user/AnimatedMyProfile/AnimatedMyProfile';
-import { useRouter } from 'next/navigation';
 import { User } from '@/context/UserContext/UserContext';
+import LogOutButton from '../../auth/LogOutButton/LogOutButton';
 
 export default function AuthUserHeader({ UserData }: { UserData?: User }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const {
-    isOpen: isModalOpen,
-    onOpen: onModalOpen,
-    onClose: onModalClose,
-  } = useDisclosure();
-  const router = useRouter();
-
-  const handleLogout = () => {
-    localStorage.removeItem('userData');
-    router.push('/home');
-    onModalClose();
-  };
 
   return (
     <Box
@@ -88,21 +69,7 @@ export default function AuthUserHeader({ UserData }: { UserData?: User }) {
           )}
 
           {/* Log Out Button */}
-          <Button
-            bg={'brandblue'}
-            color={'white'}
-            fontWeight={'semibold'}
-            fontSize="sm"
-            _hover={{
-              bg: 'brandyellow',
-              color: 'brandblack',
-              transform: 'translateY(-2px)',
-              transition: 'transform 0.2s ease, box-shadow 0.3s ease',
-            }}
-            onClick={onModalOpen}
-          >
-            Log out
-          </Button>
+          <LogOutButton />
         </Flex>
 
         {/* Hamburger menu for mobile */}
@@ -147,25 +114,7 @@ export default function AuthUserHeader({ UserData }: { UserData?: User }) {
               )}
 
               {/* Log Out */}
-              <Button
-                bg={'brandblue'}
-                color={'white'}
-                fontWeight={'semibold'}
-                fontSize="sm"
-                size="sm"
-                _hover={{
-                  bg: 'brandyellow',
-                  color: 'brandblack',
-                  transform: 'translateY(-2px)',
-                  transition: 'transform 0.2s ease, box-shadow 0.3s ease',
-                }}
-                onClick={() => {
-                  onClose();
-                  onModalOpen();
-                }}
-              >
-                Log out
-              </Button>
+              <LogOutButton />
 
               <Divider />
 
@@ -190,7 +139,7 @@ export default function AuthUserHeader({ UserData }: { UserData?: User }) {
                 </Text>
               </Stack>
 
-              {/* Talk To us*/}
+              {/* Talk To us */}
               <Button
                 as={NextLink}
                 bg={'brandblue'}
@@ -212,50 +161,6 @@ export default function AuthUserHeader({ UserData }: { UserData?: User }) {
           </DrawerBody>
         </DrawerContent>
       </Drawer>
-
-      {/* Logout Confirmation Modal */}
-      <Modal isOpen={isModalOpen} onClose={onModalClose} isCentered>
-        <ModalOverlay />
-        <ModalContent borderRadius="lg" bg="brandwhite" boxShadow="xl">
-          <ModalHeader textAlign="center" fontWeight="bold" fontSize="lg">
-            Confirm Logout
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Text textAlign="center" fontSize="md" color="brandblack" mt={2}>
-              Are you sure you want to log out?
-            </Text>
-            <Text textAlign="center" fontSize="sm" color="brandgray" mt={1}>
-              You’ll need to log back in to access your account.
-            </Text>
-          </ModalBody>
-          <ModalFooter justifyContent="center" gap={4}>
-            <Button
-              color="brandwhite"
-              bg="brandblue"
-              _hover={{
-                bg: 'brandyellow',
-                color: 'brandblack',
-              }}
-              onClick={handleLogout}
-              size="md"
-            >
-              Yes, Log Out
-            </Button>
-            <Button
-              color="brandblack"
-              bg="brandmiddlegray"
-              _hover={{
-                bg: 'brandlightgray',
-              }}
-              onClick={onModalClose}
-              size="md"
-            >
-              No, I want to stay
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
     </Box>
   );
 }
