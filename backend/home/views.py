@@ -12,6 +12,8 @@ from src.serializers import *
 
 @api_view(["GET"])
 def get_showcased(request):
+    print("Headers:")
+    print(request.headers)
     dealerships = list(Dealership.objects.all())
     size = 6 if len(dealerships) >= 6 else len(dealerships)
     showcased_dealerships = random.sample(dealerships, size)
