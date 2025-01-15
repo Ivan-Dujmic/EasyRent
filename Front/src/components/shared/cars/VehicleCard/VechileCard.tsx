@@ -20,7 +20,7 @@ export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
     <Card
       margin={0}
       as={NextLink}
-      href={`/vehicles/${vehicle.modelName}`}
+      href={`/offer/:${vehicle.offer_id}`}
       maxW="260px"
       minW="260px"
       height="250px" // Fixed height for consistency

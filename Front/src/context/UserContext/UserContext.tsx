@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState } from 'react';
 
 // Definišite tipove za podatke o korisniku
-interface User {
+export interface User {
   role: 'guest' | 'user' | 'company' | 'admin';
   firstName?: string;
   lastName?: string;

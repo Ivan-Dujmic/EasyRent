@@ -18,6 +18,7 @@ import {
   Divider,
 } from '@chakra-ui/react';
 import CustomHeader from '@/components/shared/Header/CustomHeader/CustomHeader';
+import ChatbotWidget from '@/components/shared/ChatbotWidget/ChatbotWidget';
 
 export default function UserProfilePage() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -160,6 +161,7 @@ function Chat({ onClose }: { onClose: () => void }) {
       >
         Close
       </Button>
+      <ChatbotWidget />
     </Flex>
   );
 }

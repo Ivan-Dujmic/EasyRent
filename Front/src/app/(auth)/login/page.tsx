@@ -24,7 +24,6 @@ import SubmitButton from '@/components/shared/auth/SubmitButton';
 import SupportButton from '@/components/shared/auth/SupportButton';
 
 export default function HomePage() {
-  const [loggedIn, setLoggedIn] = useState(false);
   const {
     register,
     handleSubmit,
@@ -36,9 +35,9 @@ export default function HomePage() {
 
   const { trigger } = useSWRMutation(swrKeys.logIn, logIn, {
     onSuccess: (data) => {
-      setLoggedIn(true);
-      if (data?.role === 'user') router.push('/YourHomePage');
-      else if (data?.role === 'company') router.push('/CompanyHomePage');
+      if (data?.success == 1)
+        /*Tu bi potneicjlano moglo doci do greske */
+        router.push('/SuccesfulLogin');
     },
     onError: () => {
       setError('email', {
@@ -65,9 +64,7 @@ export default function HomePage() {
     lg: '30%', // Slightly smaller on large screens for spacing
   });
 
-  return loggedIn ? (
-    <SucessLoginWindow />
-  ) : (
+  return (
     <Box
       width={boxWidth}
       margin="0 auto"
@@ -133,7 +130,7 @@ export default function HomePage() {
                 Continue as Guest
               </SupportButton>
               <SupportButton
-                href="https://easyrent-t7he.onrender.com/accounts/google/login/?next=/"
+                href="https://easyrent-t7he.onrender.com/accounts/google/login/?next=/SuccessfulLogin"
                 w={buttonWidth}
               >
                 <Flex justify="center" align="center" gap={2}>
