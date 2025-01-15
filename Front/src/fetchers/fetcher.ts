@@ -21,9 +21,9 @@ export async function fetcher<T>(
     let data: T | undefined;
 
     try {
-        const csrfToken = getCookie('csrftoken');
+        let csrfToken = getCookie('csrftoken');
         if (!csrfToken) {
-            throw new Error('CSRF token not found in cookies.');
+            csrfToken = "";
         }
 
         console.log(csrfToken);
