@@ -44,13 +44,6 @@ export default function SuccessfulLogin() {
 
   // Ako je došlo do greške
   if (error) {
-    setUser({
-      role: 'user',
-      firstName: 'Fran',
-      lastName: 'Galic',
-      balance: 1000,
-    });
-    router.push('/home');
     return (
       <Flex
         bg="brandwhite"

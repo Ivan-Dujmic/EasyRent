@@ -5,8 +5,10 @@ import { VehicleGrid } from '@/components/shared/cars/VehicleGrid/VehicleGrid';
 import MainFilter from '@/components/shared/filter/MainFilter/MainFilter';
 import SideFilter from '@/components/shared/filter/SideFilter/SideFilter';
 import Footer from '@/components/shared/Footer/Footer';
+import AuthUserHeader from '@/components/shared/Header/AuthUserHeader/AuthUserHeader';
 import Header from '@/components/shared/Header/Header';
 import { useCarContext } from '@/context/CarContext';
+import { useUserContext } from '@/context/UserContext/UserContext';
 import { mockVehicles } from '@/mockData/mockVehicles';
 import { Box, Text, Flex, useBreakpointValue } from '@chakra-ui/react';
 import {
@@ -42,12 +44,14 @@ const ListinGuestFooterLinks = {
 
 export default function ResultsPage() {
   const { cars } = useCarContext();
+  const { user } = useUserContext();
 
   const isSmallScreen = useBreakpointValue({ base: true, md: false });
 
   return (
     <Flex direction="column" grow={1} align={'center'} width={'100%'}>
-      <Header />
+      {user.role === 'user' && <AuthUserHeader UserData={user} />}
+      {user.role !== 'user' && <Header />}
       {/* Drugi dio stranice */}
       <Flex
         bg="brandlightgray"
