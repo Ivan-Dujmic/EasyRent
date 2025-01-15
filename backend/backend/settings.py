@@ -196,6 +196,7 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_HEADERS = [
     "content-type",
     "authorization",
+    "x-csrftoken",
 ]
 
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
