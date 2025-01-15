@@ -14,7 +14,7 @@ import {
   Heading,
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
-import Select, { MultiValue, GroupBase, components } from 'react-select';
+import Select, { MultiValue, GroupBase } from 'react-select';
 
 // Define the makes and models data
 const makesAndModels: Record<string, string[]> = {
@@ -23,10 +23,15 @@ const makesAndModels: Record<string, string[]> = {
   Volkswagen: ['Golf', 'Passat', 'Tiguan'],
 };
 
-// Define type for react-select options
+// Define types for react-select options
 type Option = {
   label: string;
   value: string;
+};
+
+type GroupedOption = {
+  label: string;
+  options: Option[];
 };
 
 export default function SideFilter() {
@@ -35,22 +40,36 @@ export default function SideFilter() {
   const [minPrice, setMinPrice] = useState<number>(15);
   const [maxPrice, setMaxPrice] = useState<number>(72);
 
+  // State for checkboxes
+  const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
+  const [selectedCarType, setSelectedCarType] = useState<string[]>([]);
+  const [selectedTransmission, setSelectedTransmission] = useState<string[]>(
+    []
+  );
+
   const makeOptions: Option[] = Object.keys(makesAndModels).map((make) => ({
     label: make,
     value: make,
   }));
 
-  const modelOptions: GroupBase<Option>[] = selectedMakes.map((make) => ({
-    label: make.label,
+  // Grouped model options based on selected makes
+  const modelOptions: GroupedOption[] = selectedMakes.map((make) => ({
+    label: make.label, // Use the selected make as the group label
     options: makesAndModels[make.value]?.map((model) => ({
       label: model,
-      value: model,
+      value: `${make.value}|${model}`, // Use `|` as the delimiter
     })),
   }));
 
   const handleMakeChange = (selected: MultiValue<Option>) => {
     setSelectedMakes(selected);
-    setSelectedModels([]);
+
+    // Filter models based on currently selected makes
+    setSelectedModels((currentModels) =>
+      currentModels.filter((model) =>
+        selected.some((make) => model.value.startsWith(`${make.value}|`))
+      )
+    );
   };
 
   const handleModelChange = (selected: MultiValue<Option>) => {
@@ -92,6 +111,37 @@ export default function SideFilter() {
     </Box>
   );
 
+  const handleApply = () => {
+    // Map models back to make-model pairs
+    const makeModelPairs = selectedModels.map((model) => {
+      const [make, modelName] = model.value.split('|');
+      return { make, model: modelName };
+    });
+
+    // Extract makes without models
+    const makesWithoutModels = selectedMakes
+      .filter(
+        (make) =>
+          !selectedModels.some((model) =>
+            model.value.startsWith(`${make.value}|`)
+          )
+      )
+      .map((make) => ({ make: make.value, model: null }));
+
+    // Combine makes with models and makes without models
+    const makeAndModelData = [...makeModelPairs, ...makesWithoutModels];
+
+    const data = {
+      seats: selectedSeats,
+      carType: selectedCarType,
+      transmission: selectedTransmission,
+      priceRange: { min: minPrice, max: maxPrice },
+      makeAndModel: makeAndModelData,
+    };
+
+    console.log(JSON.stringify(data, null, 2));
+  };
+
   return (
     <Box
       width="400px"
@@ -111,7 +161,11 @@ export default function SideFilter() {
           Seats:
         </Text>
         <Flex gap={4}>
-          <CheckboxGroup colorScheme="blue">
+          <CheckboxGroup
+            colorScheme="blue"
+            value={selectedSeats}
+            onChange={(values) => setSelectedSeats(values as string[])}
+          >
             <Flex gap={4}>
               <Checkbox value="1-2">1-2</Checkbox>
               <Checkbox value="4-5">4-5</Checkbox>
@@ -126,7 +180,11 @@ export default function SideFilter() {
         <Text fontSize="lg" mb={2} fontWeight="bold">
           Car Type:
         </Text>
-        <CheckboxGroup colorScheme="blue">
+        <CheckboxGroup
+          colorScheme="blue"
+          value={selectedCarType}
+          onChange={(values) => setSelectedCarType(values as string[])}
+        >
           <Flex direction="column" gap={2}>
             <Checkbox value="Compact">Compact</Checkbox>
             <Checkbox value="Limo/Estate">Limo/Estate</Checkbox>
@@ -140,7 +198,11 @@ export default function SideFilter() {
         <Text fontSize="lg" mb={2} fontWeight="bold">
           Transmission:
         </Text>
-        <CheckboxGroup colorScheme="blue">
+        <CheckboxGroup
+          colorScheme="blue"
+          value={selectedTransmission}
+          onChange={(values) => setSelectedTransmission(values as string[])}
+        >
           <Flex direction="row" gap={4}>
             <Checkbox value="Manual">Manual</Checkbox>
             <Checkbox value="Automatic">Automatic</Checkbox>
@@ -201,7 +263,9 @@ export default function SideFilter() {
             isMulti
             options={makeOptions}
             value={selectedMakes}
-            onChange={handleMakeChange}
+            onChange={(selected) =>
+              handleMakeChange(selected as MultiValue<Option>)
+            }
             placeholder="Select Makes"
             closeMenuOnSelect={false}
             components={{
@@ -221,7 +285,9 @@ export default function SideFilter() {
             isMulti
             options={modelOptions}
             value={selectedModels}
-            onChange={handleModelChange}
+            onChange={(selected) =>
+              handleModelChange(selected as MultiValue<Option>)
+            }
             placeholder="Select Models"
             isDisabled={selectedMakes.length === 0}
             components={{
@@ -245,6 +311,7 @@ export default function SideFilter() {
         color="white"
         _hover={{ bg: 'brandyellow', color: 'brandblack' }}
         width="100%"
+        onClick={handleApply}
       >
         Apply
       </Button>
