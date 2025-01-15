@@ -22,14 +22,19 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 // Provider komponenta
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User>(() => {
-    // Dohvati podatke iz localStorage ili postavi na default (guest)
-    const savedUser = localStorage.getItem('user');
-    return savedUser ? JSON.parse(savedUser) : { role: 'guest' };
+    if (typeof window !== 'undefined') {
+      // Dohvati podatke iz localStorage ili postavi na default (guest)
+      const savedUser = localStorage.getItem('user');
+      return savedUser ? JSON.parse(savedUser) : { role: 'guest' };
+    }
+    return { role: 'guest' }; // Default vrijednost za SSR okruženje
   });
 
   // Kad god se podaci o korisniku promijene, spremi ih u localStorage
   useEffect(() => {
-    localStorage.setItem('user', JSON.stringify(user));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', JSON.stringify(user));
+    }
   }, [user]);
 
   return (
