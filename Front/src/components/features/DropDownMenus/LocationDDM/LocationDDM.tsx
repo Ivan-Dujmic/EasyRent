@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Menu,
   MenuList,
@@ -9,19 +11,24 @@ import {
   useOutsideClick,
   useBreakpointValue,
 } from '@chakra-ui/react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { FaCarAlt } from 'react-icons/fa';
 import LocationDDMGroups from './LocationDDMGroups/LocationDDMGroups';
 import { LocationDDMProps } from '@/typings/DDM-DropDownMenu/DDM';
+
+interface EnhancedLocationDDMProps extends LocationDDMProps {
+  value?: string; // Dodan prop za inicijalnu vrijednost
+}
 
 export default function LocationDDM({
   options,
   description,
   placeHolder,
   onLocationChange,
-}: LocationDDMProps) {
+  value, // Novi prop za vrijednost
+}: EnhancedLocationDDMProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState<string | null>(null);
+  const [search, setSearch] = useState<string | null>(value || null); // Inicijalna vrijednost dolazi iz value
 
   const ref = useRef(null);
 
@@ -39,6 +46,11 @@ export default function LocationDDM({
     ref,
     handler: () => setIsOpen(false),
   });
+
+  // Kada se promijeni prop `value`, ažuriraj stanje komponente
+  useEffect(() => {
+    setSearch(value || null);
+  }, [value]);
 
   const handleSelectLocation = (location: string) => {
     setSearch(location);
