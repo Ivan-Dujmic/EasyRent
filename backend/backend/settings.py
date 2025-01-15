@@ -170,7 +170,10 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
-# CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True  # Ensure this is True for HTTPS
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = "None"  # Can also be 'Strict' or 'None'
+
 SESSION_COOKIE_DOMAIN = None
 SESSION_COOKIE_NAME = "sessionid"
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
