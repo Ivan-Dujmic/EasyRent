@@ -28,13 +28,9 @@ import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 import EasyRentLogo from '@/components/core/EasyRentLogo/EasyRentLogo';
 import { AnimatedMyProfile } from '../../user/AnimatedMyProfile/AnimatedMyProfile';
 import { useRouter } from 'next/navigation';
-import { ILoginData } from '@/mutation/login';
+import { User } from '@/context/UserContext/UserContext';
 
-export default function AuthUserHeader({
-  UserData,
-}: {
-  UserData?: ILoginData;
-}) {
+export default function AuthUserHeader({ UserData }: { UserData?: User }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
     isOpen: isModalOpen,
@@ -78,7 +74,7 @@ export default function AuthUserHeader({
               color={'brandblack'}
               fontWeight={'semibold'}
             >
-              {UserData?.firstName || 'Guest'}
+              {UserData?.firstName || 'Guest'} {UserData?.lastName || ''}
             </Text>
             <Box height="4" borderLeft="1px" borderColor="brandgray" />
             <AnimatedMyProfile />
