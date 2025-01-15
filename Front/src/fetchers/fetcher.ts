@@ -5,6 +5,11 @@ const getCsrfToken = async () => {
     const data = await response.json();
     return data.csrfToken;
 };
+const getCookie = (name) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+};
 
 export async function fetcher<T>(
     input: string | URL | globalThis.Request,
@@ -13,7 +18,7 @@ export async function fetcher<T>(
     let data: T | undefined;
 
     try {
-        const csrfToken = await getCsrfToken();
+        const csrfToken = getCookie('csrftoken');
         console.log(csrfToken);
         const response = await fetch(input, {
             headers: {
