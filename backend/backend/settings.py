@@ -170,7 +170,6 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-CORS_ORIGIN_ALLOW_ALL = True
 CSRF_COOKIE_SECURE = True  # Ensure this is True for HTTPS
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = "Lax"  # Can also be 'Strict' or 'None'
@@ -191,7 +190,6 @@ CRSF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     "https://easy-rent-ashy.vercel.app",
 ]
-CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_HEADERS = [
     "content-type",
