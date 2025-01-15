@@ -15,5 +15,6 @@ urlpatterns = [
     path("user-info/", views.userInfo, name="userInfo"),
     path("activate/<uidb64>/<token>/", views.activate, name="activateUser"),
     path("", views.redirectHome, name="redirectHome"),
+    path("get-csrf", view.getCSRF, name="getCSRF"),
     path("SuccessfulLogin", views.redirectHome, name="redirectHome"),
 ]

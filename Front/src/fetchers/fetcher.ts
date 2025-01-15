@@ -1,5 +1,5 @@
 const getCsrfToken = async () => {
-    const response = await fetch('https://your-backend-url.onrender.com/csrf/', {
+    const response = await fetch('https://easyrent-t7he.onrender.com/api/auth/get-csrf', {
         credentials: 'include',
     });
     const data = await response.json();
@@ -8,7 +8,7 @@ const getCsrfToken = async () => {
 
 const sendRequest = async () => {
     const csrfToken = await getCsrfToken();
-    await fetch('https://your-backend-url.onrender.com/api/endpoint/', {
+    await fetch('https://easyrent-t7he.onrender.com/api/auth/get-csrf', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

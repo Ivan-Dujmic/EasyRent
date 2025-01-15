@@ -35,7 +35,7 @@ from PIL import Image
 
 
 @csrf_exempt
-def get_csrf_token(request):
+def getCSRF(request):
     return JsonResponse({"csrfToken": get_token(request)})
 
 
