@@ -14,6 +14,7 @@ export async function fetcher<T>(
 
     try {
         const csrfToken = await getCsrfToken();
+        console.log(csrfToken);
         const response = await fetch(input, {
             headers: {
                 'Content-Type': 'application/json',
