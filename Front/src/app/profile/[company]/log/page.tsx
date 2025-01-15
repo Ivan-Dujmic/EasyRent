@@ -10,7 +10,7 @@ const mokdata = [
         modelName: "modelName",
         makeName: "makeName",
         customerName: "pero",
-        customerSurame: "peric",
+        customerSurname: "peric",
         price: "price",
         registration: "registration",
         pickupp: "pickupp",
@@ -22,7 +22,7 @@ const mokdata = [
         modelName: "modelName",
         makeName: "makeName",
         customerName: "pero",
-        customerSurame: "peric",
+        customerSurname: "peric",
         price: "price",
         registration: "registration",
         pickupp: "pickupp",
@@ -34,7 +34,7 @@ const mokdata = [
         modelName: "modelName",
         makeName: "makeName",
         customerName: "pero",
-        customerSurame: "peric",
+        customerSurname: "peric",
         price: "price",
         registration: "registration",
         pickupp: "pickupp",
@@ -46,7 +46,7 @@ const mokdata = [
         modelName: "modelName",
         makeName: "makeName",
         customerName: "pero",
-        customerSurame: "peric",
+        customerSurname: "peric",
         price: "price",
         registration: "registration",
         pickupp: "pickupp",
@@ -58,7 +58,7 @@ const mokdata = [
         modelName: "modelName",
         makeName: "makeName",
         customerName: "pero",
-        customerSurame: "peric",
+        customerSurname: "peric",
         price: "price",
         registration: "registration",
         pickupp: "pickupp",
@@ -72,7 +72,6 @@ export default function CompanyProfileLog() {
           justify={'center'}
           align={'center'}
           direction={'column'}
-          py={8}
           gap={2}
           w="100%"
         >

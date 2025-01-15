@@ -52,9 +52,8 @@ export default function LogCard({ log }: { log: ILog }) {
               <Text fontSize="xs">
                 {log.registration}
               </Text>
-              <Text fontSize="xs">{log.customerName} {log.customerSurame}</Text>
+              <Text fontSize="xs">{log.customerName} {log.customerSurname}</Text>
             </Flex>
-
             <Text fontSize="xs">{log.pickupp} - {log.dropoff}</Text>
           </Flex>
         </Stack>

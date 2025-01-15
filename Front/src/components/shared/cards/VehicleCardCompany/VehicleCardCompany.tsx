@@ -15,6 +15,7 @@ import {
   MenuList,
   IconButton,
   MenuItem,
+  Divider,
   
 } from '@chakra-ui/react';
 import { IoPersonSharp } from 'react-icons/io5';
@@ -25,19 +26,30 @@ import { ICar } from '@/fetchers/homeData';
 import { useState } from 'react';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import CardMenuDot from '../cardMenu/CardMenuDot';
+import { useRouter } from 'next/navigation';
 
 export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
+  const router = useRouter();
   const [isDimmed, setIsDimmed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  const handleClick = () => {
+  const handleHide = () => {
+    setIsDimmed(!isDimmed);
+  };
+  const handleOfferClick = () => {
+    router.push("/offerDetails/${offer.id}"); 
+  };
+  const handleEditClick = () => {
+    router.push("edit/vehicle"); 
+  };
+  const handleDelete = () => {
     setIsDimmed(!isDimmed);
   };
 
   return (
     <Card
       as={NextLink}
-      href={`/vehicles/${vehicle.modelName}`}
+      href={`${vehicle.modelName}`}
       maxW="210px"
       minW="180px"
       borderWidth="2px"
@@ -56,10 +68,10 @@ export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
     >
       {isHovered && (
         <CardMenuDot>
-              <MenuItem>View offer</MenuItem>
-              <MenuItem >Edit offer</MenuItem>
-              <MenuItem >Edit vehicle</MenuItem>
-              <MenuItem onClick={handleClick}>Hide</MenuItem>
+              <MenuItem onClick={handleOfferClick}>View offer</MenuItem>
+              <MenuItem onClick={handleEditClick}>Edit vehicle</MenuItem>
+              <MenuItem onClick={handleDelete}>Delete</MenuItem>
+              <MenuItem onClick={handleHide}>{isDimmed && (<Text>Show</Text>)} {!isDimmed && (<Text>Hide</Text>)}</MenuItem>
         </CardMenuDot>
       )}
 
@@ -70,6 +82,12 @@ export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
         width="100%"
         height="110px" // Set a fixed height to make all images uniform
         borderRadius="md" // Optional: adds a nice rounded edge to the image
+      />
+      <Divider
+        borderWidth="2px"
+        borderColor="transparent"
+        background="linear-gradient(to right, blue, lightblue)"
+        height="1px"
       />
       <CardBody px={0} py={2}>
         <Stack spacing={2} height={'100%'} justify={'space-between'}>

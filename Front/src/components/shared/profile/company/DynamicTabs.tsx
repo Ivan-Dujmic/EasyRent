@@ -21,34 +21,31 @@ export default function DynamicTabs({ tabs }: ITab) {
       variant="unstyled"
       w="100%"
       index={activeTabIndex}
+      mb="10px"
     >
-      <TabList justifyContent="center">
+      <TabList justifyContent="center" position="relative">
         {tabs.map((tab, index) => (
           <Tab
             as="a" 
             key={index}
             href={tab.href} 
+            borderBottom='2px solid'
+            borderColor='brandlightgray'
             _selected={{
               color: 'brandblue',
               fontWeight: 'bold',
+              borderBottom: '2px solid',
+              borderColor: 'brandblue'
             }}
             _hover={{ bg: 'brandlightgray' }} 
             _focus={{ outline: 'none',
                       shadow: 'none'
              }}   
-            _active={{ bg: 'transparent' }}
           >
             {tab.name}
           </Tab>
         ))}
       </TabList>
-
-      <TabIndicator
-        mt="-1.5px"
-        height="2px"
-        bg="brandblue"
-        borderRadius="1px"
-      />
     </Tabs>
   );
 }

@@ -42,7 +42,6 @@ export interface IReview{
   date: string;
   description: string;
   rating: string;
-
 }
 
 export interface IShowcased {

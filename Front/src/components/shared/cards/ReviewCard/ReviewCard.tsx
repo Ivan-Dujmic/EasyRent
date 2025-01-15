@@ -1,3 +1,5 @@
+"use client";
+
 import { Vehicle } from '@/typings/vehicles/vehicles';
 import { StarIcon } from '@chakra-ui/icons';
 import {
@@ -23,8 +25,9 @@ import { IReview } from '@/fetchers/homeData';
 export default function ReviewCard({ review }: { review: IReview }) {
   return (
     <Card
-      maxW="350px"
-      minW="180px"
+      maxW="500px"
+      minW="250px"
+      w="100%"
       borderWidth="2px"
       borderRadius="lg"
       overflow="hidden"
@@ -35,40 +38,44 @@ export default function ReviewCard({ review }: { review: IReview }) {
         borderColor: 'brandblack',
         transition: 'border-color 0.3s ease',
       }}
+      
     >
-      <CardHeader>
-        <Heading size="md">
-          {review.modelName} - {review.registration}
-        </Heading>
-      </CardHeader>
-      <Divider />
-      <CardBody>
-        <VStack align="start" spacing={3}>
-          <HStack>
-            <Text fontSize="sm" color="gray.600">
-              Reviewed by:
-            </Text>
-            <Badge colorScheme="blue">{review.customerName} {review.customerSurname}</Badge>
-          </HStack>
-          <HStack>
-            <Text fontSize="sm" color="gray.600">
-              Rating:
-            </Text>
-            <Text fontSize="sm" color="gray.600">
-              {review.rating}
-            </Text>
-          </HStack>
-          <Text fontSize="sm" color="gray.600">
-            Date: {new Date(review.date).toLocaleDateString()}
-          </Text>
-        </VStack>
+      <CardBody px={0} py={2}>
+        <Stack spacing={2} height={'100%'} justify={'space-between'} fontSize="sm">
+            <Flex gap={1} align={'baseline'} justify={'space-between'}>
+              <Text>
+                {review.makeName} {review.modelName}
+              </Text>
+
+              <Text>{review.date}</Text>
+            </Flex>
+
+            <Flex gap={1} align={'baseline'} justify={'space-between'}>
+              <Text>
+                {review.registration}
+              </Text>
+              <Flex
+              gap={'1px'}
+              fontSize="xs"
+              align="baseline"
+              alignSelf="flex-end"
+              alignItems="center"
+              >
+                <StarIcon boxSize="3" />{' '}
+                {/* Adjusts the star icon to be slightly smaller */}
+                <Box mr="5px">{review.rating}</Box>
+                <Text fontSize="md">{review.customerName} {review.customerSurname}</Text>
+              </Flex>
+            </Flex>
+            <Divider
+              borderWidth="2px"
+              borderColor="transparent"
+              background="linear-gradient(to right, blue, lightblue)"
+              height="1px"
+            />
+            <Text>{review.description}</Text>
+        </Stack>
       </CardBody>
-      <Divider />
-      <CardFooter>
-        <Text fontSize="md" color="gray.800">
-          "{review.description}"
-        </Text>
-      </CardFooter>
     </Card>
   );
 }

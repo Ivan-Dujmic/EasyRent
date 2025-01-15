@@ -18,7 +18,7 @@ export default function CardMenuDot ({ children }: { children: React.ReactNode }
               variant="ghost"
               aria-label="Options"
             />
-            <MenuList p="0" fontSize="x-small">
+            <MenuList p="0" fontSize="sm">
               {children}
             </MenuList>
           </Menu>

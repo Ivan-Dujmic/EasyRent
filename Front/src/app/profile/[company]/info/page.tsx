@@ -1,6 +1,8 @@
 "use client";
 
 import SupportButton from "@/components/shared/auth/SupportButton";
+import CustomMap from "@/components/shared/Map/CustomMap/CustomMap";
+import { dealershipLocations } from "@/mockData/mockLocations";
 import { EditIcon } from "@chakra-ui/icons";
 import { Flex, Heading, Text, Image, Box } from "@chakra-ui/react";
 import { usePathname } from "next/navigation";
@@ -13,8 +15,8 @@ export default function CompanyProfileInfo() {
         "Unska ulica 1, Zagreb",
         "Ulica grada Vukovara 59, Zagreb"]
     return(
-        <Flex w="100%" justifyContent="space-evenly" mt="20px" bg="brandwhite">
-            <Flex direction="column" maxW="50%" gap="10px">
+        <Flex w="100%" justifyContent="space-evenly" bg="brandwhite">
+            <Flex direction="column" maxW="30%" gap="10px">
                 <Flex justifyContent="space-between" alignItems="center">
                     <Heading ml="40px">
                         {company}
@@ -31,17 +33,23 @@ export default function CompanyProfileInfo() {
                     Edit profile
                 </SupportButton>
             </Flex>
-            <Flex direction="column" p="20px">
-                <Text fontWeight="bold">
-                    Zagrebačka avenija 3, Zagreb
-                </Text>
-                <Flex direction="column" justifyContent="flex-start" gap="2px">
-                    {adresses.map((adress, indx) => (
-                        <Text key={indx}>
-                            {adress}
-                        </Text>
-                    )
-                    )}
+            <Flex direction="column" pt="20px" gap="5px" w="50%" minWidth="500px">
+                <Heading size="lg" color="brandblack" alignSelf="flex-start" m="0 0 10px 20px">
+                    Your locations:
+                </Heading>
+                <CustomMap locations={dealershipLocations} showInfoWindow={true} />
+                <Flex direction="column" ml="10px">
+                    <Text fontWeight="bold" paddingBlock="5px">
+                        Zagrebačka avenija 3, Zagreb
+                    </Text>
+                    <Flex direction="column" justifyContent="flex-start" gap="2px">
+                        {adresses.map((adress, indx) => (
+                            <Text key={indx}>
+                                {adress}
+                            </Text>
+                        )
+                        )}
+                    </Flex>
                 </Flex>
             </Flex>
         </Flex>

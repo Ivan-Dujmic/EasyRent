@@ -129,10 +129,10 @@ const mokcars = [
   
 export default function CompanyProfileOffers() {
     return(
-    <Box p={10} w="100%">
+    <Box px={10} w="100%">
     <SupportButton href="profile/${company}/addoffer" mb="20px" ml="5%">Add Offer</SupportButton>
       <Grid
-        templateColumns="repeat(auto-fit, minmax(180px, 1fr))"
+        templateColumns="repeat(auto-fit, minmax(200px, 1fr))"
         gap={6}
       >
         {mokcars.map((offer, indx) =>(

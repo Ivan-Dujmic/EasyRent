@@ -15,6 +15,7 @@ import {
   MenuList,
   IconButton,
   MenuItem,
+  Divider,
   
 } from '@chakra-ui/react';
 import { IoPersonSharp } from 'react-icons/io5';
@@ -25,12 +26,20 @@ import { ICar } from '@/fetchers/homeData';
 import { useState } from 'react';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import CardMenuDot from '../cardMenu/CardMenuDot';
+import { useRouter } from 'next/navigation';
 
 export default function OfferCard({ offer }: { offer: ICar }) {
+  const router = useRouter();
   const [isDimmed, setIsDimmed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  const handleClick = () => {
+  const handleHide = () => {
+    setIsDimmed(!isDimmed);
+  };
+  const handleEdit = () => {
+    router.push("profile/${company}/edit/offer")
+  };
+  const handleDelete = () => {
     setIsDimmed(!isDimmed);
   };
 
@@ -56,8 +65,9 @@ export default function OfferCard({ offer }: { offer: ICar }) {
     >
       {isHovered && (
         <CardMenuDot>
-              <MenuItem >Edit offer</MenuItem>
-              <MenuItem onClick={handleClick}>Hide</MenuItem>
+              <MenuItem onClick={handleEdit}>Edit offer</MenuItem>
+              <MenuItem onClick={handleDelete}>Delete</MenuItem>
+              <MenuItem onClick={handleHide}>Hide</MenuItem>
         </CardMenuDot>
       )}
 
@@ -69,16 +79,21 @@ export default function OfferCard({ offer }: { offer: ICar }) {
         height="110px" // Set a fixed height to make all images uniform
         borderRadius="md" // Optional: adds a nice rounded edge to the image
       />
+      <Divider
+        borderWidth="2px"
+        borderColor="transparent"
+        background="linear-gradient(to right, blue, lightblue)"
+        height="1px"
+      />
       <CardBody px={0} py={2}>
         <Stack spacing={2} height={'100%'} justify={'space-between'}>
           <Flex direction={'column'}>
             <Flex gap={1} align={'baseline'} justify={'space-between'}>
-              <Text size="xs">
+              <Heading size="xs" fontSize="sm">
                 {offer.makeName} {offer.modelName}
-              </Text>
+              </Heading>
               <Text fontSize="xs">€{offer.price}/day</Text>
             </Flex>
-
             <Flex
               gap={'1px'}
               fontSize="xs"
