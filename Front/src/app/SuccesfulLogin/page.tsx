@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import useSWR from 'swr';
 import { useRouter } from 'next/navigation';
 import {
-  Box,
   VStack,
   Text,
   Button,
@@ -13,10 +12,10 @@ import {
   Icon,
   Flex,
 } from '@chakra-ui/react';
-import NextLink from 'next/link';
 import { User, useUserContext } from '@/context/UserContext/UserContext';
 import { CustomGet } from '@/fetchers/homeData';
 import { CheckCircleIcon } from '@chakra-ui/icons';
+import { swrKeys } from '@/fetchers/swrKeys';
 
 export default function SuccessfulLogin() {
   const router = useRouter();
@@ -24,7 +23,7 @@ export default function SuccessfulLogin() {
 
   // Koristimo useSWR za dohvat podataka o korisniku
   const { data, error, isValidating } = useSWR(
-    '/api/auth/user-info',
+    swrKeys.userinfo,
     CustomGet<User>,
     {
       revalidateOnFocus: false,
@@ -35,10 +34,10 @@ export default function SuccessfulLogin() {
   useEffect(() => {
     if (data) {
       setUser(data); // Sprema korisničke podatke u kontekst
-      if (data.role === 'guest') {
-        router.push('/'); // Ako je guest, preusmerite ga na početnu stranicu
+      if (data.role === 'company') {
+        router.push('/CompanyHomePage'); // Ako je guest, preusmerite ga na početnu stranicu
       } else {
-        router.push('/dashboard'); // Ili ga preusmerite na odgovarajuću stranicu
+        router.push('/home'); // Ili ga preusmerite na odgovarajuću stranicu
       }
     }
   }, [data, router, setUser]);
