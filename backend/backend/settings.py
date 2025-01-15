@@ -111,7 +111,6 @@ DATABASES = {
     }
 }
 DATABASES["default"] = dj_database_url.parse(os.getenv("DATABASE"))
-print(dj_database_url.parse(os.getenv("DATABASE")))
 STATIC_ROOT = ""
 STATIC_URL = "/static/"
 # Password validation
