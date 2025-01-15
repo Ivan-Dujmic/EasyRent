@@ -23,6 +23,7 @@ import {
 } from 'react-icons/fa';
 import CustomMap from '@/components/shared/Map/CustomMap/CustomMap';
 import FQA from '@/components/shared/info/FQA/FQA';
+import ChatbotWidget from '@/components/shared/ChatbotWidget/ChatbotWidget';
 
 export default function TalkToUs() {
   const headingSize = useBreakpointValue({
@@ -224,6 +225,7 @@ export default function TalkToUs() {
           onClick={() => window.open('https://linkedin.com', '_blank')}
         />
       </Flex>
+      <ChatbotWidget />
     </Flex>
   );
 }

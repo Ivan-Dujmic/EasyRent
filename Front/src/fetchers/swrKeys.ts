@@ -7,4 +7,5 @@ export const swrKeys = {
   logIn: `${auth}loginUser/`,
   showcased: `${home}showcased/`,
   search: `${home}search`,
+  userinfo: `${auth}user-info/`,
 };
