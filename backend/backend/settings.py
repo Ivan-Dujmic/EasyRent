@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import dj_database_url
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -104,13 +105,15 @@ WSGI_APPLICATION = "backend.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "EasyRentTest",
+        "NAME": "EasyRentTest3",
         "USER": "postgres",
         "PASSWORD": "postgres",
         "HOST": "localhost",
         "PORT": "5433",  # 5432 or 5433
     }
 }
+
+#DATABASES["default"] = dj_database_url.parse("postgresql://easyrenttest_user:DgzXkonl30N4oxzbB8gP9i5m3UpS9VK1@dpg-csrs4obv2p9s73bh4u80-a.frankfurt-postgres.render.com/easyrenttest")
 
 
 # Password validation

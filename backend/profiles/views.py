@@ -1254,7 +1254,7 @@ def companyLocation(request):
                 )
                 workingHours = data.get("workingHours")
                 for workingHour in workingHours:
-                    wh = WorkingHourse.object.filter(
+                    wh = WorkingHours.object.filter(
                         location_id=locationId, day=workingHour["dayOfTheWeek"]
                     )
                     wh.startTime = (
