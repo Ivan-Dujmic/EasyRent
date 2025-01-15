@@ -72,6 +72,9 @@ export default function HomePage() {
     md: '60vw', // Širina mape za srednje i velike ekrane
   });
 
+  const numCards =
+    useBreakpointValue({ base: 1, sm: 1, md: 2, lg: 3, xl: 4 }) || 4;
+
   return (
     <>
       <AuthRedirect to={''} condition={'isLoggedIn'} />
@@ -107,14 +110,17 @@ export default function HomePage() {
           direction={'column'}
           py={8}
           gap={2}
+          width={"85vw"}
         >
           <VehicleList
-            vehicles={data?.most_popular}
+            // vehicles={data?.most_popular}
             description={'Most popular:'}
+            numCards={numCards}
           />
           <VehicleList
-            vehicles={data?.best_value}
+            // vehicles={data?.best_value}
             description={'Best value:'}
+            numCards={numCards}
           />
         </Flex>
 

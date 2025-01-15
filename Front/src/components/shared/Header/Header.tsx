@@ -63,7 +63,7 @@ export function LoginButton({
 
 export default function Header() {
   return <CustomHeader 
-    HeaderItems={
+    HeaderItems={ // For larger screens
       <>
         <LoginButton/>
 
@@ -74,7 +74,7 @@ export default function Header() {
 
         <HeaderButton href = "/TalkToUs"> Talk to us </HeaderButton>
       </>}
-    MenuItems={
+    MenuItems={ // For smaller screens
       <>
         <LoginButton/>
 

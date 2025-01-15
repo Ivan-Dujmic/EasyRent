@@ -1,11 +1,12 @@
 'use client';
 
+import "./style.css"
 import VehicleList from '@/components/shared/cars/VechileList/VechileList';
 import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { CustomGet, IRentals } from '@/fetchers/homeData';
 import { FaComments } from 'react-icons/fa';
-import React, { useState } from 'react';
+import React, { useState, useEffect, ReactElement } from 'react';
 import {
   Flex,
   Box,
@@ -15,11 +16,54 @@ import {
   Button,
   VStack,
   Divider,
-  useBreakpointValue
+  useBreakpointValue,
+  PositionProps,
+  Drawer,
+  DrawerBody,
+  DrawerHeader,
+  DrawerCloseButton,
+  DrawerContent,
+  DrawerFooter,
+  DrawerOverlay
 } from '@chakra-ui/react';
+import {
+  FaFacebookF,
+  FaInstagram,
+  FaTwitter,
+  FaLinkedinIn,
+  FaCcVisa,
+  FaCcMastercard,
+  FaCcStripe,
+} from 'react-icons/fa';
 import {CustomHeader as Header} from '@/components/shared/Header/CustomHeader/CustomHeader';
 import {HeaderButton, LoginButton} from '@/components/shared/Header/Header';
 import ChatbotWidget from '@/components/shared/ChatbotWidget/ChatbotWidget';
+import EasyRentLogo from '@/components/core/EasyRentLogo/EasyRentLogo';
+import { CloseIcon } from '@chakra-ui/icons';
+import CompactFooter from '@/components/shared/Footer/CompactFooter';
+import Footer from '@/components/shared/Footer/Footer';
+// import LogOutButton from '@/components/shared/auth/LogOutButton/LogOutButton';
+
+const userProfileFooterLinks = {
+  quickLinks: [
+    { label: 'Home', href: '/home' },
+    { label: 'About Us', href: '/home' },
+    { label: 'FAQ', href: '/home#faq-section' },
+    { label: 'Contact Us', href: '/TalkToUs' },
+  ],
+  contactInfo: {
+    phone: '+385 95 517 1890',
+    email: 'support@easyrent.com',
+    address: 'Unska ul. 3, 10000, Zagreb',
+  },
+  socialLinks: [
+    { label: 'Facebook', href: 'https://facebook.com', icon: FaFacebookF },
+    { label: 'Instagram', href: 'https://instagram.com', icon: FaInstagram },
+    { label: 'Twitter', href: 'https://twitter.com', icon: FaTwitter },
+    { label: 'LinkedIn', href: 'https://linkedin.com', icon: FaLinkedinIn },
+  ],
+  paymentIcons: [FaCcVisa, FaCcMastercard, FaCcStripe],
+};
 
 export default function UserProfilePage() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -51,6 +95,9 @@ export default function UserProfilePage() {
     lg: 'space-between'
   })
 
+  const numCards =
+    useBreakpointValue({ base: 1, sm: 1, md: 2, lg: 3, xl: 4 }) || 3;
+
   return (
     <Flex direction="column" grow={1} bg="brandlightgray" minH="100vh">
       {/* Header */}
@@ -73,7 +120,7 @@ export default function UserProfilePage() {
 
         <HeaderButton> Edit profile </HeaderButton>
 
-        <LoginButton log='out'/>
+        <LoginButton log="out"/>
       </Header>
       {/* Main Content */}
       <Box position = "relative" width = "100vw">
@@ -98,40 +145,82 @@ export default function UserProfilePage() {
             p={gapSize}
             gap={gapSize}
           >
-            <Heading size={headingSize} color="brandblue" textAlign="center">
+            <Heading size={headingSize} color="brandblue">
               Your Profile
             </Heading>
             <Divider />
-            <VehicleList description="Ongoing rentals:" />
-            <VehicleList description="Previously rented:" />
+            <VehicleList numCards={numCards} description="Ongoing rentals:" />
+            <VehicleList numCards={numCards} description="Previously rented:" />
           </Flex>
 
           {/* Chats Section */}
           {isChatOpen ? (
-            <Chat onClose={toggleChat} />
+            <ChatMenu onClose={toggleChat} isOpen={isChatOpen} chats={
+              [
+                {name:"Admin"}, 
+                {name:"Company 1"}, 
+                {name:"Company 2"}, 
+                {name:"Company 3"}
+              ]
+            } />
           ) : (
-            <IconButton
-              position="absolute"
-              right={gapSize}
-              top={gapSize}
-              aria-label="Open chat"
-              icon={<FaComments />}
+            <ChatIcon 
               onClick={toggleChat}
-              isRound
-              size="lg"
-              bg="brandblue"
-              color="brandwhite"
-              _hover={{ bg: 'brandyellow', color: 'brandblack' }}
-            />
+              position="absolute"
+              right={{base: 5, lg: gapSize}}
+              top={gapSize}/>
           )}
         </Flex>
       </Box>
+      <Footer links={userProfileFooterLinks}/>
     </Flex>
   );
 }
 
-function Chat({ onClose }: { onClose: () => void }) {
+interface IChat {
+  name : string
+  messages?: string[]
+}
 
+function ChatIcon ({
+  onClick,
+  ...rest
+}:ChatIconProps) {
+  return <IconButton
+    aria-label="Open chat"
+    icon={<FaComments />}
+    onClick={onClick}
+    isRound
+    size="lg"
+    bg="brandblue"
+    color="brandwhite"
+    _hover={{ bg: 'brandyellow', color: 'brandblack' }}
+    {...rest}
+  />
+}
+
+interface ChatIconProps extends PositionProps {
+  onClick: () => void
+}
+
+function ChatButton ({
+  name
+}:IChat, key : number) {
+  return <Button
+    key={key}
+    size="sm"
+    variant="outline"
+    color="brandblue"
+    justifyContent="flex-start"
+    _hover={{ bg: 'brandlightgray' }}
+  >{name}</Button>
+}
+
+export function ChatMenu({ 
+  onClose,
+  isOpen,
+  chats = []
+}:ChatMenuProps) {
   const gapSize = useBreakpointValue({
     base: 8, // Small gap for small screens (mobile)
     md: 10, // Slightly larger gap for medium screens (laptop/tablet)
@@ -139,14 +228,18 @@ function Chat({ onClose }: { onClose: () => void }) {
     xl: 10,
   });
 
-  return (
+  const screenSize = useBreakpointValue({ base: 'small', lg: 'large' });
+
+  let content = chats.map((props, index) => ChatButton(props, index))
+
+  return screenSize == "large" ? (
     <Flex
       direction="column"
-      width="33%"
+      width="25%"
       bg="brandwhite"
       boxShadow="base"
       borderRadius="md"
-      p={5}
+      p={gapSize}
       gap={gapSize}
     >
       <Heading size="md" color="brandblue">
@@ -154,18 +247,7 @@ function Chat({ onClose }: { onClose: () => void }) {
       </Heading>
       <Divider />
       <VStack align="stretch" spacing={3}>
-        {['Admin', 'Company1', 'Company2', 'Company3'].map((chat, index) => (
-          <Button
-            key={index}
-            size="sm"
-            variant="outline"
-            color="brandblue"
-            justifyContent="flex-start"
-            _hover={{ bg: 'brandlightgray' }}
-          >
-            {chat}
-          </Button>
-        ))}
+        {content}
       </VStack>
       <Button
         onClick={onClose}
@@ -180,5 +262,38 @@ function Chat({ onClose }: { onClose: () => void }) {
       </Button>
       <ChatbotWidget />
     </Flex>
+   ) : (
+     <>
+        <Drawer isOpen={isOpen} onClose={onClose}>
+          <DrawerOverlay />
+          <DrawerContent>
+            <DrawerHeader>
+              <Flex justify="space-between" align="center">
+                <Heading size="md" color="brandblue">
+                  Chats
+                </Heading>
+                <IconButton
+                  aria-label="Close Chat"
+                  icon={<CloseIcon />}
+                  variant="ghost"
+                  onClick={onClose}
+                />
+              </Flex>
+            </DrawerHeader>
+            <Divider />
+            <DrawerBody>
+              <VStack align="stretch" spacing={4}>
+                {content}
+              </VStack>
+            </DrawerBody>
+          </DrawerContent>
+        </Drawer>
+      </>
   );
+}
+
+interface ChatMenuProps {
+  onClose: () => void,
+  isOpen: boolean,
+  chats?: IChat[]
 }

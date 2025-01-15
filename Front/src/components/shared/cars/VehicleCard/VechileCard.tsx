@@ -15,9 +15,10 @@ import { TbAutomaticGearbox } from 'react-icons/tb';
 import NextLink from 'next/link';
 import { ICar } from '@/fetchers/homeData';
 
-export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
+export default function VehicleCard({ vehicle, index }: { vehicle: ICar, index : number }) {
   return (
     <Card
+      id={`${index}`}
       margin={0}
       as={NextLink}
       href={`/offer/:${vehicle.offer_id}`}
