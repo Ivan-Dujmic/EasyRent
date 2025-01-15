@@ -21,18 +21,28 @@ export async function fetcher<T>(
     let data: T | undefined;
 
     try {
-        let csrfToken = getCookie('csrftoken');
-        if (!csrfToken) {
-            csrfToken = "";
-        }
+        const csrfToken: string | undefined = getCookie('csrftoken');
 
         console.log(csrfToken);
-        const response = await fetch(input, {
-            headers: {
+        var header1, header2;
+        if (csrfToken) {
+            header1 = {
                 'Content-Type': 'application/json',
                 Accept: 'application/json',
-                // 'X-CSRFToken': csrfToken, // !!!Include CSRF token if CSRF is enabled
-            },
+                'X-CSRFToken': csrfToken
+
+            }
+        }
+        else {
+            header2 = {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                // 'X-CSRFToken': csrfToken ? csrfToken : undefined
+
+            }
+        }
+        const response = await fetch(input, {
+            headers: csrfToken ? header1 : header2,
             credentials: 'include', // Omogućava slanje kolačića za autentifikaciju
             ...init,
         });
