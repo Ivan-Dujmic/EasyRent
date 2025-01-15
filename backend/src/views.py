@@ -568,7 +568,6 @@ def logoutUser(request):
     },
 )
 @api_view(["POST"])
-@csrf_exempt
 def loginUser(request):
     if request.method == "POST":
         data = request.data

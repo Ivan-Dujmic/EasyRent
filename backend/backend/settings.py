@@ -60,7 +60,7 @@ AUTH_USER_MODEL = "auth.User"
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    # "django.middleware.csrf.CsrfViewMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -173,7 +173,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 CORS_ORIGIN_ALLOW_ALL = True
 CSRF_COOKIE_SECURE = True  # Ensure this is True for HTTPS
 CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = "None"  # Can also be 'Strict' or 'None'
+CSRF_COOKIE_SAMESITE = "Lax"  # Can also be 'Strict' or 'None'
 
 SESSION_COOKIE_DOMAIN = None
 SESSION_COOKIE_NAME = "sessionid"
