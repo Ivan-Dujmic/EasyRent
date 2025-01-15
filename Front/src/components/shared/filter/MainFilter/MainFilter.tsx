@@ -42,6 +42,11 @@ export default function MainFilter() {
   const [dropoffDate, setDropoffDate] = useState<Date | null>(null);
   const [url, setUrl] = useState(''); // State za URL
 
+  const [isReady, setIsReady] = useState(false); // Novo stanje
+  useEffect(() => {
+    setIsReady(true); // Postavi na true kada je komponenta spremna
+  }, []);
+
   const [formErrors, setFormErrors] = useState({
     pickupLocation: false,
     dropoffLocation: false,
@@ -135,42 +140,48 @@ export default function MainFilter() {
     const fullUrl = `/api/home/search?${queryParams.toString()}`;
     setUrl(fullUrl); // Postavljamo URL u state
   };
-  const maxWidth = useBreakpointValue({
-    base: '80vw',
-    md: '60vw',
-    xl: '1200px',
+
+  const breakpoints = useBreakpointValue({
+    base: {
+      maxWidth: '80vw',
+      buttonWidth: '100%',
+      locationWidth: '100%',
+      dateTimeWidth: '100%',
+      gap: 2,
+      justifyContent: 'space-around',
+    },
+    md: {
+      maxWidth: '60vw',
+      buttonWidth: '100%',
+      locationWidth: 'calc(50% - 1rem)',
+      dateTimeWidth: 'calc(50% - 1rem)',
+      gap: 2,
+      justifyContent: 'space-between',
+    },
+    xl: {
+      maxWidth: '1200px',
+      buttonWidth: '150px',
+      locationWidth: 'calc(15% - 1rem)',
+      dateTimeWidth: 'calc(25% - 1rem)',
+      gap: 4,
+      justifyContent: 'center',
+    },
   });
 
-  const buttonWidth = useBreakpointValue({
-    base: '100%',
-    md: '100%',
-    xl: '150px',
-  });
+  // Ako komponenta nije spremna, ništa se ne prikazuje
+  if (!isReady) {
+    return null;
+  }
 
-  const locationWidth = useBreakpointValue({
-    base: '100%',
-    md: 'calc(50% - 1rem)',
-    xl: 'calc(15% - 1rem)',
-  });
-
-  const dateTimeWidth = useBreakpointValue({
-    base: '100%',
-    md: 'calc(50% - 1rem)',
-    xl: 'calc(25% - 1rem)',
-  });
-
-  const gap = useBreakpointValue({
-    base: 2,
-    md: 2,
-    xl: 4,
-  });
-
-  const justifyContent = useBreakpointValue({
-    base: 'space-around',
-    md: 'space-between',
-    xl: 'center',
-  });
-
+  // Rastavljanje vrijednosti
+  const {
+    maxWidth,
+    buttonWidth,
+    locationWidth,
+    dateTimeWidth,
+    gap,
+    justifyContent,
+  } = breakpoints || {};
   return (
     <Flex
       direction={{ base: 'column', md: 'row' }}
