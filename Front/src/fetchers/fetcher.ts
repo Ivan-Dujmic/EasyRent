@@ -6,20 +6,6 @@ const getCsrfToken = async () => {
     return data.csrfToken;
 };
 
-const sendRequest = async () => {
-    const csrfToken = await getCsrfToken();
-    await fetch('https://easyrent-t7he.onrender.com/api/auth/get-csrf', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken,
-        },
-        body: JSON.stringify({ key: 'value' }),
-        credentials: 'include',
-    });
-};
-
-
 export async function fetcher<T>(
     input: string | URL | globalThis.Request,
     init?: RequestInit
