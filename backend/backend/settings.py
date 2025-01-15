@@ -29,7 +29,12 @@ SECRET_KEY = "django-insecure-upfieqv^tvk=6qdn1b3aps5-&!kqknvu-pa573k_2401*1uqvf
 # SECURITY WARNING: don"t run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["http://localhost:3000", "127.0.0.1"]
+ALLOWED_HOSTS = [
+    "http://localhost:3000",
+    "127.0.0.1",
+    "http://localhost:8000",
+    "localhost",
+]
 
 
 # Application definition
@@ -53,6 +58,7 @@ INSTALLED_APPS = [
     "src",
     "home",
     "profile",
+    "wallet",
 ]
 AUTH_USER_MODEL = "auth.User"
 
@@ -62,7 +68,7 @@ MIDDLEWARE = [
     #'django.middleware.csrf.CsrfViewMiddleware',
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    # "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -105,11 +111,11 @@ WSGI_APPLICATION = "backend.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "EasyRentTest3",
+        "NAME": "EasyRentTest",
         "USER": "postgres",
         "PASSWORD": "postgres",
         "HOST": "localhost",
-        "PORT": "5433",  # 5432 or 5433
+        "PORT": "5432",  # 5432 or 5433
     }
 }
 
@@ -219,5 +225,8 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 # ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
 
 # Images (using Pillow)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
