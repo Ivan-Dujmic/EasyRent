@@ -36,10 +36,21 @@ export default function MainFilter() {
   const router = useRouter();
   const { setCars } = useCarContext();
 
-  const [pickupLocation, setPickupLocation] = useState('');
-  const [dropoffLocation, setDropoffLocation] = useState('');
-  const [pickupDate, setPickupDate] = useState<Date | null>(null);
-  const [dropoffDate, setDropoffDate] = useState<Date | null>(null);
+  // LocalStorage za inicijalne vrijednosti
+  const [pickupLocation, setPickupLocation] = useState(
+    () => localStorage.getItem('pickupLocation') || ''
+  );
+  const [dropoffLocation, setDropoffLocation] = useState(
+    () => localStorage.getItem('dropoffLocation') || ''
+  );
+  const [pickupDate, setPickupDateTime] = useState<Date | null>(() => {
+    const saved = localStorage.getItem('pickupDateTime');
+    return saved ? new Date(saved) : null;
+  });
+  const [dropoffDate, setdropoffDate] = useState<Date | null>(() => {
+    const saved = localStorage.getItem('dropoffDate');
+    return saved ? new Date(saved) : null;
+  });
   const [url, setUrl] = useState(''); // State za URL
 
   const [isReady, setIsReady] = useState(false); // Novo stanje
@@ -73,7 +84,7 @@ export default function MainFilter() {
     {
       onSuccess: (data: ICar[]) => {
         setCars(data); // Spremanje automobila u globalni kontekst
-        router.push('/GuestListing'); // Preusmjeravanje na novu stranicu
+        router.push('/listing'); // Preusmjeravanje na novu stranicu
       },
       onError: (error) => {
         console.error('Error fetching data:', error);
@@ -86,6 +97,15 @@ export default function MainFilter() {
       trigger();
     }
   }, [url, trigger]);
+
+  useEffect(() => {
+    localStorage.setItem('pickupLocation', pickupLocation);
+    localStorage.setItem('dropoffLocation', dropoffLocation);
+    if (pickupDate)
+      localStorage.setItem('pickupDateTime', pickupDate.toISOString());
+    if (dropoffDate)
+      localStorage.setItem('dropoffDate', dropoffDate.toISOString());
+  }, [pickupLocation, dropoffLocation, pickupDate, dropoffDate]);
 
   const handleSearch = () => {
     if (!validateForm()) return;
@@ -203,7 +223,7 @@ export default function MainFilter() {
           options={options}
           description="Pick-up location"
           placeHolder="From?"
-          value="Zagreb, Croatia"
+          value={pickupLocation}
           onLocationChange={(location) => {
             setPickupLocation(location);
             setFormErrors((prev) => ({
@@ -223,6 +243,7 @@ export default function MainFilter() {
           options={options}
           description="Drop-off location"
           placeHolder="To?"
+          value={dropoffLocation}
           onLocationChange={(location) => {
             setDropoffLocation(location);
             setFormErrors((prev) => ({
@@ -241,8 +262,7 @@ export default function MainFilter() {
       {/* Date and Time */}
       <Box width={dateTimeWidth}>
         <DateTimeDDM
-          /*           initialDate={new Date('2025-01-15T08:00:00')}
-          initialTime="8:00" */
+          initialDate={pickupDate}
           description="Pick-up date/time"
           placeHolder="Start?"
           minDate={new Date()}
@@ -252,7 +272,7 @@ export default function MainFilter() {
               : undefined
           }
           onDateTimeChange={(dateTime) => {
-            setPickupDate(dateTime);
+            setPickupDateTime(dateTime);
             setFormErrors((prev) => ({ ...prev, pickupDate: !dateTime }));
           }}
         />
@@ -264,6 +284,7 @@ export default function MainFilter() {
       </Box>
       <Box width={dateTimeWidth}>
         <DateTimeDDM
+          initialDate={dropoffDate}
           description="Drop-off date/time"
           placeHolder="End?"
           minDate={
@@ -272,7 +293,7 @@ export default function MainFilter() {
               : new Date(new Date().getTime() + 24 * 60 * 60 * 1000)
           }
           onDateTimeChange={(dateTime) => {
-            setDropoffDate(dateTime);
+            setdropoffDate(dateTime);
             setFormErrors((prev) => ({ ...prev, dropoffDate: !dateTime }));
           }}
         />

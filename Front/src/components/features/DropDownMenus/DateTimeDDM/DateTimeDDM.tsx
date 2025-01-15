@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Stack,
   Text,
@@ -25,8 +25,7 @@ interface DateTimeDDMProps {
   minDate?: Date;
   maxDate?: Date;
   minTime?: string; // Minimalno dopušteno vrijeme
-  initialDate?: Date; // Početna vrijednost datuma
-  initialTime?: string; // Početna vrijednost vremena
+  initialDate?: Date | null; // Početna vrijednost datuma i vremena
   relatedMinDate?: Date; // Ograničenje za minimum datuma kod drop-off
   relatedMaxDate?: Date; // Ograničenje za maksimum datuma kod pickup
   onDateTimeChange?: (dateTime: Date | null) => void;
@@ -39,19 +38,15 @@ export default function DateTimeDDM({
   maxDate,
   minTime,
   initialDate,
-  initialTime,
   relatedMinDate,
   relatedMaxDate,
   onDateTimeChange,
 }: DateTimeDDMProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(
-    initialDate || null
-  );
-  const [selectedTime, setSelectedTime] = useState<string | null>(
-    initialTime || null
-  );
-  const [showError, setShowError] = useState(false); // Prikaži grešku samo u određenim uvjetima
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [showError, setShowError] = useState(false);
+  const updateRef = useRef(false);
 
   const ref = useRef(null);
 
@@ -60,28 +55,41 @@ export default function DateTimeDDM({
     handler: () => setIsOpen(false),
   });
 
+  // Postavi početne vrijednosti iz initialDate
+  useEffect(() => {
+    if (initialDate) {
+      const hours = String(initialDate.getHours());
+      const minutes = String(initialDate.getMinutes()).padStart(2, '0');
+      setSelectedDate(initialDate);
+      setSelectedTime(`${hours}:${minutes}`);
+    }
+  }, [initialDate]);
+
   const handleDateChange: CalendarProps['onChange'] = (value) => {
     if (value instanceof Date) {
       setSelectedDate(value);
-      setIsOpen(false);
 
       if (selectedTime) {
-        // Kombiniraj datum i vrijeme
         const [hours, minutes] = selectedTime.split(':').map(Number);
         const dateTime = new Date(value);
         dateTime.setHours(hours);
         dateTime.setMinutes(minutes);
-        setShowError(false); // Sakrij grešku jer imamo i datum i vrijeme
+
+        // Obavijesti roditelja
         onDateTimeChange?.(dateTime);
-      } else {
-        setShowError(true); // Prikaži grešku jer nema vremena
-        onDateTimeChange?.(value);
       }
+      setIsOpen(false);
     }
   };
 
   const handleTimeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const time = event.target.value;
+    if (!time) {
+      setSelectedTime(null);
+      onDateTimeChange?.(selectedDate); // Obavijesti roditelja samo o datumu
+      return;
+    }
+
     setSelectedTime(time);
 
     if (selectedDate) {
@@ -89,10 +97,16 @@ export default function DateTimeDDM({
       const dateTime = new Date(selectedDate);
       dateTime.setHours(hours);
       dateTime.setMinutes(minutes);
-      setShowError(false); // Sakrij grešku jer imamo i datum i vrijeme
-      onDateTimeChange?.(dateTime);
+
+      // Obavijesti roditelja
+      if (!updateRef.current) {
+        updateRef.current = true;
+        onDateTimeChange?.(dateTime);
+        setTimeout(() => (updateRef.current = false), 100); // Debounce update
+      }
     } else {
-      setShowError(true); // Prikaži grešku jer nema datuma
+      // Ako nema odabranog datuma, prikaži grešku
+      setShowError(true);
     }
   };
 
@@ -100,7 +114,9 @@ export default function DateTimeDDM({
     setSelectedDate(null);
     setSelectedTime(null);
     setShowError(false); // Resetiraj grešku
-    onDateTimeChange?.(null); // Resetiraj vrijednost roditelju
+
+    // Resetiraj roditelju
+    onDateTimeChange?.(null);
   };
 
   const isTimeDisabled = (time: string) => {
@@ -158,7 +174,7 @@ export default function DateTimeDDM({
 
         {/* Time Dropdown */}
         <Select
-          placeholder="Select"
+          placeholder="Select Time"
           value={selectedTime || ''} // Prikaži trenutni odabrani sat
           onChange={handleTimeChange}
           width={{ base: '110px', md: '100%', lg: '110px' }}
@@ -192,13 +208,6 @@ export default function DateTimeDDM({
           ))}
         </Select>
       </Flex>
-
-      {/* Error Message */}
-      {showError && (
-        <Text color="brandyellow" fontSize="sm">
-          Both date and time are required.
-        </Text>
-      )}
 
       {/* Calendar */}
       {isOpen && (
