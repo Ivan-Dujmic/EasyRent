@@ -242,6 +242,8 @@ export default function MainFilter() {
         <DateTimeDDM
           description="Pick-up date/time"
           placeHolder="Start?"
+          initialDate={new Date('2025-01-15')} // Inicijalni datum
+          initialTime="8:00" // Inicijalno vrijeme
           minDate={new Date()}
           maxDate={
             dropoffDate

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Stack,
   Text,
@@ -24,7 +24,9 @@ interface DateTimeDDMProps {
   placeHolder: string;
   minDate?: Date;
   maxDate?: Date;
-  minTime?: string; // New prop to restrict time
+  minTime?: string; // Minimalno dopušteno vrijeme
+  initialDate?: Date; // Početna vrijednost datuma
+  initialTime?: string; // Početna vrijednost vremena
   onDateTimeChange?: (dateTime: Date | null) => void;
 }
 
@@ -34,11 +36,17 @@ export default function DateTimeDDM({
   minDate,
   maxDate,
   minTime,
+  initialDate,
+  initialTime,
   onDateTimeChange,
 }: DateTimeDDMProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(
+    initialDate || null
+  );
+  const [selectedTime, setSelectedTime] = useState<string | null>(
+    initialTime || null
+  );
   const [error, setError] = useState(false);
 
   const ref = useRef(null);
@@ -48,19 +56,36 @@ export default function DateTimeDDM({
     handler: () => setIsOpen(false),
   });
 
+  useEffect(() => {
+    // Ako imamo početne vrijednosti, pošalji ih roditelju
+    if (initialDate && initialTime) {
+      const [hours, minutes] = initialTime.split(':').map(Number);
+      const dateTime = new Date(initialDate);
+      dateTime.setHours(hours);
+      dateTime.setMinutes(minutes);
+      onDateTimeChange?.(dateTime);
+    } else if (initialDate) {
+      onDateTimeChange?.(initialDate);
+    } else {
+      onDateTimeChange?.(null);
+    }
+  }, [initialDate, initialTime, onDateTimeChange]);
+
   const handleDateChange: CalendarProps['onChange'] = (value) => {
     if (value instanceof Date) {
       setSelectedDate(value);
       setIsOpen(false);
+
       if (selectedTime) {
+        // Kombiniraj datum i vrijeme
         const [hours, minutes] = selectedTime.split(':').map(Number);
         const dateTime = new Date(value);
         dateTime.setHours(hours);
         dateTime.setMinutes(minutes);
         setError(false);
-        onDateTimeChange?.(dateTime);
+        onDateTimeChange?.(dateTime); // Pošalji novu vrijednost roditelju
       } else {
-        setError(true);
+        setError(true); // Ako vrijeme nije postavljeno, prijavi grešku
       }
     }
   };
@@ -68,15 +93,17 @@ export default function DateTimeDDM({
   const handleTimeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const time = event.target.value;
     setSelectedTime(time);
+
     if (selectedDate) {
+      // Kombiniraj vrijeme s odabranim datumom
       const [hours, minutes] = time.split(':').map(Number);
       const dateTime = new Date(selectedDate);
       dateTime.setHours(hours);
       dateTime.setMinutes(minutes);
       setError(false);
-      onDateTimeChange?.(dateTime);
+      onDateTimeChange?.(dateTime); // Pošalji novu vrijednost roditelju
     } else {
-      setError(true);
+      setError(true); // Ako datum nije odabran, prijavi grešku
     }
   };
 
@@ -84,7 +111,7 @@ export default function DateTimeDDM({
     setSelectedDate(null);
     setSelectedTime(null);
     setError(true);
-    onDateTimeChange?.(null);
+    onDateTimeChange?.(null); // Resetiraj vrijednost roditelju
   };
 
   const isTimeDisabled = (time: string) => {
@@ -143,7 +170,7 @@ export default function DateTimeDDM({
         {/* Time Dropdown */}
         <Select
           placeholder="Select"
-          value={selectedTime || ''}
+          value={selectedTime || ''} // Prikaži trenutni odabrani sat
           onChange={handleTimeChange}
           width={{ base: '110px', md: '100%', lg: '110px' }}
           borderWidth={'2px'}
