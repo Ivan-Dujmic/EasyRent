@@ -3,12 +3,12 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.core.mail import EmailMessage
+from django.views.decorators.csrf import csrf_exempt
+from django.middleware.csrf import get_token
 from django.contrib.auth.models import User
 from django.db.models import Max
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import get_user_model
 from django.contrib.auth import logout, authenticate, login, get_user_model
-
 from backend.settings import DEFAULT_FROM_EMAIL
 from .models import *
 from wallet.models import Wallet
@@ -32,6 +32,11 @@ from drf_spectacular.utils import (
     OpenApiExample,
 )
 from PIL import Image
+
+
+@csrf_exempt
+def get_csrf_token(request):
+    return JsonResponse({"csrfToken": get_token(request)})
 
 
 def activate(request, uidb64, token):
