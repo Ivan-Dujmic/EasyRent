@@ -60,7 +60,7 @@ AUTH_USER_MODEL = "auth.User"
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    # "django.middleware.csrf.CsrfViewMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -196,7 +196,7 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_HEADERS = [
     "content-type",
     "authorization",
-    "x-csrftoken",
+    "X-CSRFToken",
 ]
 
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"

@@ -31,7 +31,7 @@ export async function fetcher<T>(
             headers: {
                 'Content-Type': 'application/json',
                 Accept: 'application/json',
-                'X-CSRFToken': csrfToken, // !!!Include CSRF token if CSRF is enabled
+                // 'X-CSRFToken': csrfToken, // !!!Include CSRF token if CSRF is enabled
             },
             credentials: 'include', // Omogućava slanje kolačića za autentifikaciju
             ...init,

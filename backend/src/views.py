@@ -572,7 +572,6 @@ def logoutUser(request):
 def loginUser(request):
     if request.method == "POST":
         data = request.data
-
         email = data.get("email")
         password = data.get("password")
         if not email or not password:
