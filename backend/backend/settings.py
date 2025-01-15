@@ -70,6 +70,7 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
 ]
 
+
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "SCOPE": ["profile", "email"],
@@ -169,7 +170,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-
+CORS_ORIGIN_ALLOW_ALL = True
 CSRF_COOKIE_SECURE = True  # Ensure this is True for HTTPS
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = "None"  # Can also be 'Strict' or 'None'
