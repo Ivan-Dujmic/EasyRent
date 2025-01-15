@@ -37,7 +37,7 @@ export default function HomePage() {
     onSuccess: (data) => {
       if (data?.success == 1)
         /*Tu bi potneicjlano moglo doci do greske */
-        router.push('/SuccesfulLogin');
+        router.push('/SuccessfulLogin');
     },
     onError: () => {
       setError('email', {
