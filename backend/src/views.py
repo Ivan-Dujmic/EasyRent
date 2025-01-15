@@ -49,8 +49,6 @@ def activate(request, uidb64, token):
 
 
 def activateEmail(request, user, toEmail):
-    print("nigga")
-    print(toEmail)
     subject = "Activate EasyRent account"
     message = render_to_string(
         "templateActivateAccount.html",
