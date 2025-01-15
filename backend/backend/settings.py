@@ -120,7 +120,7 @@ DATABASES = {
 }
 
 #DATABASES["default"] = dj_database_url.parse("postgresql://easyrenttest_user:DgzXkonl30N4oxzbB8gP9i5m3UpS9VK1@dpg-csrs4obv2p9s73bh4u80-a.frankfurt-postgres.render.com/easyrenttest")
-DATABASES["default"] = dj_database_url.parse(os.getenv("DATABASE"))
+#DATABASES["default"] = dj_database_url.parse(os.getenv("DATABASE"))
 
 
 # Password validation
