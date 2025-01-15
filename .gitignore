@@ -6,6 +6,7 @@ venv/
 .vscode/
 env/
 __pycache__/
+__pycache__/*
 media/logos/*
 !media/logos/.gitkeep
 media/offers/*
