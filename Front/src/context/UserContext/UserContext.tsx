@@ -1,27 +1,55 @@
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Definišite tipove za podatke o korisniku
-interface User {
-  role: 'guest' | 'user' | 'company' | 'admin';
+// Definiraj strukturu podataka
+export interface User {
+  role: string; // "guest", "user", "company", "admin"
   firstName?: string;
   lastName?: string;
-  balance?: number;
   companyName?: string;
+  balance?: number;
 }
 
-interface UserContextProps {
+interface UserContextType {
   user: User;
-  setUser: (user: User) => void; // Funkcija za ažuriranje podataka o korisniku
+  setUser: (user: User) => void;
 }
 
-// Kreirajte kontekst
-const UserContext = createContext<UserContextProps | undefined>(undefined);
+// Kreiraj kontekst
+const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// Provider za upravljanje podacima o korisniku
+// Provider komponenta
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User>({ role: 'guest' }); // Default vrednost: guest
+  const [user, setUser] = useState<User>({ role: 'guest' }); // Default vrijednost
+
+  // Dohvati podatke pri inicijalizaciji komponente
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        setUser(JSON.parse(savedUser)); // Postavi korisnika iz localStorage
+      } else {
+        // Možeš ovdje pozvati API ako želiš dohvatiti podatke s backend-a
+        fetch('/api/user') // Primjer API poziva
+          .then((res) => res.json())
+          .then((data) => {
+            setUser(data);
+            localStorage.setItem('user', JSON.stringify(data)); // Spremi podatke u localStorage
+          })
+          .catch(() => {
+            console.error('Failed to fetch user data');
+          });
+      }
+    }
+  }, []); // Pokreće se samo jednom nakon montaže komponente
+
+  // Kad god se podaci o korisniku promijene, ažuriraj localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', JSON.stringify(user));
+    }
+  }, [user]);
 
   return (
     <UserContext.Provider value={{ user, setUser }}>
@@ -30,11 +58,11 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// Custom hook za pristup UserContext-u
+// Hook za lakši pristup kontekstu
 export const useUserContext = () => {
   const context = useContext(UserContext);
   if (!context) {
-    throw new Error('useUserContext must be used within a UserProvider');
+    throw new Error('useUserContext mora biti korišten unutar UserProvidera');
   }
   return context;
 };

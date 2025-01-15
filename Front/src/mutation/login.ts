@@ -3,9 +3,7 @@ import { ILogIn } from '@/typings/logIn/logIn.type';
 
 export interface ILoginData {
   success: number;
-  role: 'company' | 'user';
-  balance: string;
-  firstName: string;
+  message: string;
 }
 
 export async function logIn(url: string, { arg }: { arg: ILogIn }) {

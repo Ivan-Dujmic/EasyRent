@@ -26,6 +26,8 @@ import {
 } from 'react-icons/fa';
 import CustomMap from '@/components/shared/Map/CustomMap/CustomMap';
 import { dealershipLocations } from '@/mockData/mockLocations';
+import { useUserContext } from '@/context/UserContext/UserContext';
+import AuthUserHeader from '@/components/shared/Header/AuthUserHeader/AuthUserHeader';
 
 const homeGuestFooterLinks = {
   quickLinks: [
@@ -50,6 +52,7 @@ const homeGuestFooterLinks = {
 
 export default function HomePage() {
   const { data, error, isLoading } = useSWR(swrKeys.showcased, getShowCaseds);
+  const { user } = useUserContext();
 
   const gapSize = useBreakpointValue({
     base: 8, // Small gap for small screens (mobile)
@@ -73,7 +76,8 @@ export default function HomePage() {
     <>
       <AuthRedirect to={''} condition={'isLoggedIn'} />
       <Flex direction="column" grow={1} align={'center'} width={'100%'}>
-        <Header />
+        {user.role === 'user' && <AuthUserHeader UserData={user} />}
+        {user.role !== 'user' && <Header />}
         {/* Drugi dio stranice */}
         <Flex
           bg="brandlightgray"
