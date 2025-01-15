@@ -203,6 +203,7 @@ export default function MainFilter() {
           options={options}
           description="Pick-up location"
           placeHolder="From?"
+          value="Zagreb, Croatia"
           onLocationChange={(location) => {
             setPickupLocation(location);
             setFormErrors((prev) => ({
@@ -240,10 +241,10 @@ export default function MainFilter() {
       {/* Date and Time */}
       <Box width={dateTimeWidth}>
         <DateTimeDDM
+          /*           initialDate={new Date('2025-01-15T08:00:00')}
+          initialTime="8:00" */
           description="Pick-up date/time"
           placeHolder="Start?"
-          initialDate={new Date('2025-01-15')} // Inicijalni datum
-          initialTime="8:00" // Inicijalno vrijeme
           minDate={new Date()}
           maxDate={
             dropoffDate
