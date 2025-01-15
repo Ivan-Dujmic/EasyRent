@@ -201,7 +201,6 @@ def registerUser(request):
             )
 
 
-@csrf_exempt
 @extend_schema(
     methods=["POST"],
     operation_id="register_company",
@@ -311,6 +310,7 @@ def registerUser(request):
     },
 )
 @api_view(["POST"])
+@csrf_exempt
 def registerCompany(request):
     if request.method == "POST":
         data = request.data
@@ -487,7 +487,6 @@ def registerCompany(request):
             )
 
 
-@csrf_exempt
 @extend_schema(
     methods=["POST"],
     operation_id="logout_user",
@@ -506,13 +505,13 @@ def registerCompany(request):
     },
 )
 @api_view(["POST"])
+@csrf_exempt
 def logoutUser(request):
     if request.method == "POST":
         logout(request)
         return JsonResponse({"success": 1, "message": "Logged out"}, status=200)
 
 
-@csrf_exempt
 @extend_schema(
     methods=["POST"],
     operation_id="login_user",
@@ -634,6 +633,7 @@ def loginUser(request):
     },
 )
 @api_view(["GET"])
+@csrf_exempt
 def userInfo(request):
     if request.method == "GET":
         if request.user.is_authenticated:
@@ -676,5 +676,6 @@ def userInfo(request):
             )
 
 
+@csrf_exempt
 def redirectHome(request):
     return redirect("http://localhost:3000/home")
