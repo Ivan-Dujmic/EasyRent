@@ -6,9 +6,10 @@ import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { CustomGet, IRentals } from '@/fetchers/homeData';
 import { FaComments } from 'react-icons/fa';
-import React, { useState, useEffect, ReactElement } from 'react';
+import React, { useState} from 'react';
 import {
   Flex,
+  useDisclosure,
   Box,
   IconButton,
   Heading,
@@ -21,10 +22,16 @@ import {
   Drawer,
   DrawerBody,
   DrawerHeader,
-  DrawerCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
   DrawerContent,
-  DrawerFooter,
-  DrawerOverlay
+  Modal,
+  DrawerOverlay,
+  ModalOverlay,
+  ModalCloseButton,
+  ModalBody,
+  Input
 } from '@chakra-ui/react';
 import {
   FaFacebookF,
@@ -42,7 +49,7 @@ import EasyRentLogo from '@/components/core/EasyRentLogo/EasyRentLogo';
 import { CloseIcon } from '@chakra-ui/icons';
 import CompactFooter from '@/components/shared/Footer/CompactFooter';
 import Footer from '@/components/shared/Footer/Footer';
-// import LogOutButton from '@/components/shared/auth/LogOutButton/LogOutButton';
+
 
 const userProfileFooterLinks = {
   quickLinks: [
@@ -65,12 +72,28 @@ const userProfileFooterLinks = {
   paymentIcons: [FaCcVisa, FaCcMastercard, FaCcStripe],
 };
 
+const Overlay = () => (
+  <ModalOverlay
+    bg='blackAlpha.300'
+    backdropFilter='blur(10px)'
+  />
+)
+
 export default function UserProfilePage() {
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const { data } = useSWR(swrKeys.registerUser, CustomGet<IRentals>); // Placeholder for rentals fetcher
+  const { data } = useSWR(swrKeys.registerUser, CustomGet<IRentals>);
+  
+  const { isOpen, onOpen, onClose } = useDisclosure()
+  const [overlay, setOverlay] = useState(<Overlay/>)
+  const [amount, setAmount] = useState('');
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
+  };
+
+  const handleAddFunds = () => {
+    console.log(`Adding funds: ${amount}`);
+    onClose();
   };
 
   const gapSize = useBreakpointValue({
@@ -81,13 +104,13 @@ export default function UserProfilePage() {
   });
 
   const headingSize = useBreakpointValue({
-    base: '2xl', // Default heading size for laptop/tablet ????? IDK
-    lg: '2xl', // Larger heading for desktop
+    base: '2xl',
+    lg: '2xl',
   });
 
   const rentalswidth = useBreakpointValue({
-    base: '100%', // Širina mape za mobilne uređaje i male ekrane
-    lg: '80%', // Širina mape za srednje i velike ekrane
+    base: '100%',
+    lg: '80%',
   });
 
   const rentalAllignment = useBreakpointValue({
@@ -100,6 +123,32 @@ export default function UserProfilePage() {
 
   return (
     <Flex direction="column" grow={1} bg="brandlightgray" minH="100vh">
+      {/* Add Funds Modal */}
+      <Modal isCentered isOpen={isOpen} onClose={onClose}>
+        {overlay}
+        <ModalContent>
+          <ModalHeader>Add Funds</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text mb={4}>Enter the amount you want to add:</Text>
+            <Input
+              placeholder="Amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              type="number"
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={onClose} mr={3}>
+              Cancel
+            </Button>
+            <Button colorScheme="blue" onClick={handleAddFunds}>
+              Add Funds
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
       {/* Header */}
       <Header>
         <Text fontSize="md" fontWeight="bold" color="brandblue">
@@ -107,6 +156,10 @@ export default function UserProfilePage() {
         </Text>
 
         <Button
+          onClick={() => {
+            setOverlay(<Overlay />)
+            onOpen()
+          }}
           bgColor={'brandblue'}
           color={'brandwhite'}
           size="sm"
