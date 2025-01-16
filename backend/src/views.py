@@ -704,7 +704,7 @@ def googleLogin(request):
         rentoid = Rentoid.objects.create(
             user=cuser, phoneNo=6129945, driversLicenseNo=162862
         )
-    # return redirect(https://easy-rent-ashy.vercel.app/home)
-    return redirect("http://localhost:3000/home/")
+    return redirect("https://easy-rent-ashy.vercel.app/home")
+    # return redirect("http://localhost:3000/home/")
     # ovo promjeniti -> napraviti novu front stranicu koja je samo dummy za redirect.
     # nek ta stranica onda redirecta na home page + posalje request za user info koji se dobija upravo kao u ovoj funckiji
