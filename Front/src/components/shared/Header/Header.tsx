@@ -9,7 +9,6 @@ import {
 import NextLink from 'next/link';
 import { AnimatedSignUp } from '../auth/AnimatedSignUp/AnimatedSignUp';
 import CustomHeader from './CustomHeader/CustomHeader';
-import LogOutButton from '../auth/LogOutButton/LogOutButton';
 
 interface HeaderButtonProps extends ButtonProps {
     href?: string
@@ -66,7 +65,6 @@ export default function Header() {
     return <CustomHeader
         HeaderItems={ // For larger screens
             <>
-                <LogOutButton />
                 <LoginButton />
 
                 {/* Small vertical line */}
@@ -78,7 +76,6 @@ export default function Header() {
             </>}
         MenuItems={ // For smaller screens
             <>
-                <LoginButton />
                 <LoginButton />
 
                 <AnimatedSignUp />
