@@ -10,6 +10,7 @@ import {
   Select,
   Stack,
   Text,
+  useBreakpointValue,
 } from '@chakra-ui/react';
 import { FaCreditCard, FaWallet } from 'react-icons/fa';
 
@@ -41,19 +42,27 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
     });
   };
 
+  const formWidth = useBreakpointValue({
+    base: '100%', // Full width on small screens
+    md: '80%', // Slightly narrower on medium screens
+    lg: '60%', // Smaller width on large screens
+  });
+
   return (
     <Box
-      flex="1"
-      minWidth="300px"
-      p={5}
-      border="1px solid"
-      borderColor="gray.300"
-      borderRadius="md"
-      boxShadow="sm"
+      width={formWidth}
+      mx="auto"
+      p={6}
+      borderWidth="1px"
+      borderRadius="lg"
+      boxShadow="md"
+      bg="brandwhite"
+      maxWidth={'800px'}
     >
-      <Heading size="md" mb={4} color="brandblue">
+      <Heading size="md" mb={6} color="brandblue" textAlign="center">
         Book this car
       </Heading>
+
       <Stack spacing={4}>
         {/* Pick-up location */}
         <Box>
@@ -75,7 +84,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
         </Box>
 
         {/* Pick-up date and time */}
-        <Flex gap={2}>
+        <Flex gap={4} direction={{ base: 'column', md: 'row' }}>
           <Box flex="1">
             <Text fontSize="sm" fontWeight="bold" mb={1}>
               Pick-up date
@@ -121,7 +130,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
         </Box>
 
         {/* Drop-off date and time */}
-        <Flex gap={2}>
+        <Flex gap={4} direction={{ base: 'column', md: 'row' }}>
           <Box flex="1">
             <Text fontSize="sm" fontWeight="bold" mb={1}>
               Drop-off date
@@ -150,7 +159,13 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
       </Stack>
 
       {/* Payment buttons */}
-      <Flex justifyContent="flex-end" alignItems="center" mt={6} gap={4}>
+      <Flex
+        justifyContent="center"
+        alignItems="center"
+        mt={6}
+        gap={4}
+        direction={{ base: 'column', md: 'row' }}
+      >
         <Button
           rightIcon={<FaWallet />}
           bg="brandblue"
@@ -159,6 +174,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
           size="lg"
           onClick={() => handleRent('wallet')}
           isDisabled={!isDropoffEnabled}
+          width={{ base: '100%', md: 'auto' }}
         >
           Pay with Wallet
         </Button>
@@ -170,6 +186,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
           size="lg"
           onClick={() => handleRent('card')}
           isDisabled={!isDropoffEnabled}
+          width={{ base: '100%', md: 'auto' }}
         >
           Pay with Card
         </Button>

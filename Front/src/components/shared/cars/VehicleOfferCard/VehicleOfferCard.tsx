@@ -33,7 +33,6 @@ export default function VehicleOfferCard({
       boxShadow="md"
       bg="brandwhite"
       p={4}
-      m={4}
     >
       <Flex direction={{ base: 'column', md: 'row' }} gap={4}>
         {/* Left Section - Image */}
@@ -43,6 +42,7 @@ export default function VehicleOfferCard({
           objectFit="cover"
           borderRadius="md"
           width="auto"
+          maxW={'250px'}
           height="160px"
         />
 
@@ -50,7 +50,7 @@ export default function VehicleOfferCard({
         <Box flex="2" p={4}>
           {/* Header */}
           <Stack spacing={3}>
-            <Flex alignItems="center" justifyContent="space-between">
+            <Flex alignItems="center" justifyContent="space-between" gap={2}>
               <Heading size="lg" color="gray.800">
                 {vehicle.makeName} {vehicle.modelName}
               </Heading>

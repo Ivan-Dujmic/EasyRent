@@ -6,6 +6,7 @@ import AuthUserHeader from '@/components/shared/Header/AuthUserHeader/AuthUserHe
 import Header from '@/components/shared/Header/Header';
 import CustomMap from '@/components/shared/Map/CustomMap/CustomMap';
 import BookingForm from '@/components/shared/offer/BookingForm/BookingForm';
+import BookingLoginPrompt from '@/components/shared/offer/BookingLoginPrompt/BookingLoginPrompt';
 import { useUserContext } from '@/context/UserContext/UserContext';
 import { dealershipLocations } from '@/mockData/mockLocations';
 import { mockOffer } from '@/mockData/mockOffer';
@@ -67,8 +68,8 @@ export default function OfferPage() {
 
       {/* Offer Section */}
       <Flex
-        justify={'center'}
-        align={'center'}
+        justify={'flex-start'}
+        align={'flex-start'}
         direction={'column'}
         width={containerWidth}
         mt={6}
@@ -78,14 +79,19 @@ export default function OfferPage() {
           Your Offer:
         </Heading>
         <Flex
-          direction={{ base: 'column', md: 'row' }}
+          direction={'row'}
           gap={{ base: 6, md: 8 }} // Adjust spacing for mobile vs. desktop
-          align="center"
+          align="flex-start"
           justify="center"
           width="100%"
+          wrap={'wrap'}
         >
           {/* Offer Card */}
           <VehicleOfferCard vehicle={mockOffer} />
+
+          {/* Booking Form */}
+          {user.role === 'user' && <BookingForm balance={mockOffer.price} />}
+          {user.role !== 'user' && <BookingLoginPrompt />}
         </Flex>
       </Flex>
 
@@ -105,9 +111,6 @@ export default function OfferPage() {
           {/* Map Component */}
           <CustomMap locations={dealershipLocations} showInfoWindow={true} />
         </Box>
-
-        {/* Booking Form */}
-        <BookingForm balance={mockOffer.price} />
       </Flex>
 
       {/* footer */}
