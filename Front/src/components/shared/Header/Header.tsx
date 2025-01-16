@@ -66,6 +66,7 @@ export default function Header() {
     return <CustomHeader
         HeaderItems={ // For larger screens
             <>
+                <LogOutButton />
                 <LoginButton />
 
                 {/* Small vertical line */}
@@ -78,7 +79,8 @@ export default function Header() {
         MenuItems={ // For smaller screens
             <>
                 <LoginButton />
-                <LogOutButton />
+                <LoginButton />
+
                 <AnimatedSignUp />
 
                 <HeaderButton href="/TalkToUs"> Talk to us </HeaderButton>
