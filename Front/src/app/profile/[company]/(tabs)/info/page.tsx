@@ -28,7 +28,7 @@ export default function CompanyProfileInfo() {
                 <Text m="10px">
                 Lorem ipsum odor amet, consectetuer adipiscing elit. Egestas interdum dolor blandit vivamus convallis pellentesque. Massa justo volutpat interdum congue placerat semper. Lorem ipsum odor amet, consectetuer adipiscing elit. Egestas interdum dolor blandit vivamus convallis pellentesque. Massa justo volutpat interdum congue placerat semper. Lorem ipsum odor amet, consectetuer adipiscing elit. Egestas interdum dolor blandit vivamus convallis pellentesque. Massa justo volutpat interdum congue placerat semper. Lorem ipsum odor amet, consectetuer adipiscing elit. Egestas interdum dolor blandit vivamus convallis pellentesque. Massa justo volutpat interdum congue placerat semper.
                 </Text>
-                <SupportButton href={`/profile/${company}/edit`} m="5px" maxWidth="180px">
+                <SupportButton href={`/profile/${company}/edit/info`} m="5px" maxWidth="180px">
                     <EditIcon marginRight="10px"/>
                     Edit profile
                 </SupportButton>

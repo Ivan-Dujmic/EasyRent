@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Flex, VStack } from '@chakra-ui/react';
 import CompanyProfileHeader from '@/components/shared/Header/HeaderCompany';
 
-export default function CompanyProfileLayout({
+export default function CompanyTabsLayout({
     children,
   }: Readonly<{
     children: React.ReactNode;
@@ -47,7 +47,7 @@ export default function CompanyProfileLayout({
 
     return (
         <VStack w="100%">
-            <CompanyProfileHeader />
+            <DynamicTabs tabs={tabs} />
             {children}
         </VStack>
     );

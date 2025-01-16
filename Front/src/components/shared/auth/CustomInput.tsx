@@ -4,18 +4,14 @@ import { FormControl, InputProps, FormLabel, Input, FormErrorMessage } from "@ch
 
 interface ICustomInput extends InputProps{
     label: string;
-    type: string;
-    placeholder: string;
     error?: string;
 }
 
-export default function CustomInput ({label, type, placeholder, error, ...rest }: ICustomInput) {
+export default function CustomInput ({label, error, ...rest }: ICustomInput) {
     return(
         <FormControl isRequired isInvalid={!!error}>
 			<FormLabel>{label}</FormLabel>
 				<Input
-					type={type}
-					placeholder={placeholder}
                     {...rest}
 				/>
 				{error && (
