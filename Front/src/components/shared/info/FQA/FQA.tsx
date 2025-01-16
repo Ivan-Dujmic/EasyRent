@@ -47,11 +47,11 @@ export default function FQA() {
             <AccordionPanel pb={4} fontSize={'0.8rem'}>
               <Text mb={3}>
                 We make it easy to find the perfect rental car to suit your
-                needs. Here’s what we offer:
+                needs. Here&apos;s what we offer:
               </Text>
               <List spacing={2} pl={5} styleType="disc">
                 <ListItem>
-                  Wide selection of vehicles – from compact cars to SUVs
+                  Wide selection of vehicles &ndash; from compact cars to SUVs
                 </ListItem>
                 <ListItem>Support in over 30 languages</ListItem>
                 <ListItem>
@@ -86,9 +86,9 @@ export default function FQA() {
               <List spacing={2} pl={5} styleType="disc">
                 <ListItem>Passport</ListItem>
                 <ListItem>Voucher</ListItem>
-                <ListItem>Driver's license of each driver</ListItem>
+                <ListItem>Driver&apos;s license of each driver</ListItem>
                 <ListItem>
-                  The main driver's credit card (some car rental companies
+                  The main driver&apos;s credit card (some car rental companies
                   accept debit cards, but most do not)
                 </ListItem>
               </List>
@@ -97,8 +97,8 @@ export default function FQA() {
                 conditions as each car rental company has its own conditions.
                 For example, you may need additional identification, they may
                 not accept certain credit cards, or they may not want to rent a
-                car to a driver who has not held a driver's license for at least
-                36 months.
+                car to a driver who has not held a driver&apos;s license for at
+                least 36 months.
               </Text>
             </AccordionPanel>
           </AccordionItem>
@@ -115,8 +115,9 @@ export default function FQA() {
             </h2>
             <AccordionPanel pb={4} fontSize={'0.8rem'}>
               <Text>
-                Based on the average daily rental cost of €46, the price for a
-                week would be approximately €322 when booking through our site.
+                Based on the average daily rental cost of &euro;46, the price
+                for a week would be approximately &euro;322 when booking through
+                our site.
               </Text>
             </AccordionPanel>
           </AccordionItem>
@@ -133,9 +134,9 @@ export default function FQA() {
             </h2>
             <AccordionPanel pb={4} fontSize={'0.8rem'}>
               <Text>
-                Based on the average daily rental cost of €46, the price for a
-                month would be approximately €1,380 when booking through our
-                site.
+                Based on the average daily rental cost of &euro;46, the price
+                for a month would be approximately &euro;1,380 when booking
+                through our site.
               </Text>
             </AccordionPanel>
           </AccordionItem>
@@ -154,7 +155,8 @@ export default function FQA() {
               <Text>
                 Most companies will rent you a car if you are at least 21 years
                 old, although some might not rent to younger drivers. However,
-                if you are under 25, you might need to pay a "young driver fee."
+                if you are under 25, you might need to pay a &quot;young driver
+                fee.&quot;
               </Text>
             </AccordionPanel>
           </AccordionItem>
@@ -197,11 +199,11 @@ export default function FQA() {
                 <ListItem>
                   Check reviews from other users. On our website, you can find
                   numerous reviews and ratings to see what other customers liked
-                  or didn’t like about certain car rental companies.
+                  or didn&apos;t like about certain car rental companies.
                 </ListItem>
                 <ListItem>
-                  Don’t forget about the transmission. In some countries, cars
-                  with manual transmission are standard, while in others,
+                  Don&apos;t forget about the transmission. In some countries,
+                  cars with manual transmission are standard, while in others,
                   automatic cars are more common. Rent a car you are comfortable
                   driving!
                 </ListItem>
@@ -225,7 +227,7 @@ export default function FQA() {
             <AccordionPanel pb={4} fontSize={'0.8rem'}>
               <Text mb={3}>
                 It is usually possible to return a rental car at a different
-                location, but it depends on each company's rules and might
+                location, but it depends on each company&apos;s rules and might
                 involve an extra fee.
               </Text>
               <Text>
@@ -248,8 +250,9 @@ export default function FQA() {
             <AccordionPanel pb={4} fontSize={'0.8rem'}>
               <Text>
                 13% of our users book last-minute car rentals at an average
-                daily cost of €57. However, the best time to book is 3 months
-                before your trip, as the average cost drops to €34 per day.
+                daily cost of &euro;57. However, the best time to book is 3
+                months before your trip, as the average cost drops to &euro;34
+                per day.
               </Text>
             </AccordionPanel>
           </AccordionItem>
@@ -295,8 +298,8 @@ export default function FQA() {
             </h2>
             <AccordionPanel pb={4} fontSize={'0.8rem'}>
               <Text>
-                Yes, simply provide their details in the "Driver Information"
-                section during the booking process.
+                Yes, simply provide their details in the &quot;Driver
+                Information&quot; section during the booking process.
               </Text>
             </AccordionPanel>
           </AccordionItem>
@@ -338,18 +341,18 @@ export default function FQA() {
             <AccordionPanel pb={4} fontSize={'0.8rem'}>
               <Text mb={3}>
                 In the last 6 months, several companies have offered competitive
-                prices in the "medium-sized vehicle" category on our platform.
-                Below are some of the cheapest options:
+                prices in the &quot;medium-sized vehicle&quot; category on our
+                platform. Below are some of the cheapest options:
               </Text>
               <List spacing={2} pl={5} styleType="disc">
                 <ListItem>
-                  <strong>Goldcar:</strong> Average daily price of €28
+                  <strong>Goldcar:</strong> Average daily price of &euro;28
                 </ListItem>
                 <ListItem>
-                  <strong>Surprice:</strong> Average daily price of €29
+                  <strong>Surprice:</strong> Average daily price of &euro;29
                 </ListItem>
                 <ListItem>
-                  <strong>Greenmotion:</strong> Average daily price of €31
+                  <strong>Greenmotion:</strong> Average daily price of &euro;31
                 </ListItem>
               </List>
             </AccordionPanel>
