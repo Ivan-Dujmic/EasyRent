@@ -26,7 +26,6 @@ export async function fetcher<T>(
         console.log(csrfToken);
         var header1, header2;
         if (csrfToken) {
-            console.log(csrfToken);
             header1 = {
                 'Content-Type': 'application/json',
                 Accept: 'application/json',

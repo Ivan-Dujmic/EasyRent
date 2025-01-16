@@ -119,7 +119,7 @@ paths:
           description: No rentoid or dealership to match user
   /api/home/available-drop-off/{offer_id}/:
     get:
-      operationId: api_home_available_drop_off_retrieve
+      operationId: home_available_drop_off_retrieve
       parameters:
       - in: query
         name: dropOffLocationId
@@ -172,7 +172,7 @@ paths:
           description: Vehicle Not Found
   /api/home/best-value/:
     get:
-      operationId: api_home_best_value_retrieve
+      operationId: home_best_value_retrieve
       parameters:
       - in: query
         name: limit
@@ -203,7 +203,7 @@ paths:
           description: Offers Not Found
   /api/home/cities/:
     get:
-      operationId: api_home_cities_retrieve
+      operationId: home_cities_retrieve
       tags:
       - home
       security:
@@ -221,7 +221,7 @@ paths:
           description: Cities Not Found
   /api/home/company/{dealership_id}/:
     get:
-      operationId: api_home_company_retrieve
+      operationId: home_company_retrieve
       parameters:
       - in: path
         name: dealership_id
@@ -245,7 +245,7 @@ paths:
           description: Company Not Found
   /api/home/locations/:
     get:
-      operationId: api_home_locations_retrieve
+      operationId: home_locations_retrieve
       tags:
       - home
       security:
@@ -263,7 +263,7 @@ paths:
           description: Locations Not Found
   /api/home/models/:
     get:
-      operationId: api_home_models_retrieve
+      operationId: home_models_retrieve
       tags:
       - home
       security:
@@ -281,7 +281,7 @@ paths:
           description: Makes Not Found
   /api/home/most-popular/:
     get:
-      operationId: api_home_most_popular_retrieve
+      operationId: home_most_popular_retrieve
       parameters:
       - in: query
         name: limit
@@ -312,7 +312,7 @@ paths:
           description: Offers Not Found
   /api/home/offer-locations/{offer_id}/:
     get:
-      operationId: api_home_offer_locations_retrieve
+      operationId: home_offer_locations_retrieve
       parameters:
       - in: path
         name: offer_id
@@ -336,7 +336,7 @@ paths:
           description: Locations Not Found
   /api/home/offer/{offer_id}/:
     get:
-      operationId: api_home_offer_retrieve
+      operationId: home_offer_retrieve
       parameters:
       - in: path
         name: offer_id
@@ -360,7 +360,7 @@ paths:
           description: Offer Not Found
   /api/home/offers/{dealership_id}/:
     get:
-      operationId: api_home_offers_retrieve
+      operationId: home_offers_retrieve
       parameters:
       - in: path
         name: dealership_id
@@ -396,7 +396,7 @@ paths:
           description: Offers Not Found
   /api/home/reviews/{offer_id}/:
     get:
-      operationId: api_home_reviews_retrieve
+      operationId: home_reviews_retrieve
       parameters:
       - in: query
         name: limit
@@ -432,7 +432,7 @@ paths:
           description: Reviews Not Found
   /api/home/search/:
     get:
-      operationId: api_home_search_retrieve
+      operationId: home_search_retrieve
       parameters:
       - in: query
         name: automatic
@@ -550,7 +550,7 @@ paths:
           description: Offers Not Found
   /api/home/showcased/:
     get:
-      operationId: api_home_showcased_retrieve
+      operationId: home_showcased_retrieve
       tags:
       - home
       security:
@@ -562,7 +562,7 @@ paths:
           description: No response body
   /api/home/showcased-companies/:
     get:
-      operationId: api_home_showcased_companies_retrieve
+      operationId: home_showcased_companies_retrieve
       parameters:
       - in: query
         name: limit
@@ -587,7 +587,7 @@ paths:
           description: Companies Not Found
   /api/home/unavailable-pick-up/{offer_id}/:
     get:
-      operationId: api_home_unavailable_pick_up_retrieve
+      operationId: home_unavailable_pick_up_retrieve
       parameters:
       - in: path
         name: offer_id
@@ -618,9 +618,9 @@ paths:
           description: Vehicles Not Found
   /api/profile/company/delete/:
     delete:
-      operationId: api_profile_company_delete_destroy
+      operationId: profile_company_delete_destroy
       tags:
-      - api
+      - profile
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -663,9 +663,9 @@ paths:
                   $ref: '#/components/schemas/GetCompanyInfo'
           description: ''
     put:
-      operationId: api_profile_company_info_update
+      operationId: profile_company_info_update
       tags:
-      - api
+      - profile
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -852,9 +852,9 @@ paths:
                 $ref: '#/components/schemas/GetCompanyOffer'
           description: ''
     post:
-      operationId: api_profile_company_offer_create
+      operationId: profile_company_offer_create
       tags:
-      - api
+      - profile
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -863,9 +863,9 @@ paths:
         '200':
           description: No response body
     put:
-      operationId: api_profile_company_offer_update
+      operationId: profile_company_offer_update
       tags:
-      - api
+      - profile
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -874,9 +874,9 @@ paths:
         '200':
           description: No response body
     delete:
-      operationId: api_profile_company_offer_destroy
+      operationId: profile_company_offer_destroy
       tags:
-      - api
+      - profile
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -904,9 +904,9 @@ paths:
           description: ''
   /api/profile/company/pass/:
     put:
-      operationId: api_profile_company_pass_update
+      operationId: profile_company_pass_update
       tags:
-      - api
+      - profile
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -934,9 +934,9 @@ paths:
           description: ''
   /api/profile/company/setHQ/:
     put:
-      operationId: api_profile_company_setHQ_update
+      operationId: profile_company_setHQ_update
       tags:
-      - api
+      - profile
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -946,9 +946,9 @@ paths:
           description: No response body
   /api/profile/company/toggle-vehicle-visibility/:
     put:
-      operationId: api_profile_company_toggle_vehicle_visibility_update
+      operationId: profile_company_toggle_vehicle_visibility_update
       tags:
-      - api
+      - profile
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -958,9 +958,9 @@ paths:
           description: No response body
   /api/profile/company/vehicle/:
     post:
-      operationId: api_profile_company_vehicle_create
+      operationId: profile_company_vehicle_create
       tags:
-      - api
+      - profile
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -969,9 +969,9 @@ paths:
         '200':
           description: No response body
     delete:
-      operationId: api_profile_company_vehicle_destroy
+      operationId: profile_company_vehicle_destroy
       tags:
-      - api
+      - profile
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -1030,9 +1030,9 @@ paths:
                 $ref: '#/components/schemas/GetCompanyVehicleEdit'
           description: ''
     put:
-      operationId: api_profile_company_vehicles_edit_vehicle_update
+      operationId: profile_company_vehicles_edit_vehicle_update
       tags:
-      - api
+      - profile
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -1157,7 +1157,7 @@ paths:
           description: User not authenticated
   /api/schema/:
     get:
-      operationId: api_schema_retrieve
+      operationId: schema_retrieve
       description: |-
         OpenApi3 schema for this API. Format can be selected via content negotiation.
 
@@ -1276,7 +1276,7 @@ paths:
           - zh-hans
           - zh-hant
       tags:
-      - api
+      - schema
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -1303,7 +1303,7 @@ paths:
           description: ''
   /api/wallet/addMoney/{rentoid_id}/:
     post:
-      operationId: api_wallet_addMoney_create
+      operationId: wallet_addMoney_create
       parameters:
       - in: path
         name: rentoid_id
@@ -1333,7 +1333,7 @@ paths:
           description: No response body
   /api/wallet/buyGems:
     post:
-      operationId: api_wallet_buyGems_create
+      operationId: wallet_buyGems_create
       tags:
       - wallet
       requestBody:
@@ -1356,7 +1356,7 @@ paths:
           description: No response body
   /api/wallet/checkTransaction/{transaction_id}:
     get:
-      operationId: api_wallet_checkTransaction_retrieve
+      operationId: wallet_checkTransaction_retrieve
       parameters:
       - in: path
         name: transaction_id
@@ -1374,7 +1374,7 @@ paths:
           description: No response body
   /api/wallet/getBalance/:
     get:
-      operationId: api_wallet_getBalance_retrieve
+      operationId: wallet_getBalance_retrieve
       tags:
       - wallet
       security:
@@ -1386,7 +1386,7 @@ paths:
           description: No response body
   /api/wallet/removeMoney/{rentoid_id}/:
     post:
-      operationId: api_wallet_removeMoney_create
+      operationId: wallet_removeMoney_create
       parameters:
       - in: path
         name: rentoid_id
@@ -1416,7 +1416,7 @@ paths:
           description: No response body
   /api/wallet/rentOffer/{offer_id}/:
     post:
-      operationId: api_wallet_rentOffer_create
+      operationId: wallet_rentOffer_create
       parameters:
       - in: path
         name: offer_id
@@ -1446,9 +1446,9 @@ paths:
           description: No response body
   /api/wallet/webhook:
     post:
-      operationId: api_wallet_webhook_create
+      operationId: wallet_webhook_create
       tags:
-      - api
+      - wallet
       security:
       - cookieAuth: []
       - basicAuth: []

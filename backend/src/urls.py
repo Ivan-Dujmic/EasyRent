@@ -16,5 +16,5 @@ urlpatterns = [
     path("activate/<uidb64>/<token>/", views.activate, name="activateUser"),
     path("", views.redirectHome, name="redirectHome"),
     path("get-csrf", views.getCSRF, name="getCSRF"),
-    path("SuccessfulLogin", views.redirectHome, name="redirectHome"),
+    path("SuccessfulLogin", views.googleLogin, name="googleLogin"),
 ]
