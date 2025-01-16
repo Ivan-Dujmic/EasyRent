@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import useSWRMutation from 'swr/mutation';
 import { CustomGet, ICar } from '@/fetchers/homeData';
 import { swrKeys } from '@/fetchers/swrKeys';
+import { useFilterContext } from '@/context/FilterContext/FilterContext';
 
 const options: { [key: string]: string[] } = {
   'Cities (including airports)': [
@@ -35,12 +36,29 @@ const options: { [key: string]: string[] } = {
 export default function MainFilter() {
   const router = useRouter();
   const { setCars } = useCarContext();
+  const { setFilterData } = useFilterContext();
 
-  const [pickupLocation, setPickupLocation] = useState('');
-  const [dropoffLocation, setDropoffLocation] = useState('');
-  const [pickupDate, setPickupDate] = useState<Date | null>(null);
-  const [dropoffDate, setDropoffDate] = useState<Date | null>(null);
+  // LocalStorage za inicijalne vrijednosti
+  const [pickupLocation, setPickupLocation] = useState(
+    () => localStorage.getItem('pickupLocation') || ''
+  );
+  const [dropoffLocation, setDropoffLocation] = useState(
+    () => localStorage.getItem('dropoffLocation') || ''
+  );
+  const [pickupDate, setPickupDateTime] = useState<Date | null>(() => {
+    const saved = localStorage.getItem('pickupDateTime');
+    return saved ? new Date(saved) : null;
+  });
+  const [dropoffDate, setdropoffDate] = useState<Date | null>(() => {
+    const saved = localStorage.getItem('dropoffDate');
+    return saved ? new Date(saved) : null;
+  });
   const [url, setUrl] = useState(''); // State za URL
+
+  const [isReady, setIsReady] = useState(false); // Novo stanje
+  useEffect(() => {
+    setIsReady(true); // Postavi na true kada je komponenta spremna
+  }, []);
 
   const [formErrors, setFormErrors] = useState({
     pickupLocation: false,
@@ -68,7 +86,7 @@ export default function MainFilter() {
     {
       onSuccess: (data: ICar[]) => {
         setCars(data); // Spremanje automobila u globalni kontekst
-        router.push('/GuestListing'); // Preusmjeravanje na novu stranicu
+        router.push('/listing'); // Preusmjeravanje na novu stranicu
       },
       onError: (error) => {
         console.error('Error fetching data:', error);
@@ -81,6 +99,15 @@ export default function MainFilter() {
       trigger();
     }
   }, [url, trigger]);
+
+  useEffect(() => {
+    localStorage.setItem('pickupLocation', pickupLocation);
+    localStorage.setItem('dropoffLocation', dropoffLocation);
+    if (pickupDate)
+      localStorage.setItem('pickupDateTime', pickupDate.toISOString());
+    if (dropoffDate)
+      localStorage.setItem('dropoffDate', dropoffDate.toISOString());
+  }, [pickupLocation, dropoffLocation, pickupDate, dropoffDate]);
 
   const handleSearch = () => {
     if (!validateForm()) return;
@@ -122,6 +149,16 @@ export default function MainFilter() {
     const formattedPickupLocation = formatLocation(pickupLocation);
     const formattedDropoffLocation = formatLocation(dropoffLocation);
 
+    // sprmei mi te podatke u konteskt da se mogu korsititi i u sidefilter-u
+    setFilterData({
+      pick_up_location: formattedPickupLocation,
+      drop_off_location: formattedDropoffLocation,
+      pick_up_date: pickup.date,
+      pick_up_time: pickup.time,
+      drop_off_date: dropoff.date,
+      drop_off_time: dropoff.time,
+    });
+
     // Kreiranje URL-a sa query parametrima
     const queryParams = new URLSearchParams({
       pick_up_location: formattedPickupLocation,
@@ -132,45 +169,52 @@ export default function MainFilter() {
       drop_off_time: dropoff.time, // Vrijeme u HH:MM:SS formatu
     });
 
-    const fullUrl = `/api/home/search?${queryParams.toString()}`;
+    const fullUrl = swrKeys.search(queryParams.toString());
+    console.log(fullUrl);
     setUrl(fullUrl); // Postavljamo URL u state
   };
-  const maxWidth = useBreakpointValue({
-    base: '80vw',
-    md: '60vw',
-    xl: '1200px',
+
+  const breakpoints = useBreakpointValue({
+    base: {
+      maxWidth: '80vw',
+      buttonWidth: '100%',
+      locationWidth: '100%',
+      dateTimeWidth: '100%',
+      gap: 2,
+      justifyContent: 'space-around',
+    },
+    md: {
+      maxWidth: '60vw',
+      buttonWidth: '100%',
+      locationWidth: 'calc(50% - 1rem)',
+      dateTimeWidth: 'calc(50% - 1rem)',
+      gap: 2,
+      justifyContent: 'space-between',
+    },
+    xl: {
+      maxWidth: '1200px',
+      buttonWidth: '150px',
+      locationWidth: 'calc(15% - 1rem)',
+      dateTimeWidth: 'calc(25% - 1rem)',
+      gap: 4,
+      justifyContent: 'center',
+    },
   });
 
-  const buttonWidth = useBreakpointValue({
-    base: '100%',
-    md: '100%',
-    xl: '150px',
-  });
+  // Ako komponenta nije spremna, ništa se ne prikazuje
+  if (!isReady) {
+    return null;
+  }
 
-  const locationWidth = useBreakpointValue({
-    base: '100%',
-    md: 'calc(50% - 1rem)',
-    xl: 'calc(15% - 1rem)',
-  });
-
-  const dateTimeWidth = useBreakpointValue({
-    base: '100%',
-    md: 'calc(50% - 1rem)',
-    xl: 'calc(25% - 1rem)',
-  });
-
-  const gap = useBreakpointValue({
-    base: 2,
-    md: 2,
-    xl: 4,
-  });
-
-  const justifyContent = useBreakpointValue({
-    base: 'space-around',
-    md: 'space-between',
-    xl: 'center',
-  });
-
+  // Rastavljanje vrijednosti
+  const {
+    maxWidth,
+    buttonWidth,
+    locationWidth,
+    dateTimeWidth,
+    gap,
+    justifyContent,
+  } = breakpoints || {};
   return (
     <Flex
       direction={{ base: 'column', md: 'row' }}
@@ -192,6 +236,7 @@ export default function MainFilter() {
           options={options}
           description="Pick-up location"
           placeHolder="From?"
+          value={pickupLocation}
           onLocationChange={(location) => {
             setPickupLocation(location);
             setFormErrors((prev) => ({
@@ -211,6 +256,7 @@ export default function MainFilter() {
           options={options}
           description="Drop-off location"
           placeHolder="To?"
+          value={dropoffLocation}
           onLocationChange={(location) => {
             setDropoffLocation(location);
             setFormErrors((prev) => ({
@@ -229,6 +275,7 @@ export default function MainFilter() {
       {/* Date and Time */}
       <Box width={dateTimeWidth}>
         <DateTimeDDM
+          initialDate={pickupDate}
           description="Pick-up date/time"
           placeHolder="Start?"
           minDate={new Date()}
@@ -238,7 +285,7 @@ export default function MainFilter() {
               : undefined
           }
           onDateTimeChange={(dateTime) => {
-            setPickupDate(dateTime);
+            setPickupDateTime(dateTime);
             setFormErrors((prev) => ({ ...prev, pickupDate: !dateTime }));
           }}
         />
@@ -250,6 +297,7 @@ export default function MainFilter() {
       </Box>
       <Box width={dateTimeWidth}>
         <DateTimeDDM
+          initialDate={dropoffDate}
           description="Drop-off date/time"
           placeHolder="End?"
           minDate={
@@ -258,7 +306,7 @@ export default function MainFilter() {
               : new Date(new Date().getTime() + 24 * 60 * 60 * 1000)
           }
           onDateTimeChange={(dateTime) => {
-            setDropoffDate(dateTime);
+            setdropoffDate(dateTime);
             setFormErrors((prev) => ({ ...prev, dropoffDate: !dateTime }));
           }}
         />
