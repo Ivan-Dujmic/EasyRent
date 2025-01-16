@@ -193,3 +193,15 @@ class GetCompanyLogReviews(serializers.Serializer):
     date = serializers.DateTimeField()
     description = serializers.CharField()
     rating = serializers.FloatField()
+
+
+class CompanyVehicleSerializer(serializers.Serializer):
+    registration = serializers.CharField()
+    model_id = serializers.IntegerField()
+    location_id = serializers.IntegerField()
+
+class CompanyOfferPostSerializer(serializers.Serializer):
+    price = serializers.FloatField()
+    image = serializers.FileField()
+    description = serializers.CharField()
+    model_id = serializers.IntegerField()

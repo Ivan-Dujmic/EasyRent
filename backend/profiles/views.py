@@ -425,7 +425,7 @@ def companyVehicles(request):
         company = request.user
         if company.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user=company)
+                dealership = Dealership.objects.get(user=company)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
 
@@ -440,12 +440,12 @@ def companyVehicles(request):
                 vehicleIds = []
                 offerIds = []
 
-                vehicles = Vehicle.objects.filter(dealer_id=dealership.dealer_id)
+                vehicles = Vehicle.objects.filter(dealer_id=dealership.dealership_id)
                 # Return: [image, makeName, modelName, registration, price, rating, noOfReviews, isVisible, vehicle_id, offer_id]
                 res = []
                 for vehicle in vehicles:
                     # make, model, registration, noOfReviews, isVisible, vehicleId
-                    model = Model.object.filter(vehicle_id=vehicle)
+                    model = Model.objects.get(vehicle_id=vehicle)
                     makeNames.append(model.makeName)
                     modelNames.append(model.modelName)
                     registrations.append(vehicle.registration)
@@ -454,8 +454,8 @@ def companyVehicles(request):
                     vehicleIds.append(vehicle.vehicle_id)
 
                     # price, rating, offerId, image
-                    offer = Offer.object.filter(
-                        model=vehicle.model, dealer_id=dealership.dealer_id
+                    offer = Offer.objects.get(
+                        model=vehicle.model, dealer_id=dealership.dealership_id
                     )
                     prices.append(offer.price)
                     ratings.append(offer.rating)
@@ -540,7 +540,7 @@ def companyOffers(request):
         company = request.user
         if company.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user=company)
+                dealership = Dealership.objects.get(user=company)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
 
@@ -553,14 +553,14 @@ def companyOffers(request):
                 offerIds = []
                 isVisible = []
 
-                offers = Offer.objects.filter(dealer_id=dealership.dealer_id)
+                offers = Offer.objects.filter(dealer_id=dealership.dealership_id)
                 # Return: [image, makeName, modelName, price, rating, noOfReviews, isVisible, offer_id]
                 res = []
                 for offer in offers:
                     # make, model, noOfReviews, offerId
-                    model = Model.object.filter(model_id=offer.model)
-                    vehicle = Vehicle.object.filter(
-                        model=model, dealer_id=dealership.dealer_id
+                    model = Model.objects.get(model_id=offer.model)
+                    vehicle = Vehicle.objects.get(
+                        model=model, dealer_id=dealership.dealership_id
                     )
                     makeNames.append(model.makeName)
                     modelNames.append(model.modelName)
@@ -611,10 +611,10 @@ def toggleOfferVisibility(request):
                     {"success": 0, "message": "Offer ID is required"}, status=400
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 offer = Offer.objects.get(offer_id=data.get("offerId"))
                 vehicles = Vehicle.objects.get(
-                    model=offer.model, dealer_id=dealership.dealer_id
+                    model=offer.model, dealer_id=dealership.dealership_id
                 )
                 if all(not vehicle.isVisible for vehicle in vehicles):
                     for vehicle in vehicles:
@@ -656,19 +656,19 @@ def upcomingCompanyRents(request):
         user = request.user
         if user.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
-                rents = Rent.objects.filter(dealer_id=dealership.dealer_id)
+                rents = Rent.objects.filter(dealer_id=dealership.dealership_id)
                 res = []
                 for rent in rents:
-                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
-                    rentUser = User.object.filter(id=rentoid.user_id)
-                    vehicle = Vehicle.object.filter(vehicle_id=rent.vehicle_id)
+                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    rentUser = User.objects.get(id=rentoid.user_id)
+                    vehicle = Vehicle.objects.get(vehicle_id=rent.vehicle_id)
                     offer = Offer.objects.filter(
                         dealer=rent.dealer_id, model=vehicle.model
                     )
-                    model = Model.object.filter(model_id=vehicle.model_id)
+                    model = Model.objects.get(model_id=vehicle.model_id)
                     if rent.dateTimeRented < datetime.now():
                         item = {
                             "dateTimePickup": rent.dateTimeRented,
@@ -717,19 +717,19 @@ def ongoingCompanyRents(request):
         user = request.user
         if user.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
-                rents = Rent.objects.filter(dealer_id=dealership.dealer_id)
+                rents = Rent.objects.filter(dealer_id=dealership.dealership_id)
                 res = []
                 for rent in rents:
-                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
-                    rentUser = User.object.filter(id=rentoid.user_id)
-                    vehicle = Vehicle.object.filter(vehicle_id=rent.vehicle_id)
+                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    rentUser = User.objects.get(id=rentoid.user_id)
+                    vehicle = Vehicle.objects.get(vehicle_id=rent.vehicle_id)
                     offer = Offer.objects.filter(
                         dealer=rent.dealer_id, model=vehicle.model
                     )
-                    model = Model.object.filter(model_id=vehicle.model_id)
+                    model = Model.objects.get(model_id=vehicle.model_id)
                     if (
                         rent.dateTimeRented >= datetime.now()
                         and rent.dateTimeReturned < datetime.now()
@@ -781,19 +781,19 @@ def completedCompanyRents(request):
         user = request.user
         if user.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
                 rents = Rent.objects.filter(dealer_id=dealership.dealership_id)
                 res = []
                 for rent in rents:
-                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
-                    rentUser = User.object.filter(id=rentoid.user_id)
-                    vehicle = Vehicle.object.filter(vehicle_id=rent.vehicle_id)
+                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    rentUser = User.objects.get(id=rentoid.user_id)
+                    vehicle = Vehicle.objects.get(vehicle_id=rent.vehicle_id)
                     offer = Offer.objects.filter(
                         dealer=rent.dealer_id, model=vehicle.model
                     )
-                    model = Model.object.filter(model_id=vehicle.model_id)
+                    model = Model.objects.get(model_id=vehicle.model_id)
                     if rent.dateTimeReturned >= datetime.now():
                         item = {
                             "dateTimePickup": rent.dateTimeRented,
@@ -842,21 +842,21 @@ def companyReviews(request):
         user = request.user
         if user.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
 
-                rents = Rent.object.filter(dealer_id=dealership.dealer_id)
+                rents = Rent.objects.get(dealer_id=dealership.dealership_id)
                 res = []
                 for rent in rents:
-                    reviews = Review.object.filter(rent_id=rent.rent_id)
-                    vehicle = Vehicle.object.filter(vehicle_id=rent.vehicle_id)
-                    model = Model.object.filter(model_id=vehicle.model_id)
-                    offer = Offer.object.filter(
-                        dealer_id=dealership.dealer_id, model_id=vehicle.model_id
+                    reviews = Review.objects.get(rent_id=rent.rent_id)
+                    vehicle = Vehicle.objects.get(vehicle_id=rent.vehicle_id)
+                    model = Model.objects.get(model_id=vehicle.model_id)
+                    offer = Offer.objects.get(
+                        dealer_id=dealership.dealership_id, model_id=vehicle.model_id
                     )
-                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
-                    rentUser = User.object.filter(id=rentoid.user_id)
+                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    rentUser = User.objects.get(id=rentoid.user_id)
 
                     current = {
                         "image": offer.image,
@@ -900,10 +900,10 @@ def companyEarnings(request):
         user = request.user
         if user.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 year = int(request.GET.get("year", datetime.now().year))
 
-                rents = Rent.object.filter(dealer_id=dealership.dealer_id)
+                rents = Rent.objects.get(dealer_id=dealership.dealership_id)
                 totalEarnings = 0
                 monthlyEarnings = {i: 0 for i in range(1, 13)}
                 thisYearEarnings = 0
@@ -961,7 +961,7 @@ def companyInfo(request):
                     {"success": 0, "message": "Wrong password!"}, status=401
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 if phoneNo:
                     dealership.phoneNo = phoneNo
                 if name:
@@ -995,9 +995,9 @@ def companyInfo(request):
         if user.is_authenticated:
             try:
                 # Return: {companyLogo, companyName, phoneNo, description}
-                dealership = Dealership.object.filter(user_id=user)
-                workingHours = WorkingHours.object.filter(
-                    dealership_id=dealership.dealer_id
+                dealership = Dealership.objects.get(user=user.id)
+                workingHours = WorkingHours.objects.get(
+                    dealership_id=dealership.dealership_id
                 )
                 res = []
                 for workingHour in workingHours:
@@ -1072,9 +1072,9 @@ def companyLocations(request):
         user = request.user
         if user.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 # Return: [streetName, streetNo, cityName, location_id]
-                locations = Location.object.filter(dealership_id=dealership.dealer_id)
+                locations = Location.objects.get(dealership_id=dealership.dealership_id)
                 res = [{}]
                 for location in locations:
                     current = {
@@ -1117,13 +1117,13 @@ def companySetHQ(request):
                     {"success": 0, "message": "Location ID is required"}, status=200
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                locations = Location.object.filter(dealership_id=dealership.dealer_id)
+                dealership = Dealership.objects.get(user=user.id)
+                locations = Location.objects.get(dealership_id=dealership.dealership_id)
 
                 for location in locations:
                     location.isHQ = False
                     location.save()
-                location = Location.object.filter(location_id=data.get("locationId"))
+                location = Location.objects.get(location_id=data.get("locationId"))
                 location.isHQ = True
                 location.save()
                 return Response(
@@ -1167,12 +1167,12 @@ def companyLocation(request):
                     {"success": 0, "message": "Location ID is required"}, status=200
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                location = Location.object.filter(
+                dealership = Dealership.objects.get(user=user.id)
+                location = Location.objects.get(
                     location_id=locationId,
-                    dealership_id=dealership.dealer_id,
+                    dealership_id=dealership.dealership_id,
                 )
-                workingHours = WorkingHours.object.filter(
+                workingHours = WorkingHours.objects.get(
                     location_id=location.location_id
                 )
                 retObject = {
@@ -1214,10 +1214,10 @@ def companyLocation(request):
                     {"success": 0, "message": "Location ID is required"}, status=200
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                location = Location.object.filter(
+                dealership = Dealership.objects.get(user=user.id)
+                location = Location.objects.get(
                     location_id=locationId,
-                    dealership_id=dealership.dealer_id,
+                    dealership_id=dealership.dealership_id,
                 )
                 location.delete()
                 return Response(
@@ -1247,14 +1247,14 @@ def companyLocation(request):
                     {"success": 0, "message": "Location ID is required"}, status=200
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                location = Location.object.filter(
+                dealership = Dealership.objects.get(user=user.id)
+                location = Location.objects.get(
                     location_id=locationId,
-                    dealership_id=dealership.dealer_id,
+                    dealership_id=dealership.dealership_id,
                 )
                 workingHours = data.get("workingHours")
                 for workingHour in workingHours:
-                    wh = WorkingHours.object.filter(
+                    wh = WorkingHours.objects.get(
                         location_id=locationId, day=workingHour["dayOfTheWeek"]
                     )
                     wh.startTime = (
@@ -1299,20 +1299,20 @@ def companyLocation(request):
                     {"success": 0, "message": "All fields are required"}, status=400
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                location = Location.object.create(
+                dealership = Dealership.objects.get(user=user.id)
+                location = Location.objects.create(
                     latitude=data.get("latitude"),
                     longitude=data.get("longitude"),
                     streetName=data.get("streetName"),
                     countryName=data.get("countryName"),
                     streetNo=data.get("streetNo"),
                     cityName=data.get("cityName"),
-                    dealership_id=dealership.dealer_id,
+                    dealership_id=dealership.dealership_id,
                     isHQ=False,
                 )
                 location.save()
                 for workingHour in workingHours:
-                    wh = WorkingHours.object.create(
+                    wh = WorkingHours.objects.create(
                         day=workingHour["dayOfTheWeek"],
                         startTime=workingHour["startTime"],
                         endTime=workingHour["endTime"],
@@ -1395,10 +1395,10 @@ def companyVehicleEdit(request):
                     {"success": 0, "message": "Vehicle ID is required"}, status=400
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 vehicle = Vehicle.objects.get(
                     vehicle_id=request.GET.get("vehicleId"),
-                    dealer_id=dealership.dealer_id,
+                    dealer_id=dealership.dealership_id,
                 )
                 hasUpcomingRental = False
                 upcoming_rental = Rent.objects.filter(
@@ -1442,13 +1442,13 @@ def companyVehicleEdit(request):
         user = request.user
         if user.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 # Return: {registration, streetName, streetNo, cityName, location_id}
                 vehicle = Vehicle.objects.filter(
-                    dealer_id=dealership.dealer_id,
+                    dealer_id=dealership.dealership_id,
                     vehicle_id=request.GET.get("vehicleId"),
                 )
-                location = location.object.filter(location_id=vehicle.location_id)
+                location = location.objects.get(location_id=vehicle.location_id)
                 retObject = {
                     "registration": vehicle.registration,
                     "streetName": location.streetName,
@@ -1468,6 +1468,12 @@ def companyVehicleEdit(request):
 
 
 @login_required
+@extend_schema(
+    methods=["POST"],
+    operation_id="post_company_vehicle",
+    tags=["profile"],
+    request=CompanyVehicleSerializer,
+)
 @api_view(["DELETE", "POST"])
 def companyVehicle(request):
     if request.method == "DELETE":
@@ -1479,13 +1485,13 @@ def companyVehicle(request):
                     {"success": 0, "message": "Vehicle ID is required"}, status=400
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 vehicle = Vehicle.objects.get(
                     vehicle_id=request.GET.get("vehicleId"),
-                    dealer_id=dealership.dealer_id,
+                    dealer_id=dealership.dealership_id,
                 )
-                vehicles = Vehicle.object.get(
-                    dealer_id=dealership.dealer_id, model_id=vehicle.model_id
+                vehicles = Vehicle.objects.get(
+                    dealer_id=dealership.dealership_id, model_id=vehicle.model_id
                 )
                 hasUpcomingRental = False
                 upcoming_rental = Rent.objects.filter(
@@ -1505,7 +1511,7 @@ def companyVehicle(request):
                     )
                 if len(vehicles) == 1:
                     offer = Offer.objects.filter(
-                        model=vehicle.model_id, dealer_id=dealership.dealer_id
+                        model=vehicle.model_id, dealer_id=dealership.dealership_id
                     )
                     offer.delete()
                 vehicle.delete()
@@ -1539,16 +1545,16 @@ def companyVehicle(request):
                     {"success": 0, "message": "All fields are required"}, status=400
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                model = Model.object.filter(model_id=data.get("model_id"))
-                location = Location.object.filter(
-                    location_id=data.get("locationId"),
-                    dealership_id=dealership.dealer_id,
+                dealership = Dealership.objects.get(user=user.id)
+                model = Model.objects.get(model_id=data.get("model_id"))
+                location = Location.objects.get(
+                    location_id=data.get("location_id")
                 )
-                vehicle = Vehicle.object.create(
+
+                vehicle = Vehicle.objects.create(
                     model_id=model.model_id,
                     location_id=location.location_id,
-                    dealer_id=dealership.dealer_id,
+                    dealer_id=dealership.dealership_id,
                     registration=data.get("registration"),
                     noOfReviews=0,
                     isVisible=True,
@@ -1581,6 +1587,12 @@ def companyVehicle(request):
         200: GetCompanyOffer(),
     },
 )
+@extend_schema(
+    methods=["POST"],
+    operation_id="post_company_offer",
+    tags=["profile"],
+    request=CompanyOfferPostSerializer
+)
 @login_required
 @api_view(["GET", "POST", "PUT", "DELETE"])
 def companyOffer(request):
@@ -1593,7 +1605,7 @@ def companyOffer(request):
                     {"success": 0, "message": "Offer ID is required"}, status=400
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 offer = Offer.objects.get(
                     offer_id=request.GET.get("offerId"),
                 )
@@ -1626,7 +1638,7 @@ def companyOffer(request):
             data = request.data
             if (
                 not data.get("price")
-                or not data.get("image")
+                or not request.FILES.get("image")
                 or not data.get("description")
                 or not data.get("model_id")
             ):
@@ -1634,13 +1646,22 @@ def companyOffer(request):
                     {"success": 0, "message": "All fields are required"}, status=400
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                model = Model.object.filter(model_id=data.get("model_id"))
-                offer = Offer.object.create(
-                    model_id=model.model_id,
-                    dealer_id=dealership.dealer_id,
+                dealership = Dealership.objects.get(user=user.id)
+                model = Model.objects.get(model_id=data.get("model_id"))
+
+                print(f"model_id: {model.model_id}")
+                print(f"dealer_id: {dealership.dealership_id}")
+                print(f"price: {data.get('price')}")
+                print(f"image: {request.FILES.get("image"),}")
+                print(f"description: {data.get('description')}")
+                print("noOfReviews: 0")
+                print("rating: 0")
+
+                offer = Offer.objects.create(
+                    model=model,
+                    dealer=dealership,
                     price=data.get("price"),
-                    image=data.get("image"),
+                    image = request.FILES.get("image"),
                     description=data.get("description"),
                     noOfReviews=0,
                     rating=0,
@@ -1671,7 +1692,7 @@ def companyOffer(request):
                     {"success": 0, "message": "Offer ID is required"}, status=400
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 offer = Offer.objects.get(
                     offer_id=request.GET.get("offerId"),
                 )
@@ -1696,13 +1717,13 @@ def companyOffer(request):
         user = request.user
         if user.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 # , makeName, modelName,
                 offer = Offer.objects.filter(
-                    # dealer_id=dealership.dealer_id,
+                    # dealer_id=dealership.dealership_id,
                     offer_id=request.GET.get("offerId"),
                 )
-                model = Model.object.filter(model_id=offer.model_id)
+                model = Model.objects.get(model_id=offer.model_id)
                 retObject = {
                     "price": offer.price,
                     "image": offer.image,
@@ -1738,22 +1759,22 @@ def companyVehicleLog(request):
         if user.is_authenticated():
             try:
                 vehicle_id = request.GET.get("vehicleId")
-                dealership = Dealership.object.filter(user_id=user)
-                vehicle = Vehicle.object.filter(vehicle_id=vehicle_id)
-                model = Model.object.filter(model_id=vehicle.model_id)
-                location = Location.object.filter(location_id=vehicle.location_id)
-                rents = Rent.object.filter(vehicle_id=vehicle_id)
+                dealership = Dealership.objects.get(user=user.id)
+                vehicle = Vehicle.objects.get(vehicle_id=vehicle_id)
+                model = Model.objects.get(model_id=vehicle.model_id)
+                location = Location.objects.get(location_id=vehicle.location_id)
+                rents = Rent.objects.get(vehicle_id=vehicle_id)
                 rentCount = 0
                 rentTime = 0
                 moneyMade = 0
                 onGoing = {}
                 for rent in rents:
-                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
-                    rentUser = User.object.filter(id=rentoid.user_id)
-                    rentLocation = Location.object.filter(
+                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    rentUser = User.objects.get(id=rentoid.user_id)
+                    rentLocation = Location.objects.get(
                         location_id=rent.rentedLocation_id
                     )
-                    returnLocation = Location.object.filter(
+                    returnLocation = Location.objects.get(
                         location_id=rent.returnLocation_id
                     )
                     if rent.dateTimeReturned >= datetime.now():
@@ -1817,9 +1838,9 @@ def companyLogUpcoming(request):
         user = request.user
         if user.is_authenticated():
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                rents = Rent.object.filter(
-                    dealer_id=dealership.dealer_id,
+                dealership = Dealership.objects.get(user=user.id)
+                rents = Rent.objects.get(
+                    dealer_id=dealership.dealership_id,
                     vehicle_id=request.GET.get("vehicleId"),
                 )
                 page = int(request.GET.get("page", 1))
@@ -1832,8 +1853,8 @@ def companyLogUpcoming(request):
                         or rent.dateTimeRented < datetime.now()
                     ):
                         continue
-                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
-                    rentUser = User.object.filter(id=rentoid.user_id)
+                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    rentUser = User.objects.get(id=rentoid.user_id)
                     if rent.dateTimeRented >= datetime.now():
                         item = {
                             "dateTimePickup": rent.dateTimeRented,
@@ -1876,9 +1897,9 @@ def companyLogOngoing(request):
         user = request.user
         if user.is_authenticated():
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                rents = Rent.object.filter(
-                    dealer_id=dealership.dealer_id,
+                dealership = Dealership.objects.get(user=user.id)
+                rents = Rent.objects.get(
+                    dealer_id=dealership.dealership_id,
                     vehicle_id=request.GET.get("vehicleId"),
                 )
                 page = int(request.GET.get("page", 1))
@@ -1895,8 +1916,8 @@ def companyLogOngoing(request):
                         )
                     ):
                         continue
-                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
-                    rentUser = User.object.filter(id=rentoid.user_id)
+                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    rentUser = User.objects.get(id=rentoid.user_id)
                     if rent.dateTimeRented >= datetime.now():
                         item = {
                             "dateTimePickup": rent.dateTimeRented,
@@ -1939,9 +1960,9 @@ def companyLogCompleted(request):
         user = request.user
         if user.is_authenticated():
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                rents = Rent.object.filter(
-                    dealer_id=dealership.dealer_id,
+                dealership = Dealership.objects.get(user=user.id)
+                rents = Rent.objects.get(
+                    dealer_id=dealership.dealership_id,
                     vehicle_id=request.GET.get("vehicleId"),
                 )
                 page = int(request.GET.get("page", 1))
@@ -1955,8 +1976,8 @@ def companyLogCompleted(request):
                         or rent.dateTimeRented > datetime.now()
                     ):
                         continue
-                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
-                    rentUser = User.object.filter(id=rentoid.user_id)
+                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    rentUser = User.objects.get(id=rentoid.user_id)
                     if rent.dateTimeRented >= datetime.now():
                         item = {
                             "dateTimePickup": rent.dateTimeRented,
@@ -2001,10 +2022,10 @@ def companyLogReviews(request, query):
             try:
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 vehicle_id = request.GET.get("vehicleId")
-                rents = Rent.object.filter(
-                    dealer_id=dealership.dealer_id, vehicle_id=vehicle_id
+                rents = Rent.objects.get(
+                    dealer_id=dealership.dealership_id, vehicle_id=vehicle_id
                 )
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
@@ -2012,9 +2033,9 @@ def companyLogReviews(request, query):
                 for rent in rents:
                     if rent.vehicle_id != vehicle_id:
                         continue
-                    review = Review.object.filter(rent_id=rent.rent_id)
-                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
-                    rentUser = User.object.filter(id=rentoid.user_id)
+                    review = Review.objects.get(rent_id=rent.rent_id)
+                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    rentUser = User.objects.get(id=rentoid.user_id)
 
                     item = {
                         "firstName": rentUser.first_name,

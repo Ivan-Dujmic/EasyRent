@@ -33,7 +33,6 @@ class Model(models.Model):
     modelName = models.CharField(max_length=50)
     makeName = models.CharField(max_length=50)
     modelType = models.ForeignKey(ModelType, on_delete=models.CASCADE, null=True)
-    modelType = models.ForeignKey(ModelType, on_delete=models.SET_NULL, null=True)
 
     class Meta:
         unique_together = ("makeName", "modelName")
@@ -48,7 +47,7 @@ class Offer(models.Model):
     model = models.ForeignKey(Model, on_delete=models.CASCADE)
     dealer = models.ForeignKey(Dealership, on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    rating = models.FloatField(blank=True, default=None, null=True)
+    rating = models.FloatField(blank=True, default=0, null=True)
     noOfReviews = models.IntegerField(blank=True, default=0)
     description = models.TextField(blank=True, default="")
     image = models.ImageField(upload_to="offers")
