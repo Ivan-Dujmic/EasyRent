@@ -7,9 +7,11 @@ import Header from '@/components/shared/Header/Header';
 import CustomMap from '@/components/shared/Map/CustomMap/CustomMap';
 import BookingForm from '@/components/shared/offer/BookingForm/BookingForm';
 import BookingLoginPrompt from '@/components/shared/offer/BookingLoginPrompt/BookingLoginPrompt';
+import { ReviewList } from '@/components/shared/review/ReviewList/ReviewList';
 import { useUserContext } from '@/context/UserContext/UserContext';
 import { dealershipLocations } from '@/mockData/mockLocations';
 import { mockOffer } from '@/mockData/mockOffer';
+import { mockReviews } from '@/mockData/mockReviews';
 import { Box, Flex, Heading, useBreakpointValue } from '@chakra-ui/react';
 import {
   FaCcMastercard,
@@ -72,7 +74,7 @@ export default function OfferPage() {
         align={'flex-start'}
         direction={'column'}
         width={containerWidth}
-        mt={6}
+        my={6}
         gap={5}
       >
         <Heading size={'lg'} color="brandblack" alignSelf="flex-start">
@@ -90,8 +92,8 @@ export default function OfferPage() {
           <VehicleOfferCard vehicle={mockOffer} />
 
           {/* Booking Form */}
-          {user.role === 'user' && <BookingForm balance={mockOffer.price} />}
-          {user.role !== 'user' && <BookingLoginPrompt />}
+          {user.role !== 'user' && <BookingForm balance={mockOffer.price} />}
+          {user.role === 'user' && <BookingLoginPrompt />}
         </Flex>
       </Flex>
 
@@ -102,14 +104,24 @@ export default function OfferPage() {
         gap={10}
         justify="center"
         align="flex-start"
+        wrap={'wrap'}
       >
         {/* Map Section */}
         <Box flex="1" width={{ base: '100%', lg: '65%' }}>
-          <Heading fontSize="xl" color={'brandblack'} mb={5}>
-            Pickup Locations
+          <Heading fontSize="2xl" color={'brandblack'} mb={5}>
+            Pickup Locations:
           </Heading>
           {/* Map Component */}
           <CustomMap locations={dealershipLocations} showInfoWindow={true} />
+        </Box>
+
+        {/* Reviews section */}
+        <Box flex="1" width={{ base: '100%', lg: '50%' }}>
+          <Heading fontSize="2xl" color={'brandblack'} mb={5}>
+            Reviews:
+          </Heading>
+          {/* reviews */}
+          <ReviewList reviews={mockReviews} />
         </Box>
       </Flex>
 
