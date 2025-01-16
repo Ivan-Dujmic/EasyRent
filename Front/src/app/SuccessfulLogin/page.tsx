@@ -66,8 +66,8 @@ export default function SuccessfulLogin() {
             Something went wrong 😞
           </Heading>
           <Text fontSize="md" color="brandgray" textAlign="center">
-            We couldn't access your data. Please try again later or contact us
-            for help.
+            We couldn `&apos;`t access your data. Please try again later or
+            contact us for help.
           </Text>
           <Button
             as="a"

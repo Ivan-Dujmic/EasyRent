@@ -40,7 +40,7 @@ export const VehicleGrid = ({ vehicles }: IVehicleGridProps) => {
         mb={4}
       >
         {currentVehicles.map((vehicle, index) => (
-          <VehicleCard vehicle={vehicle} index={index} key={vehicle.offer_id} />
+          <VehicleCard vehicle={vehicle} key={Number(vehicle.offer_id)} />
         ))}
       </Flex>
 
