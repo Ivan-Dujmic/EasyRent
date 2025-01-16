@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -285,3 +286,340 @@ export default function MainFilter() {
     </Flex>
   );
 }
+=======
+'use client';
+
+import { useEffect, useState } from 'react';
+import { Button, Flex, Box, Text, useBreakpointValue } from '@chakra-ui/react';
+import DateTimeDDM from '@/components/features/DropDownMenus/DateTimeDDM/DateTimeDDM';
+import LocationDDM from '@/components/features/DropDownMenus/LocationDDM/LocationDDM';
+import { useCarContext } from '@/context/CarContext';
+import { useRouter } from 'next/navigation';
+import useSWRMutation from 'swr/mutation';
+import { CustomGet, ICar } from '@/fetchers/homeData';
+import { swrKeys } from '@/fetchers/swrKeys';
+import { useFilterContext } from '@/context/FilterContext/FilterContext';
+
+const options: { [key: string]: string[] } = {
+  'Cities (including airports)': [
+    'Zagreb, Croatia',
+    'Sesvete, Croatia',
+    'Velika Gorica, Croatia',
+    'Samobor, Croatia',
+    'Split, Croatia',
+    'Rijeka, Croatia',
+  ],
+  Airports: [
+    'Franjo Tuđman, ZAG, Zagreb, Croatia',
+    'Split Airport, SPU, Split, Croatia',
+    'Dubrovnik Airport, DBV, Dubrovnik, Croatia',
+  ],
+  'Train stations': [
+    'Zagreb Central Station, Zagreb, Croatia',
+    'Split Train Station, Split, Croatia',
+    'Osijek Train Station, Osijek, Croatia',
+    'Rijeka Train Station, Rijeka, Croatia',
+  ],
+};
+
+export default function MainFilter() {
+  const router = useRouter();
+  const { setCars } = useCarContext();
+  const { setFilterData } = useFilterContext();
+
+  // LocalStorage za inicijalne vrijednosti
+  const [pickupLocation, setPickupLocation] = useState(
+    () => localStorage.getItem('pickupLocation') || ''
+  );
+  const [dropoffLocation, setDropoffLocation] = useState(
+    () => localStorage.getItem('dropoffLocation') || ''
+  );
+  const [pickupDate, setPickupDateTime] = useState<Date | null>(() => {
+    const saved = localStorage.getItem('pickupDateTime');
+    return saved ? new Date(saved) : null;
+  });
+  const [dropoffDate, setdropoffDate] = useState<Date | null>(() => {
+    const saved = localStorage.getItem('dropoffDate');
+    return saved ? new Date(saved) : null;
+  });
+  const [url, setUrl] = useState(''); // State za URL
+
+  const [isReady, setIsReady] = useState(false); // Novo stanje
+  useEffect(() => {
+    setIsReady(true); // Postavi na true kada je komponenta spremna
+  }, []);
+
+  const [formErrors, setFormErrors] = useState({
+    pickupLocation: false,
+    dropoffLocation: false,
+    pickupDate: false,
+    dropoffDate: false,
+  });
+
+  const validateForm = () => {
+    const errors = {
+      pickupLocation: !pickupLocation,
+      dropoffLocation: !dropoffLocation,
+      pickupDate: !pickupDate,
+      dropoffDate: !dropoffDate,
+    };
+    setFormErrors(errors);
+
+    return !Object.values(errors).some((hasError) => hasError);
+  };
+
+  const { trigger } = useSWRMutation(
+    url,
+    CustomGet,
+    // Fetcher funkcija
+    {
+      onSuccess: (data: ICar[]) => {
+        setCars(data); // Spremanje automobila u globalni kontekst
+        router.push('/listing'); // Preusmjeravanje na novu stranicu
+      },
+      onError: (error) => {
+        console.error('Error fetching data:', error);
+      },
+    }
+  );
+
+  useEffect(() => {
+    if (url) {
+      trigger();
+    }
+  }, [url, trigger]);
+
+  useEffect(() => {
+    localStorage.setItem('pickupLocation', pickupLocation);
+    localStorage.setItem('dropoffLocation', dropoffLocation);
+    if (pickupDate)
+      localStorage.setItem('pickupDateTime', pickupDate.toISOString());
+    if (dropoffDate)
+      localStorage.setItem('dropoffDate', dropoffDate.toISOString());
+  }, [pickupLocation, dropoffLocation, pickupDate, dropoffDate]);
+
+  const handleSearch = () => {
+    if (!validateForm()) return;
+
+    /*     if (url) {
+      // Ako URL već postoji, pokreće mutaciju
+      trigger();
+    }
+ */
+
+    // Helper funkcija za odvajanje datuma i vremena
+    const extractDateAndTime = (date: Date | null) => {
+      if (!date) return { date: '', time: '' };
+
+      // Formatiranje datuma u DD-MM-YYYY
+      const dateObj = new Date(date);
+      const dateString = `${String(dateObj.getDate()).padStart(2, '0')}-${String(
+        dateObj.getMonth() + 1
+      ).padStart(2, '0')}-${dateObj.getFullYear()}`;
+
+      // Formatiranje vremena u HH:MM:SS
+      const hours = String(dateObj.getHours()).padStart(2, '0');
+      const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+      const seconds = String(dateObj.getSeconds()).padStart(2, '0');
+      const timeString = `${hours}:${minutes}:${seconds}`;
+
+      return { date: dateString, time: timeString };
+    };
+
+    // Helper funkcija za formatiranje gradova
+    const formatLocation = (location: string) => {
+      const [city, country] = location.split(',').map((s) => s.trim());
+      return `${city}-${country}`;
+    };
+
+    // Ekstrahiranje i formatiranje podataka
+    const pickup = extractDateAndTime(pickupDate);
+    const dropoff = extractDateAndTime(dropoffDate);
+    const formattedPickupLocation = formatLocation(pickupLocation);
+    const formattedDropoffLocation = formatLocation(dropoffLocation);
+
+    // sprmei mi te podatke u konteskt da se mogu korsititi i u sidefilter-u
+    setFilterData({
+      pick_up_location: formattedPickupLocation,
+      drop_off_location: formattedDropoffLocation,
+      pick_up_date: pickup.date,
+      pick_up_time: pickup.time,
+      drop_off_date: dropoff.date,
+      drop_off_time: dropoff.time,
+    });
+
+    // Kreiranje URL-a sa query parametrima
+    const queryParams = new URLSearchParams({
+      pick_up_location: formattedPickupLocation,
+      drop_off_location: formattedDropoffLocation,
+      pick_up_date: pickup.date, // Datum u DD-MM-YYYY formatu
+      pick_up_time: pickup.time, // Vrijeme u HH:MM:SS formatu
+      drop_off_date: dropoff.date, // Datum u DD-MM-YYYY formatu
+      drop_off_time: dropoff.time, // Vrijeme u HH:MM:SS formatu
+    });
+
+    const fullUrl = swrKeys.search(queryParams.toString());
+    console.log(fullUrl);
+    setUrl(fullUrl); // Postavljamo URL u state
+  };
+
+  const breakpoints = useBreakpointValue({
+    base: {
+      maxWidth: '80vw',
+      buttonWidth: '100%',
+      locationWidth: '100%',
+      dateTimeWidth: '100%',
+      gap: 2,
+      justifyContent: 'space-around',
+    },
+    md: {
+      maxWidth: '60vw',
+      buttonWidth: '100%',
+      locationWidth: 'calc(50% - 1rem)',
+      dateTimeWidth: 'calc(50% - 1rem)',
+      gap: 2,
+      justifyContent: 'space-between',
+    },
+    xl: {
+      maxWidth: '1200px',
+      buttonWidth: '150px',
+      locationWidth: 'calc(15% - 1rem)',
+      dateTimeWidth: 'calc(25% - 1rem)',
+      gap: 4,
+      justifyContent: 'center',
+    },
+  });
+
+  // Ako komponenta nije spremna, ništa se ne prikazuje
+  if (!isReady) {
+    return null;
+  }
+
+  // Rastavljanje vrijednosti
+  const {
+    maxWidth,
+    buttonWidth,
+    locationWidth,
+    dateTimeWidth,
+    gap,
+    justifyContent,
+  } = breakpoints || {};
+  return (
+    <Flex
+      direction={{ base: 'column', md: 'row' }}
+      flexWrap="wrap"
+      bg="white"
+      width="100%"
+      maxWidth={maxWidth}
+      borderRadius={14}
+      borderWidth="0px"
+      align="center"
+      py={5}
+      px={{ base: 5, xl: 0 }}
+      gap={gap}
+      justifyContent={justifyContent}
+    >
+      {/* Locations */}
+      <Box width={locationWidth}>
+        <LocationDDM
+          options={options}
+          description="Pick-up location"
+          placeHolder="From?"
+          value={pickupLocation}
+          onLocationChange={(location) => {
+            setPickupLocation(location);
+            setFormErrors((prev) => ({
+              ...prev,
+              pickupLocation: location == '',
+            }));
+          }}
+        />
+        {formErrors.pickupLocation && (
+          <Text color="brandyellow" fontSize="sm">
+            Pick-up is required.
+          </Text>
+        )}
+      </Box>
+      <Box width={locationWidth}>
+        <LocationDDM
+          options={options}
+          description="Drop-off location"
+          placeHolder="To?"
+          value={dropoffLocation}
+          onLocationChange={(location) => {
+            setDropoffLocation(location);
+            setFormErrors((prev) => ({
+              ...prev,
+              dropoffLocation: location == '',
+            }));
+          }}
+        />
+        {formErrors.dropoffLocation && (
+          <Text color="brandyellow" fontSize="sm">
+            Drop-off is required.
+          </Text>
+        )}
+      </Box>
+
+      {/* Date and Time */}
+      <Box width={dateTimeWidth}>
+        <DateTimeDDM
+          initialDate={pickupDate}
+          description="Pick-up date/time"
+          placeHolder="Start?"
+          minDate={new Date()}
+          maxDate={
+            dropoffDate
+              ? new Date(dropoffDate.getTime() - 24 * 60 * 60 * 1000)
+              : undefined
+          }
+          onDateTimeChange={(dateTime) => {
+            setPickupDateTime(dateTime);
+            setFormErrors((prev) => ({ ...prev, pickupDate: !dateTime }));
+          }}
+        />
+        {formErrors.pickupDate && (
+          <Text color="brandyellow" fontSize="sm">
+            Pick-up date and time are required.
+          </Text>
+        )}
+      </Box>
+      <Box width={dateTimeWidth}>
+        <DateTimeDDM
+          initialDate={dropoffDate}
+          description="Drop-off date/time"
+          placeHolder="End?"
+          minDate={
+            pickupDate
+              ? new Date(pickupDate.getTime() + 24 * 60 * 60 * 1000)
+              : new Date(new Date().getTime() + 24 * 60 * 60 * 1000)
+          }
+          onDateTimeChange={(dateTime) => {
+            setdropoffDate(dateTime);
+            setFormErrors((prev) => ({ ...prev, dropoffDate: !dateTime }));
+          }}
+        />
+        {formErrors.dropoffDate && (
+          <Text color="brandyellow" fontSize="sm">
+            Drop-off date and time are required.
+          </Text>
+        )}
+      </Box>
+
+      {/* Search Button */}
+      <Box width={buttonWidth} mt={{ base: 2, md: 4 }}>
+        <Button
+          bg="brandblue"
+          size="lg"
+          color="white"
+          _hover={{ bg: 'brandyellow', color: 'brandblack' }}
+          width="100%"
+          onClick={handleSearch}
+        >
+          Search
+        </Button>
+      </Box>
+    </Flex>
+  );
+}
+>>>>>>> front-fg
