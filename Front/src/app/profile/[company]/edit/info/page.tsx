@@ -9,6 +9,9 @@ import {
   Text,
   useBreakpointValue,
   Input,
+  Image,
+  Button,
+  border
 } from '@chakra-ui/react';
 import { Controller, useForm } from 'react-hook-form';
 import { useState } from 'react';
@@ -31,7 +34,6 @@ interface IInfo {
     description: string
 }
 
-const img = "slika"
 
 export default function EditInfo() {
   const {
@@ -40,10 +42,11 @@ export default function EditInfo() {
     formState: { isSubmitting, errors },
     setError,
     clearErrors,
-    control
+    control,
+    setValue
   } = useForm<IInfo>();
   const router = useRouter();
-  const [preview, setPreview] = useState(img);
+  const [preview, setPreview] = useState("slika");
 
   const { trigger } = useSWRMutation(swrKeys.logIn, logIn, {
     onSuccess: (data) => {
@@ -54,6 +57,18 @@ export default function EditInfo() {
   const onSave = async (data: IInfo) => {
     clearErrors();
     await trigger(data);
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]; // Get the selected file
+    if (file) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = () => {
+        setValue('img', reader.result as string); // Store in React Hook Form
+        setPreview(reader.result as string); // Show preview
+      };
+    }
   };
 
   const boxWidth = useBreakpointValue({
@@ -79,43 +94,54 @@ export default function EditInfo() {
       bg="brandwhite"
     >
       <chakra.form onSubmit={handleSubmit(onSave)}>
-        <VStack spacing={6}>
-{/*        
-          <Controller
-          name="img"
-          control={control}
-          defaultValue="aaaaa"
-          render={() => (
-            <Input type="file" accept="image/*" onChange={handleImageUpload} />
-          )}
-        />
+        <VStack spacing={6} alignItems="start">
+          <Flex justifyContent="space-between" alignItems="center" w="100%">
+            <Input
+              type="file"
+              accept="image/*"
+              hidden
+              required
+              id="fileInput"
+              {...register("img")}
+              onChange={handleImageUpload}
+            />
+            <Button as="label" htmlFor="fileInput" color="brandwhite" bgColor="brandblue" cursor="pointer"
+            border="2px solid"
+            borderColor="transparent"
+            _hover={{
+              bg: 'brandwhite',
+              color: 'brandblack',
+              borderColor: 'brandblue',
+              transition: 'all 0.3s ease', // Smooth hover animation
+            }}>
+              Upload Logo
+            </Button>
 
-       
-        {preview && (
-          <Box mt={4} textAlign="center">
-            <Text fontSize="sm">Preview:</Text>
-            <Image src={preview} alt="Uploaded Preview" borderRadius="md" maxH="150px" mx="auto" />
-          </Box>
-        )} */}
+            {preview && (
+              <Box textAlign="center" mr="10%">
+                <Image src={preview} h="50px"/>
+              </Box>
+            )}
+          </Flex>
             <CustomInput
               {...register('company')}
               label="Company name"
               type="text"
-              placeholder="${company}"
+              value="${company}"
               error={errors.company?.message}
             />
             <CustomInput
               {...register('phoneNumber')}
               label="Phone number"
               type="tel"
-              placeholder="${phoneNumber}"
+              value="${phoneNumber}"
               error={errors.phoneNumber?.message}
             />
             <CustomInput
               {...register('description')}
               label="Description"
               type="text"
-              placeholder="${description}"
+              value="${description}"
               error={errors.description?.message}
               h="30vh"
               as="textarea"

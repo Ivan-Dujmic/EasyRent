@@ -14,6 +14,9 @@ import {
   Flex,
   chakra,
   useBreakpointValue,
+  Input,
+  Button,
+  Image
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -28,7 +31,10 @@ export default function RegisterCompanyPage() {
     setError,
     clearErrors,
     getValues,
+    setValue
   } = useForm<IRegisterCompany>();
+  const [preview, setPreview] = useState<string | null>(null);
+
 
   const { trigger } = useSWRMutation(swrKeys.registerCompany, registerCompany, {
     onSuccess: () => {
@@ -45,6 +51,18 @@ export default function RegisterCompanyPage() {
   const onRegister = async (data: IRegisterCompany) => {
     clearErrors();
     await trigger(data);
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]; // Get the selected file
+    if (file) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = () => {
+        setValue('logo', reader.result as string); // Store in React Hook Form
+        setPreview(reader.result as string); // Show preview
+      };
+    }
   };
 
   const boxWidth = useBreakpointValue({
@@ -80,6 +98,34 @@ export default function RegisterCompanyPage() {
         >
           {/* Left Column */}
           <VStack spacing={4} w={inputWidth}>
+            <Flex justifyContent="space-between" alignItems="center" w="100%">
+              <Input
+                type="file"
+                accept="image/*"
+                hidden
+                required
+                id="fileInput"
+                {...register("logo")}
+                onChange={handleImageUpload}
+              />
+              <Button as="label" htmlFor="fileInput" color="brandwhite" bgColor="brandblue" cursor="pointer"
+              border="2px solid"
+              borderColor="transparent"
+              _hover={{
+                bg: 'brandwhite',
+                color: 'brandblack',
+                borderColor: 'brandblue',
+                transition: 'all 0.3s ease', // Smooth hover animation
+              }}>
+                Upload Logo
+              </Button>
+  
+              {preview && (
+                <Box textAlign="center">
+                  <Image src={preview} h="50px"/>
+                </Box>
+              )}
+            </Flex>
             <CustomInput
               {...register('name', {
                 required: 'Must enter company name',

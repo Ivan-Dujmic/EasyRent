@@ -16,4 +16,5 @@ export interface IRegisterCompany {
   };
   password: string; // lozinka kompanije
   confirmPassword: string; // potvrda lozinke
+  logo: string;
 }

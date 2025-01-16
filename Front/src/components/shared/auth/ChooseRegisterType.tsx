@@ -19,7 +19,7 @@ export default function ChooseRegisterType() {
         return {
           first: {
             txt: 'white',
-            light: 'blue',
+            light: 'brandblue',
             dark: 'teal.600',
           },
           second: {
@@ -37,7 +37,7 @@ export default function ChooseRegisterType() {
           },
           second: {
             txt: 'white',
-            light: 'blue',
+            light: 'brandblue',
             dark: 'teal.600',
           },
         };
@@ -45,7 +45,7 @@ export default function ChooseRegisterType() {
         return {
           first: {
             txt: 'white',
-            light: 'blue',
+            light: 'brandblue',
             dark: 'teal.600',
           },
           second: {
