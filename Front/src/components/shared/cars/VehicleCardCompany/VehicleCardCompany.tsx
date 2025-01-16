@@ -22,11 +22,23 @@ import { IoPersonSharp } from 'react-icons/io5';
 import { TbManualGearboxFilled } from 'react-icons/tb';
 import { TbAutomaticGearbox } from 'react-icons/tb';
 import NextLink from 'next/link';
-import { ICar } from '@/fetchers/homeData';
 import { useState } from 'react';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import CardMenuDot from '../cardMenu/CardMenuDot';
 import { useRouter } from 'next/navigation';
+
+interface ICar {
+  image: string;
+  companyName: string;
+  modelName: string;
+  makeName: string;
+  noOfSeats: string;
+  automatic: string;
+  price: string;
+  rating: string;
+  noOfReviews: string;
+  registration: string;
+}
 
 export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
   const router = useRouter();

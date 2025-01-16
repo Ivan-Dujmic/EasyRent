@@ -18,17 +18,26 @@ import {
   Divider,
   
 } from '@chakra-ui/react';
-import { IoPersonSharp } from 'react-icons/io5';
-import { TbManualGearboxFilled } from 'react-icons/tb';
-import { TbAutomaticGearbox } from 'react-icons/tb';
 import NextLink from 'next/link';
-import { ICar } from '@/fetchers/homeData';
 import { useState } from 'react';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import CardMenuDot from '../cardMenu/CardMenuDot';
 import { useRouter } from 'next/navigation';
 
-export default function OfferCard({ offer }: { offer: ICar }) {
+interface IOffer {
+  image: string;
+  companyName: string;
+  modelName: string;
+  makeName: string;
+  noOfSeats: string;
+  automatic: string;
+  price: string;
+  rating: string;
+  noOfReviews: string;
+  registration: string;
+}
+
+export default function OfferCard({ offer }: { offer: IOffer }) {
   const router = useRouter();
   const [isDimmed, setIsDimmed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
