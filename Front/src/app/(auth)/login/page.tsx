@@ -12,7 +12,7 @@ import {
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { ILogIn } from '@/typings/logIn/logIn.type';
-import ReCAPTCHA from 'react-google-recaptcha'
+// import ReCAPTCHA from 'react-google-recaptcha'
 import useSWRMutation from 'swr/mutation';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { logIn } from '@/mutation/login';
