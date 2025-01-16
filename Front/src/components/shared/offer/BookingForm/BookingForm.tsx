@@ -57,7 +57,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
       borderRadius="lg"
       boxShadow="md"
       bg="brandwhite"
-      maxWidth={'800px'}
     >
       <Heading size="md" mb={6} color="brandblue" textAlign="center">
         Book this car

@@ -86,14 +86,14 @@ export default function OfferPage() {
           align="flex-start"
           justify="center"
           width="100%"
-          wrap={'wrap'}
+          wrap={{ base: 'wrap', xl: 'nowrap' }}
         >
           {/* Offer Card */}
           <VehicleOfferCard vehicle={mockOffer} />
 
           {/* Booking Form */}
-          {user.role !== 'user' && <BookingForm balance={mockOffer.price} />}
-          {user.role === 'user' && <BookingLoginPrompt />}
+          {user.role === 'user' && <BookingForm balance={mockOffer.price} />}
+          {user.role !== 'user' && <BookingLoginPrompt />}
         </Flex>
       </Flex>
 
