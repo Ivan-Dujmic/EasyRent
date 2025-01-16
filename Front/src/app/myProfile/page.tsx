@@ -176,13 +176,13 @@ export default function UserProfilePage() {
         <LoginButton log="out"/>
       </Header>
       {/* Main Content */}
-      <Box position = "relative" width = "100vw">
+      <Box position = "relative" width = "100%">
         {/* Rentals */}
         <Flex
           mx="auto"
           justify={isChatOpen ? {rentalAllignment} : "center"}
           align="stretch"
-          width={{ base: '80vw', lg: '100vw' }}
+          width={{ base: '80%', lg: '100%' }}
           p={gapSize}
           gap={gapSize}
           wrap={"nowrap"}
@@ -269,7 +269,7 @@ function ChatButton ({
   >{name}</Button>
 }
 
-export function ChatMenu({ 
+function ChatMenu({ 
   onClose,
   isOpen,
   chats = []
