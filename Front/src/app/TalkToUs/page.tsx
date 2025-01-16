@@ -73,7 +73,7 @@ export default function TalkToUs() {
         textAlign="center"
       >
         <Heading fontSize={headingSize} mb={2}>
-          We're Here for{' '}
+          We`&apos;`re Here for{' '}
           <Text as="span" color="brandyellow">
             You
           </Text>
@@ -85,7 +85,7 @@ export default function TalkToUs() {
           color={'brandblue'}
         >
           Whether you need assistance or have questions, feel free to reach out.
-          Let’s connect!
+          Let`&apos;`s connect!
         </Text>
       </Flex>
 
