@@ -78,12 +78,17 @@ export default function VehicleOfferCard({
             {/* Transmission */}
             <Flex align="center" gap={1}>
               {vehicle.automatic ? (
-                <TbAutomaticGearbox />
+                <>
+                  <TbAutomaticGearbox />
+                  <Text fontSize="sm">A</Text>
+                </>
               ) : (
-                <TbManualGearboxFilled />
+                <>
+                  <TbManualGearboxFilled />
+                  <Text fontSize="sm">M</Text>
+                </>
               )}
             </Flex>
-
             {/* Model Type */}
             {vehicle.modelType && (
               <Text fontSize="sm">{vehicle.modelType}</Text>
