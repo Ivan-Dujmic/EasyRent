@@ -42,9 +42,8 @@ export default function VehicleOfferCard({
           alt={`${vehicle.makeName} ${vehicle.modelName}`}
           objectFit="cover"
           borderRadius="md"
-          width="250px"
-          height="100%"
-          maxHeight="250px"
+          width="auto"
+          height="160px"
         />
 
         {/* Right Section - Details */}
