@@ -13,7 +13,7 @@ interface IVehicleGridProps {
 export const VehicleGrid = ({ vehicles }: IVehicleGridProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerRow = useBreakpointValue({ base: 2, sm: 3, md: 4, lg: 4 });
-  const rowsPerPage = 4; // Fixed number of rows per page
+  const rowsPerPage = 3; // Fixed number of rows per page
   const itemsPerPage = (itemsPerRow || 1) * rowsPerPage;
 
   const totalPages = Math.ceil(vehicles.length / itemsPerPage);

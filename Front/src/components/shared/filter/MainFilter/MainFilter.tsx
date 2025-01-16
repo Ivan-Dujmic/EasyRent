@@ -45,6 +45,13 @@ export default function MainFilter() {
   const [pickupDate, setPickupDateTime] = useState<Date | null>(null);
   const [dropoffDate, setdropoffDate] = useState<Date | null>(null);
 
+  const [isMounted, setIsMounted] = useState(false);
+
+  // U ovom efektu označavamo da je komponenta mountana
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // 2) U ovom efektu (koji se *samo na klijentu* izvršava) čitamo localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -197,7 +204,12 @@ export default function MainFilter() {
     },
   });
 
-  // Ako se breakpointi još nisu izračunali:
+  // Ako komponenta još nije mountana (tj. na serveru ili prije učitavanja stilova/JS-a), ne prikazujemo ništa
+  if (!isMounted) {
+    return null;
+  }
+
+  // Ako se breakpointi još nisu izračunali (ili Chakra nije spreman):
   if (!breakpoints) return null;
 
   const {

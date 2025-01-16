@@ -2,6 +2,7 @@
 
 import EasyRentMoto from '@/components/core/EasyRentMoto/EasyRentMoto';
 import { VehicleGrid } from '@/components/shared/cars/VehicleGrid/VehicleGrid';
+import ChatbotWidget from '@/components/shared/ChatbotWidget/ChatbotWidget';
 import MainFilter from '@/components/shared/filter/MainFilter/MainFilter';
 import SideFilter from '@/components/shared/filter/SideFilter/SideFilter';
 import Footer from '@/components/shared/Footer/Footer';
@@ -72,7 +73,7 @@ export default function ResultsPage() {
         direction={{ base: 'column', md: 'row' }}
         py={10}
         gap={10}
-        width={'80vw'}
+        width={'81vw'}
         align={{ base: 'center', md: 'flex-start' }}
         justify={{ base: 'center', md: 'space-between' }}
       >
@@ -93,7 +94,7 @@ export default function ResultsPage() {
           <VehicleGrid vehicles={mockVehicles} />
         </Box>
       </Flex>
-
+      <ChatbotWidget />
       <Footer links={ListinGuestFooterLinks} />
     </Flex>
   );
