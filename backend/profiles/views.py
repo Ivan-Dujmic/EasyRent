@@ -64,8 +64,9 @@ def userRentals(request):
                     "dateTimeRented": rental.dateTimeRented,
                     "dateTimeReturned": rental.dateTimeReturned,
                     "expired": isUserRentalExpired(rental),
-                    "canReview": canUserReview(user, rental),
+                    "canReview": canUserReview(rental),
                     "offer_id": offer.offer_id,
+                    "rent_id": rental.rent_id,
                     "image": offer.image.url if offer.image else None,
                 }
 
@@ -83,14 +84,76 @@ def isUserRentalExpired(rental):
     return rental.dateTimeReturned < now()
 
 
-def canUserReview(user, rental):
+def canUserReview(rental):
     oneMonthAfterExpiry = rental.dateTimeReturned + timedelta(days=30)
-    hasReviewed = Review.objects.filter(user=user, rental=rental).exists()
-    return (
-        rental.dateTimeReturned < now()
-        and not hasReviewed
-        and now() <= oneMonthAfterExpiry
-    )
+    hasReviewed = Review.objects.filter(rent=rental).exists()
+    return rental.dateTimeReturned < now() and not hasReviewed and now() <= oneMonthAfterExpiry
+
+def calculateReviewsForOffer(offer):
+    rentals = Rent.objects.filter(vehicle__dealer=offer.dealer).filter(vehicle__model=offer.model).values('rent_id')
+    reviews = Review.objects.filter(rent__in=rentals).all()
+    rating = 0
+    for review in reviews:
+        rating += review.rating
+    offer.rating = rating / reviews.count()
+    offer.noOfReviews = reviews.count()
+    offer.save()
+
+def calculateReviewsForVehicle(vehicle):
+    rentals = Rent.objects.filter(vehicle=vehicle).values('rent_id')
+    reviews = Review.objects.filter(rent__in=rentals).all()
+    rating = 0
+    for review in reviews:
+        rating += review.rating
+    vehicle.rating = rating / reviews.count()
+    vehicle.noOfReviews = reviews.count()
+    vehicle.save()
+
+def calculateReviewsForAllOffers():
+    offers = Offer.objects.all()
+    for offer in offers:
+        calculateReviewsForOffer(offer)
+
+def calculateReviewsForAllVehicles():
+    vehicles = Vehicle.objects.all()
+    for vehicle in vehicles:
+        calculateReviewsForVehicle(vehicle)
+
+@extend_schema(
+    methods=["POST"],
+    operation_id="post_review",
+    tags=["profile"],
+    request=PostReviewSerializer
+)
+@api_view(["POST"])
+def postReview(request, rent_id):
+    try:
+        rent = Rent.objects.get(pk=rent_id)
+        user = request.user
+        if (not user.is_authenticated or not canUserReview(rent)):
+            return Response({"error": "User can't review"}, status=404)
+        rentoid = Rentoid.objects.get(user=user)
+        if Review.objects.filter(rent=rent).exists():
+            return Response({"error": "Review already exists"}, status=404)
+        rating = request.data.get("rating")
+        description = request.data.get("description")
+        if rating == None:
+            return Response({"error": "Rating not specified"}, status=404)
+        try:
+            rating = int(rating)
+        except:
+            return Response({"error": "Invalid rating format"}, status=404)
+        if rating < 1 or rating > 5:
+            return Response({"error": "Invalid rating format"}, status=404)
+        review = Review(rent=rent, rating=rating, description=description, reviewDate=datetime.now())
+        review.save()
+        offer = Offer.objects.get(model=rent.vehicle.model, dealer=rent.vehicle.dealer)
+        calculateReviewsForOffer(offer)
+        vehicle = Vehicle.objects.get(pk=rent.vehicle.vehicle_id)
+        calculateReviewsForVehicle(vehicle)
+        return Response({"message": "Review added"}, status=200)
+    except Rent.DoesNotExist:
+        return Response({"error": "Rent not found"}, status=404)
 
 
 @extend_schema(
@@ -340,7 +403,7 @@ def userPass(request):
 
 
 @extend_schema(
-    methods=["DELETE"],
+    methods=["POST"],
     operation_id="delete_user",
     tags=["profile"],
     request=DeleteUserSerializer,
@@ -383,13 +446,13 @@ def userPass(request):
         ),
     },
 )
-@api_view(["DELETE"])
+@login_required
+@api_view(["POST"])
 def userDelete(request):
-    if request.method == "DELETE":
+    if request.method == "POST":
         user = request.user
         if user.is_authenticated:
             data = request.data
-
             if not data.get("password"):
                 return Response(
                     {"success": 0, "message": "Password is required"}, status=400

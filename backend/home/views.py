@@ -40,7 +40,7 @@ def getOfferDetails(request, offer_id):
         dealership = offer.dealer
 
         response_data = {
-            "image": base64.b64encode(offer.image).decode('utf-8'),
+            "image": request.build_absolute_uri(offer.image.url) if offer.image else None,
             "makeName": offer.model.makeName,
             "modelName": offer.model.modelName,
             "companyName": dealership.user.first_name,
@@ -51,56 +51,13 @@ def getOfferDetails(request, offer_id):
             "price": offer.price,
             "rating": offer.rating,
             "noOfReviews": offer.noOfReviews,
-            "companyLogo": base64.b64encode(dealership.image).decode('utf-8'),
+            "image": request.build_absolute_uri(dealership.image.url) if dealership.image else None,
             "description": offer.description
         }
 
         return JsonResponse(response_data, status=200)
     except Offer.DoesNotExist:
         return Response({"error": "Offer not found"}, status=404)
-#Ivan Dujmić's function
-def canUserReview(user, rental):
-    oneMonthAfterExpiry = rental.dateTimeReturned + timedelta(days=30)
-    hasReviewed = Review.objects.filter(user=user, rental=rental).exists()
-    return rental.dateTimeReturned < now() and not hasReviewed and now() <= oneMonthAfterExpiry
-
-@extend_schema(
-    tags=['home'],
-)
-@api_view(["GET"])
-def get_showcased(request):
-    # Session debug
-    # for session in sessions:
-    #     if session.session_key == "e77fbr34a70emfsfow7veg5y1ifjst91":
-    #         print(session.session_key, session.get_decoded())
-    # for session in sessions:
-    #     data = session.get_decoded()
-    #     print(data)
-    #     print("Session: ", session.session_key)
-    # print("Trenutni: ", request.session.session_key)
-
-    dealerships = list(Dealership.objects.all())
-    size = 6 if len(dealerships) >= 6 else len(dealerships)
-    showcased_dealerships = random.sample(dealerships, size)
-
-    offers = Offer.objects.all()
-    most_popular = offers.order_by("-noOfReviews")[:5]
-    best_value = offers.order_by("price")[:5]
-
-    showcased_dealership_data = DealershipLogoSerializer(
-        showcased_dealerships, many=True
-    ).data
-    most_popular_data = OfferCardSerializer(most_popular, many=True).data
-    best_value_data = OfferCardSerializer(best_value, many=True).data
-
-    response_data = {
-        "showcased_dealerships": showcased_dealership_data,
-        "most_popular": most_popular_data,
-        "best_value": best_value_data,
-    }
-
-    return Response(response_data)
-
 
 @extend_schema(
     tags=['home'],
@@ -215,7 +172,7 @@ def getCompany(request, dealership_id):
             "isHQ" : location.isHQ 
         })
         response_data = {
-            "companyLogo" : base64.b64encode(company.image),
+            "image": request.build_absolute_uri(company.image.url) if company.image else None,
             "companyName" : company.user.first_name,
             "dealership_id" : company.dealership_id,
             "description" : company.description,
@@ -283,7 +240,7 @@ def getOffersForCompany(request, dealership_id):
         offers = offers[offset:offset+limit]
         for offer in offers:
             offer_array.append({
-            "image" : base64.b64encode(offer.image),
+            "image": request.build_absolute_uri(offer.image.url) if offer.image else None,
             "makeName" : offer.model.makeName,
             "modelName" : offer.model.modelName,
             "noOfSeats" : offer.model.noOfSeats,
@@ -303,7 +260,6 @@ def getOffersForCompany(request, dealership_id):
     except Offer.DoesNotExist:
         return Response({"error": "Offers not found"}, status=404)
     
-
 
 @extend_schema(
     tags=['home'],
@@ -342,7 +298,7 @@ def getShowcasedCompanies(request):
         for company in companies:
             company_array.append({
                 "companyName" : company.user.first_name,
-                "companyLogo" : base64.b64encode(company.image),
+                "companyLogo": request.build_absolute_uri(company.image.url) if company.image else None,
                 "dealership_id" : company.dealership_id,
             })
         if len(company_array) == 0:
@@ -410,7 +366,7 @@ def getMostPopularOffers(request):
         offers = offers[offset:offset+limit]
         for offer in offers:
             offer_array.append({
-            "image" : base64.b64encode(offer.image),
+            "image": request.build_absolute_uri(offer.image.url) if offer.image else None,
             "companyName" : offer.dealer.user.first_name,
             "makeName" : offer.model.makeName,
             "modelName" : offer.model.modelName,
@@ -490,7 +446,7 @@ def getBestValueOffers(request):
         offers = offers[offset:offset+limit]
         for offer in offers:
             offer_array.append({
-            "image" : base64.b64encode(offer.image),
+            "image": request.build_absolute_uri(offer.image.url) if offer.image else None,
             "companyName" : offer.dealer.user.first_name,
             "makeName" : offer.model.makeName,
             "modelName" : offer.model.modelName,
@@ -811,7 +767,7 @@ def getFilteredOffers(request):
             if available_vehicles.filter(model=offer.model).filter(dealer=offer.dealer).exists():
                 offers_list.append(
                     {
-                        "image" : base64.b64encode(offer.image),
+                        "image": request.build_absolute_uri(offer.image.url) if offer.image else None,
                         "companyName" : offer.dealer.user.first_name,
                         "makeName" : offer.model.makeName,
                         "modelName" : offer.model.modelName,
@@ -1287,36 +1243,6 @@ def getFirstAvailableWorkingTime(returnDateTime, dropOffLocation):
 
     return returnDateTime
 
-#FOR IVAN'S PROFILE VIEWS
-@api_view(["POST"])
-def postReview(request, rent_id):
-    try:
-        rent = Rent.objects.get(pk=rent_id)
-        user = request.user
-        if (not user.is_authenticated or not canUserReview(user, rent)):
-            return Response({"error": "User can't review"}, status=404)
-        rentoid = Rentoid.objects.get(user=user)
-        if Review.objects.filter(rent=rent).exists():
-            return Response({"error": "Review already exists"}, status=404)
-        rating = request.POST.get("rating")
-        description = request.POST.get("description")
-        if rating == None:
-            return Response({"error": "Rating not specified"}, status=404)
-        try:
-            rating = int(rating)
-        except:
-            return Response({"error": "Invalid rating format"}, status=404)
-        if rating < 1 or rating > 5:
-            return Response({"error": "Invalid rating format"}, status=404)
-        review = Review(rent=rent, rating=rating, description=description, reviewDate=datetime.now())
-        review.save()
-        offer = Offer.objects.get(model=rent.vehicle.model, dealer=rent.vehicle.dealer)
-        calculateReviewsForOffer(offer)
-        vehicle = Vehicle.objects.get(pk=rent.vehicle.vehicle_id)
-        calculateReviewsForVehicle(vehicle)
-        return Response({"message": "Review added"}, status=200)
-    except Rent.DoesNotExist:
-        return Response({"error": "Rent not found"}, status=404)
 
 #Some helpful functons, calculate and update noOfReviews and rating for offers and vehicles
 def calculateReviewsForOffer(offer):
@@ -1338,15 +1264,3 @@ def calculateReviewsForVehicle(vehicle):
     vehicle.rating = rating / reviews.count()
     vehicle.noOfReviews = reviews.count()
     vehicle.save()
-#FOR IVAN'S PROFILE VIEWS
-
-#these two will be called only when we fill the database with mock data
-def calculateReviewsForAllOffers():
-    offers = Offer.objects.all()
-    for offer in offers:
-        calculateReviewsForOffer(offer)
-
-def calculateReviewsForAllVehicles():
-    vehicles = Vehicle.objects.all()
-    for vehicle in vehicles:
-        calculateReviewsForVehicle(vehicle)

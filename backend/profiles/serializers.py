@@ -205,3 +205,7 @@ class CompanyOfferPostSerializer(serializers.Serializer):
     image = serializers.FileField()
     description = serializers.CharField()
     model_id = serializers.IntegerField()
+
+class PostReviewSerializer(serializers.Serializer):
+    rating = serializers.FloatField()
+    description = serializers.CharField()
