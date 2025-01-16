@@ -5,3 +5,10 @@ backend/db.sqlite3
 venv/
 .vscode/
 env/
+.swp
+__pycache__/
+__pycache__/*
+media/logos/*
+!media/logos/.gitkeep
+media/offers/*
+!media/offers/.gitkeep

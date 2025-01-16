@@ -8,12 +8,9 @@ class Rentoid(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
     phoneNo = models.CharField(max_length=20, null=True, blank=True)
     driversLicenseNo = models.CharField(max_length=16, default=None)
-    balance = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0.00, blank=True
-    )
 
     def __str__(self):
-        return f"{self.firstName} {self.lastName}"
+        return f"{self.user.first_name} {self.user.last_name}"
 
 
 class Dealership(models.Model):
@@ -22,7 +19,7 @@ class Dealership(models.Model):
     phoneNo = models.CharField(max_length=20, null=True, blank=True)
     TIN = models.CharField(max_length=16, default=None)
     description = models.TextField(blank=True, default="")
-    image = models.BinaryField(default=b"")
+    image = models.ImageField(upload_to="logos")
     isAccepted = models.BooleanField(blank=True, null=True, default=None)
 
     def __str__(self):
@@ -59,7 +56,7 @@ class Location(models.Model):
 
 class WorkingHours(models.Model):
     workingHours_id = models.AutoField(primary_key=True)
-    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True)
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, null=True)
     dayOfTheWeek = models.IntegerField(
         choices=[
             (i, day)

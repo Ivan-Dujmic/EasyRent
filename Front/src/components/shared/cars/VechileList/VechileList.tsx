@@ -4,27 +4,67 @@ import {
   Flex,
   Heading,
   IconButton,
+  Box,
   useBreakpointValue,
 } from '@chakra-ui/react';
 import { FaChevronRight, FaChevronLeft } from 'react-icons/fa';
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import VehicleCard from '../VehicleCard/VechileCard';
 import { ICar } from '@/fetchers/homeData';
+import { mockVehicles } from '@/mockData/mockVehicles';
 
 interface VehicleListProps {
   vehicles?: Array<ICar>;
   description?: string;
+  numCards?: number
+  cardGap?: number
 }
 
 export default function VehicleList({
-  vehicles = [],
-  description = undefined,
+  vehicles = mockVehicles,
+  description = "",
+  numCards = 4,
+  cardGap = 24
 }: VehicleListProps) {
-  // Dynamically determine the number of visible cards based on screen size
-  const numCards = useBreakpointValue({ base: 1, sm: 2, md: 3, lg: 4 }) || 4;
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
 
-  const gap = 16; // Gap between cards in pixels
-  const cardWidth = `calc((100% - ${(numCards - 1) * gap}px) / ${numCards})`; // Dynamically calculate card width
+  let [numCards_d, setNumCard] = useState(numCards) 
+
+  useEffect(() => {
+    const updateContainerWidth = () => {
+      if (containerRef.current) {
+        const { width } = containerRef.current.getBoundingClientRect();
+        setContainerWidth(width);
+      }
+    };
+
+    updateContainerWidth();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateContainerWidth();
+    });
+
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+
+    return () => {
+      if (containerRef.current) {
+        resizeObserver.unobserve(containerRef.current);
+      }
+    };
+  });
+
+  const cardWidth = 260;
+
+  useEffect(() => {
+    let neededLength = numCards_d * cardWidth + (numCards_d - 1) * cardGap + 90
+    if (numCards_d > 1 && neededLength > containerWidth)
+        setNumCard(numCards_d - 1)
+    else if (numCards_d < numCards && neededLength + cardWidth + cardGap <= containerWidth)
+        setNumCard(numCards_d + 1)
+  });
 
   const [startIndex, setStartIndex] = useState(0);
 
@@ -36,70 +76,62 @@ export default function VehicleList({
     }
   };
 
-  const visibleVehicles = vehicles.slice(startIndex, startIndex + numCards);
+  const visibleVehicles = vehicles.slice(startIndex, startIndex + numCards_d);
 
   return (
-    <Flex direction="column" align="center" width="100%">
+    <Flex direction="column" align="center" width="100%" gap={8} ref = {containerRef}>
       {description && (
-        <Heading size="md" color="brandblack" alignSelf="flex-start">
+        <Heading fontSize="1.4rem" color="brandblack" alignSelf="flex-start">
           {description}
         </Heading>
       )}
       <Flex
         position="relative"
-        justify="center"
         align="center"
         width="100%"
         mb={4}
       >
         {/* Left Scroll Button */}
-        {startIndex > 0 && (
-          <IconButton
-            position="absolute"
-            left="1vmax"
-            aria-label="Scroll left"
-            icon={<FaChevronLeft />}
-            onClick={() => handleScroll('left')}
-            isRound
-            zIndex="1"
-          />
-        )}
+        <Flex width="40px" justify={"center"} align={"center"}>
+          {startIndex > 0 && (
+            <IconButton
+              mx = "none"
+              // transform="translateX(-50%)"
+              aria-label="Scroll left"
+              icon={<FaChevronLeft />}
+              onClick={() => handleScroll('left')}
+              isRound
+            />
+          )}
+        </Flex>
 
         {/* Vehicle Cards */}
         <Flex
+          flex="1"
           overflow="hidden"
           justify="center"
           align="center"
-          width="80%"
-          gap={`${gap}px`}
-          px={2}
+          gap={`${cardGap}px`}
+          py={"2px"}
         >
           {visibleVehicles.map((vehicle, index) => (
-            <div
-              key={index}
-              style={{
-                flex: '0 0 auto',
-                width: cardWidth, // Dynamically calculated width
-                maxWidth: cardWidth,
-              }}
-            >
-              <VehicleCard vehicle={vehicle} />
-            </div>
+              <VehicleCard vehicle={vehicle} index={index}/>
           ))}
         </Flex>
 
         {/* Right Scroll Button */}
-        {startIndex < vehicles.length - numCards && (
-          <IconButton
-            position="absolute"
-            right="1vmax"
-            aria-label="Scroll right"
-            icon={<FaChevronRight />}
-            onClick={() => handleScroll('right')}
-            isRound
-            zIndex="1"
-          />
-        )}
+        <Flex width="40px" justify={"center"} align={"center"}>
+          {startIndex < vehicles.length - numCards && (
+            <IconButton
+              mx = "none"
+              // transform="translateX(50%)"
+              aria-label="Scroll right"
+              icon={<FaChevronRight />}
+              onClick={() => handleScroll('right')}
+              isRound
+            />
+          )}
+        </Flex>
       </Flex>
     </Flex>
   );

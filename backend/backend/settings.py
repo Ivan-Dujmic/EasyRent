@@ -10,16 +10,15 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import dj_database_url
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-import dj_database_url
 
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / "subdir".
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -28,6 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don"t run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
+
 
 ALLOWED_HOSTS = os.getenv("ALL_HOST").split(" ")
 
@@ -48,24 +48,28 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
+    "corsheaders",
+    "drf_spectacular",
     "src",
     "home",
-    "corsheaders",
+    "profiles",
+    "wallet",
 ]
 AUTH_USER_MODEL = "auth.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    #'django.middleware.csrf.CsrfViewMiddleware',
+    # "django.middleware.csrf.CsrfViewMiddleware",
+    "backend.middleware.DisableCSRFMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
 ]
+
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
@@ -107,7 +111,7 @@ DATABASES = {
         "USER": "postgres",
         "PASSWORD": "postgres",
         "HOST": "localhost",
-        "PORT": "5432",
+        "PORT": "5432",  # 5432 or 5433
     }
 }
 DATABASES["default"] = dj_database_url.parse(os.getenv("DATABASE"))
@@ -158,30 +162,43 @@ AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 )
-
-SESSION_COOKIE_SECURE = True  # Send only over HTTPS
-SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access
-SESSION_COOKIE_SAMESITE = "Lax"
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_HOST_USER = os.getenv("HOST_EMAIL")
 EMAIL_HOST_PASSWORD = os.getenv("HOST_PASSWORD")
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
+CORS_ORIGIN_ALLOW_ALL = True
+# CSRF_COOKIE_SECURE = True  # Ensure this is True for HTTPS
+# CSRF_COOKIE_HTTPONLY = False
+# CSRF_COOKIE_SAMESITE = "None"
+
+SESSION_COOKIE_DOMAIN = None
+SESSION_COOKIE_NAME = "sessionid"
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = False
+SESSION_COOKIE_SAMESITE = "None"
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "https://easy-rent-ashy.vercel.app",
 ]
 CRSF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
+    "localhost",
     "http://127.0.0.1:3000",
+    "http://127.0.0.1:8000",
+    "https://easy-rent-ashy.vercel.app",
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_HEADERS = [
     "content-type",
     "authorization",
+    "X-CSRFToken",
 ]
 
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
@@ -194,3 +211,23 @@ ACCOUNT_USERNAME_REQUIRED = False
 LOGIN_REDIRECT_URL = "/"
 
 LOGOUT_REDIRECT_URL = "/"
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+# To generate the API schema, run the following command:
+# python manage.py spectacular --file schema.yml
+# http://127.0.0.1:8000/api/schema/docs
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "EasyRent API",
+}
+
+# SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_LOGIN_ON_GET = True
+# ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
+
+# Images (using Pillow)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")

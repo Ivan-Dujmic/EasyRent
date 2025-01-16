@@ -2,6 +2,7 @@
 
 import EasyRentMoto from '@/components/core/EasyRentMoto/EasyRentMoto';
 import MainFilter from '@/components/shared/filter/MainFilter/MainFilter';
+import ChatbotWidget from '@/components/shared/ChatbotWidget/ChatbotWidget';
 import Header from '@/components/shared/Header/Header';
 import CompanyList from '@/components/shared/company/CompanyList/CompanyList';
 import { Flex, Heading, useBreakpointValue } from '@chakra-ui/react';
@@ -25,6 +26,8 @@ import {
 } from 'react-icons/fa';
 import CustomMap from '@/components/shared/Map/CustomMap/CustomMap';
 import { dealershipLocations } from '@/mockData/mockLocations';
+import { useUserContext } from '@/context/UserContext/UserContext';
+import AuthUserHeader from '@/components/shared/Header/AuthUserHeader/AuthUserHeader';
 
 const homeGuestFooterLinks = {
   quickLinks: [
@@ -49,6 +52,7 @@ const homeGuestFooterLinks = {
 
 export default function HomePage() {
   const { data, error, isLoading } = useSWR(swrKeys.showcased, getShowCaseds);
+  const { user } = useUserContext();
 
   const gapSize = useBreakpointValue({
     base: 8, // Small gap for small screens (mobile)
@@ -68,11 +72,15 @@ export default function HomePage() {
     md: '60vw', // Širina mape za srednje i velike ekrane
   });
 
+  const numCards =
+    useBreakpointValue({ base: 1, sm: 1, md: 2, lg: 3, xl: 4 }) || 4;
+
   return (
     <>
       <AuthRedirect to={''} condition={'isLoggedIn'} />
       <Flex direction="column" grow={1} align={'center'} width={'100%'}>
-        <Header />
+        {user.role === 'user' && <AuthUserHeader UserData={user} />}
+        {user.role !== 'user' && <Header />}
         {/* Drugi dio stranice */}
         <Flex
           bg="brandlightgray"
@@ -102,14 +110,17 @@ export default function HomePage() {
           direction={'column'}
           py={8}
           gap={2}
+          width={{base : "80vw", lg : "60vw"}}
         >
           <VehicleList
-            vehicles={data?.most_popular}
+            // vehicles={data?.most_popular}
             description={'Most popular:'}
+            numCards={numCards}
           />
           <VehicleList
-            vehicles={data?.best_value}
+            // vehicles={data?.best_value}
             description={'Best value:'}
+            numCards={numCards}
           />
         </Flex>
 
@@ -143,7 +154,7 @@ export default function HomePage() {
         >
           <FQA />
         </Flex>
-
+        <ChatbotWidget />
         {/* footer */}
         <Footer links={homeGuestFooterLinks} />
       </Flex>

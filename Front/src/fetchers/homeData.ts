@@ -8,40 +8,14 @@ export interface IDealership {
 export interface ICar {
   image: string;
   companyName: string;
-  modelName: string;
   makeName: string;
-  noOfSeats: string;
-  automatic: string;
-  price: string;
-  rating: string;
-  noOfReviews: string;
-  registration: string;
-}
-
-export interface ILog {
-  
-  image: string;
-  companyName: string;
   modelName: string;
-  makeName: string;
-  customerName: string;
-  customerSurname: string;
-  price: string;
-  registration: string;
-  pickupp: string;
-  dropoff: string;
-}
-
-export interface IReview{  
-  companyName: string;
-  modelName: string;
-  makeName: string;
-  customerName: string;
-  customerSurname: string;
-  registration: string;
-  date: string;
-  description: string;
-  rating: string;
+  noOfSeats?: string;
+  automatic?: string;
+  price?: number;
+  rating?: number;
+  noOfReviews?: number;
+  offer_id?: string;
 }
 
 export interface IShowcased {
@@ -71,7 +45,7 @@ export async function getShowCaseds(
   return result;
 }
 
-export async function get<T>(
+export async function CustomGet<T>(
   url: string,
   { arg }: { arg?: any } = {}
 ): Promise<T> {
