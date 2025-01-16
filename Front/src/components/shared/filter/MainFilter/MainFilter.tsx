@@ -169,7 +169,7 @@ export default function MainFilter() {
       drop_off_time: dropoff.time, // Vrijeme u HH:MM:SS formatu
     });
 
-    const fullUrl = `/api/home/search?${queryParams.toString()}`;
+    const fullUrl = swrKeys.search(queryParams.toString());
     console.log(fullUrl);
     setUrl(fullUrl); // Postavljamo URL u state
   };

@@ -13,8 +13,14 @@ import {
   Button,
   Heading,
 } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Select, { MultiValue, GroupBase } from 'react-select';
+import useSWRMutation from 'swr/mutation';
+import { CustomGet, ICar } from '@/fetchers/homeData';
+import { useFilterContext } from '@/context/FilterContext/FilterContext';
+import { useCarContext } from '@/context/CarContext';
+import { useRouter } from 'next/navigation';
+import { swrKeys } from '@/fetchers/swrKeys';
 
 // Define the makes and models data
 const makesAndModels: Record<string, string[]> = {
@@ -46,6 +52,13 @@ export default function SideFilter() {
   const [selectedTransmission, setSelectedTransmission] = useState<string[]>(
     []
   );
+
+  //za submit
+  const [url, setUrl] = useState(''); // State za URL
+
+  const { filterData } = useFilterContext();
+  const { setCars } = useCarContext();
+  const router = useRouter();
 
   const makeOptions: Option[] = Object.keys(makesAndModels).map((make) => ({
     label: make,
@@ -111,6 +124,23 @@ export default function SideFilter() {
     </Box>
   );
 
+  const { trigger } = useSWRMutation(url, CustomGet, {
+    onSuccess: (data: ICar[]) => {
+      setCars(data); // Spremanje automobila u globalni kontekst
+      router.push('/listing'); // Preusmjeravanje na novu stranicu
+      console.log(data);
+    },
+    onError: (error) => {
+      console.error('Error fetching data:', error);
+    },
+  });
+
+  useEffect(() => {
+    if (url) {
+      trigger();
+    }
+  }, [url, trigger]);
+
   const handleApply = () => {
     // Map models back to make-model pairs
     const makeModelPairs = selectedModels.map((model) => {
@@ -131,15 +161,46 @@ export default function SideFilter() {
     // Combine makes with models and makes without models
     const makeAndModelData = [...makeModelPairs, ...makesWithoutModels];
 
-    const data = {
-      seats: selectedSeats,
-      carType: selectedCarType,
-      transmission: selectedTransmission,
-      priceRange: { min: minPrice, max: maxPrice },
-      makeAndModel: makeAndModelData,
+    // Check for all selected values in checkboxes
+    const seatsData = selectedSeats.length === 3 ? [] : selectedSeats;
+    const carTypeData = selectedCarType.length === 3 ? [] : selectedCarType;
+
+    // Determine the value for transmission
+    let transmissionValue: string | null = null;
+    if (selectedTransmission.length === 1) {
+      transmissionValue =
+        selectedTransmission[0] === 'Automatic' ? 'true' : 'false';
+    }
+
+    // Combine the SideFilter data with FilterContext data
+    const queryParamsObj: Record<string, string> = {
+      seats: seatsData.join(','),
+      car_type: carTypeData.join(','),
+      transmission: transmissionValue || '',
+      min_price: String(minPrice),
+      max_price: String(maxPrice),
+      makes_and_models: JSON.stringify(makeAndModelData),
+      pick_up_location: filterData.pick_up_location || '',
+      drop_off_location: filterData.drop_off_location || '',
+      pick_up_date: filterData.pick_up_date || '',
+      pick_up_time: filterData.pick_up_time || '',
+      drop_off_date: filterData.drop_off_date || '',
+      drop_off_time: filterData.drop_off_time || '',
     };
 
-    console.log(JSON.stringify(data, null, 2));
+    // Remove any empty string values from the query object
+    Object.keys(queryParamsObj).forEach((key) => {
+      if (!queryParamsObj[key]) {
+        delete queryParamsObj[key];
+      }
+    });
+
+    const queryParams = new URLSearchParams(queryParamsObj);
+
+    const fullUrl = swrKeys.search(queryParams.toString());
+
+    console.log(fullUrl);
+    setUrl(fullUrl); // Postavljamo URL u state
   };
 
   return (

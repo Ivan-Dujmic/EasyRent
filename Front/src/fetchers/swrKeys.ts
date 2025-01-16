@@ -6,6 +6,6 @@ export const swrKeys = {
   registerCompany: `${auth}registerCompany/`,
   logIn: `${auth}loginUser/`,
   showcased: `${home}showcased/`,
-  search: `${home}search`,
+  search: (queryString: string = ''): string => `${home}search?${queryString}`, // search sa tipovima
   userinfo: `${auth}user-info/`,
 };
