@@ -108,6 +108,7 @@ export default function HomePage() {
         direction={'column'}
         py={8}
         gap={2}
+        width={{ base: '80vw', lg: '65vw' }}
       >
         <VehicleList
           vehicles={data?.most_popular}
