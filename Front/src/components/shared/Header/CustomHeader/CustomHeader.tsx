@@ -22,7 +22,6 @@ import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 import EasyRentLogo from '@/components/core/EasyRentLogo/EasyRentLogo';
 import { ReactElement } from 'react';
 import Head from 'next/head';
-import LogOutButton from '../auth/LogOutButton/LogOutButton';
 
 interface HeaderProps extends BoxProps, FlexProps {
     HeaderItems?: ReactElement,
