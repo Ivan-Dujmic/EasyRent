@@ -96,7 +96,7 @@ export default function VehicleList({
           {startIndex > 0 && (
             <IconButton
               mx = "none"
-              transform="translateX(-50%)"
+              // transform="translateX(-50%)"
               aria-label="Scroll left"
               icon={<FaChevronLeft />}
               onClick={() => handleScroll('left')}
@@ -112,7 +112,7 @@ export default function VehicleList({
           justify="center"
           align="center"
           gap={`${cardGap}px`}
-          height={'fit-content'}
+          py={"2px"}
         >
           {visibleVehicles.map((vehicle, index) => (
               <VehicleCard vehicle={vehicle} index={index}/>
@@ -124,7 +124,7 @@ export default function VehicleList({
           {startIndex < vehicles.length - numCards && (
             <IconButton
               mx = "none"
-              transform="translateX(50%)"
+              // transform="translateX(50%)"
               aria-label="Scroll right"
               icon={<FaChevronRight />}
               onClick={() => handleScroll('right')}
