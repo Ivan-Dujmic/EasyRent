@@ -1,7 +1,7 @@
 "use client";
 
 import SupportButton from "@/components/shared/auth/SupportButton";
-import VehicleCard from "@/components/shared/cards/VehicleCardCompany/VehicleCardCompany";
+import VehicleCard from "@/components/shared/cars/VehicleCardCompany/VehicleCardCompany";
 import { Box, Grid } from "@chakra-ui/react";
 
 interface ICar {

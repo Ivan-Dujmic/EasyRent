@@ -1,7 +1,7 @@
 "use client";
 
 import SupportButton from "@/components/shared/auth/SupportButton";
-import OfferCard from "@/components/shared/cards/OfferCardCompany/OfferCardCompany";
+import OfferCard from "@/components/shared/cars/OfferCardCompany/OfferCardCompany";
 import { Box, Grid } from "@chakra-ui/react";
 
 interface ICar {

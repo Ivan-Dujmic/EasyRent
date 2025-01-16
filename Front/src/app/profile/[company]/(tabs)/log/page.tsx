@@ -1,6 +1,6 @@
 
 
-import LogList from "@/components/shared/cards/LogList/LogList";
+import LogList from "@/components/shared/cars/LogList/LogList";
 import { Flex } from "@chakra-ui/react";
 
 const mokdata = [

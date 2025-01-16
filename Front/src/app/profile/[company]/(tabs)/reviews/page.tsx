@@ -1,4 +1,4 @@
-import ReviewCard from "@/components/shared/cards/ReviewCard/ReviewCard";
+import ReviewCard from "@/components/shared/cars/ReviewCard/ReviewCard";
 import { Box, Container, Grid } from "@chakra-ui/react";
 
 const mokReviews = [
