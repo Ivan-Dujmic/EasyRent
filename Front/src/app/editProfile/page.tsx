@@ -32,7 +32,7 @@ import { useForm } from 'react-hook-form';
 import useSWRMutation from 'swr/mutation';
 import DeleteButton from '@/components/shared/auth/DeleteButton/DeleteButton';
 
-export default function editPage() {
+export default function EditPage() {
   const {
     handleSubmit,
     formState: { isSubmitting, errors },
