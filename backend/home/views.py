@@ -13,7 +13,7 @@ from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
 from django.utils.timezone import now
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiResponse, OpenApiExample, OpenApiParameter
-from datetime import date, datetime, timedelta
+from datetime import *
 import re
 
 #extend_schema has to come before api_view
@@ -669,14 +669,17 @@ def getFilteredOffers(request):
             return Response({"error": "Required fields not filled"}, status=404)
         #check if times are valid
         try:
-            pick_up_time = int(pick_up_time)
-            drop_off_time = int(drop_off_time)
-        except:
+            pt = int(pick_up_time[0:2])
+            dt = int(drop_off_time[0:2])
+            pick_up_time = time(pt)
+            drop_off_time = time(dt)
+        except Exception as e:
+            print(e)
             return Response({"error": "Invalid time format"}, status=404)
-        if (pick_up_time < 0 or pick_up_time > 24 or drop_off_time < 0 or drop_off_time > 24):
-            return Response({"error": "Invalid time format"}, status=404)
+        # if (pick_up_time < 0 or pick_up_time > 24 or drop_off_time < 0 or drop_off_time > 24):
+        #     return Response({"error": "Invalid time format"}, status=404)
         #check if dates are valid
-        date_format = "%Y-%m-%d"
+        date_format = "%d-%m-%Y"
         try:
             pick_up_date = datetime.strptime(pick_up_date, date_format).date()
             drop_off_date = datetime.strptime(drop_off_date, date_format).date()
