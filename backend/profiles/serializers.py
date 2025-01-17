@@ -18,7 +18,7 @@ class GetUserRentalsSerializer(serializers.Serializer):
     expired = serializers.BooleanField()
     canReview = serializers.BooleanField()
     offer_id = serializers.IntegerField()
-    image = serializers.ImageField(default="IMAGE")
+    image = serializers.FileField()
 
 
 class GetUserInfoSerializer(serializers.Serializer):
@@ -44,9 +44,12 @@ class PutUserPasswordSerializer(serializers.Serializer):
 class DeleteUserSerializer(serializers.Serializer):
     password = serializers.CharField()
 
+class PutCompanyPassword(serializers.Serializer):
+    oldPassword = serializers.CharField()
+    newPassword = serializers.CharField()
 
 class GetCompanyVehicles(serializers.Serializer):
-    image = serializers.ImageField(default="IMAGE")
+    image = serializers.FileField()
     makeName = serializers.CharField()
     registration = serializers.CharField()
     modelName = serializers.CharField()
@@ -65,7 +68,7 @@ class GetCompanyOffers(serializers.Serializer):
     noOfReviews = serializers.IntegerField()
     makeName = serializers.CharField()
     modelName = serializers.CharField()
-    image = serializers.ImageField(default="IMAGE")
+    image = serializers.FileField()
     isVisible = serializers.BooleanField()
 
 
@@ -79,11 +82,11 @@ class GetCompanyRents(serializers.Serializer):
     noOfReviews = serializers.IntegerField()
     dateTimePickup = serializers.DateTimeField()
     dateTimeReturned = serializers.DateTimeField()
-    image = serializers.ImageField(default="IMAGE")
+    image = serializers.FileField()
 
 
 class GetCompanyReviews(serializers.Serializer):
-    image = serializers.ImageField(default="IMAGE")
+    image = serializers.FileField()
     makeName = serializers.CharField()
     modelName = serializers.CharField()
     registration = serializers.CharField()
@@ -102,10 +105,13 @@ class GetCompanyEarnings(serializers.Serializer):
     monthlyEarnings = serializers.ListField(child=serializers.FloatField(default=0.1))
 
 
-class GetCompanyInfo(serializers.Serializer):
-    day = serializers.CharField()
-    startTime = serializers.TimeField()
-    endTime = serializers.TimeField()
+class PutCompanyInfo(serializers.Serializer):
+    name = serializers.CharField()
+    phoneNo = serializers.CharField()
+    description = serializers.CharField()
+    password = serializers.CharField()
+    logo = serializers.FileField()
+    
 
 
 class GetCompanyLocations(serializers.Serializer):
@@ -143,7 +149,7 @@ class GetCompanyVehicleEdit(serializers.Serializer):
 
 class GetCompanyOffer(serializers.Serializer):
     price = serializers.FloatField(default=0.1)
-    image = serializers.ImageField(default="IMAGE")
+    image = serializers.FileField()
     description = serializers.CharField()
     model_id = serializers.IntegerField()
     makeName = serializers.CharField()
@@ -193,3 +199,22 @@ class GetCompanyLogReviews(serializers.Serializer):
     date = serializers.DateTimeField()
     description = serializers.CharField()
     rating = serializers.FloatField()
+
+
+class CompanyVehicleSerializer(serializers.Serializer):
+    registration = serializers.CharField()
+    model_id = serializers.IntegerField()
+    location_id = serializers.IntegerField()
+
+class CompanyOfferPostSerializer(serializers.Serializer):
+    price = serializers.FloatField()
+    image = serializers.FileField()
+    description = serializers.CharField()
+    model_id = serializers.IntegerField()
+
+class PostReviewSerializer(serializers.Serializer):
+    rating = serializers.FloatField()
+    description = serializers.CharField()
+
+class DeleteCompanySerializer(serializers.Serializer):
+    password = serializers.CharField()

@@ -33,7 +33,7 @@ ALLOWED_HOSTS = os.getenv("ALL_HOST").split(" ")
 
 
 # Application definition
-SITE_ID = 1
+SITE_ID = 2
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -222,6 +222,8 @@ REST_FRAMEWORK = {
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "EasyRent API",
+    'COMPONENT_SPLIT_REQUEST': True
+
 }
 
 # SOCIALACCOUNT_AUTO_SIGNUP = True
