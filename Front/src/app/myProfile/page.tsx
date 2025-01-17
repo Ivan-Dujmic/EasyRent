@@ -49,6 +49,8 @@ import EasyRentLogo from '@/components/core/EasyRentLogo/EasyRentLogo';
 import { CloseIcon } from '@chakra-ui/icons';
 import CompactFooter from '@/components/shared/Footer/CompactFooter';
 import Footer from '@/components/shared/Footer/Footer';
+import { useUserContext } from "@/context/UserContext/UserContext";
+import LogOutButton from "@/components/shared/auth/LogOutButton/LogOutButton";
 
 
 const userProfileFooterLinks = {
@@ -82,7 +84,7 @@ const Overlay = () => (
 export default function UserProfilePage() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { data } = useSWR(swrKeys.registerUser, CustomGet<IRentals>);
-  
+  const { user } = useUserContext();
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [overlay, setOverlay] = useState(<Overlay/>)
   const [amount, setAmount] = useState('');
@@ -142,7 +144,10 @@ export default function UserProfilePage() {
             <Button onClick={onClose} mr={3}>
               Cancel
             </Button>
-            <Button colorScheme="blue" onClick={handleAddFunds}>
+            <Button color = "white" bg = "brandblue" _hover = {{
+              color: "brandblack",
+              bg: "brandyellow"
+            }} onClick={handleAddFunds}>
               Add Funds
             </Button>
           </ModalFooter>
@@ -152,7 +157,7 @@ export default function UserProfilePage() {
       {/* Header */}
       <Header>
         <Text fontSize="md" fontWeight="bold" color="brandblue">
-          Balance: €31.42
+          {`Balance: ${user.balance}$`}
         </Text>
 
         <Button
@@ -171,9 +176,9 @@ export default function UserProfilePage() {
           Add funds
         </Button>
 
-        <HeaderButton> Edit profile </HeaderButton>
+        <HeaderButton href = "/editProfile"> Edit profile </HeaderButton>
 
-        <LoginButton log="out"/>
+        <LogOutButton useAlt = {false}/>
       </Header>
       {/* Main Content */}
       <Box position = "relative" width = "100%">
@@ -230,9 +235,15 @@ export default function UserProfilePage() {
   );
 }
 
+class Message {
+  content!: string
+  from!: "Me" | "They";
+}
+
 interface IChat {
   name : string
-  messages?: string[]
+  email?: string
+  messages?: Message[]
 }
 
 function ChatIcon ({
