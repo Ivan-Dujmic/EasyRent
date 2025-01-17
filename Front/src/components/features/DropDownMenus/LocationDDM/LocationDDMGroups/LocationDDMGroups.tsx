@@ -1,20 +1,18 @@
-import { Category } from '@/typings/locationCategorys/LocationCategroys';
 import { Box, MenuGroup, MenuItem, useBreakpointValue } from '@chakra-ui/react';
-import LocationFormatter from '../LocationFormatter/LocationFormatter';
-import { FaCity, FaTrain } from 'react-icons/fa';
-import { MdLocalAirport } from 'react-icons/md';
+import { FaCity } from 'react-icons/fa';
+// import { MdLocalAirport } from 'react-icons/md';  // Removed, no airports now
+// import { FaTrain } from 'react-icons/fa';         // Removed, no train stations now
+
+// Optional: If you're still using LocationFormatter, import it:
+// import LocationFormatter from '../LocationFormatter/LocationFormatter';
 
 interface LocationDDMGroupsProps {
-  options: { [key: string]: string[] };
+  // Data shape: each key is a country, each value is an array of city strings
+  options: { [country: string]: string[] };
   handleSelectLocation: (location: string) => void;
   search: string;
   setSearch: (value: string) => void;
 }
-const categoryIcons: { [key in Category]: JSX.Element } = {
-  'Cities (including airports)': <FaCity />,
-  Airports: <MdLocalAirport />,
-  'Train stations': <FaTrain />,
-};
 
 export default function LocationDDMGroups({
   options,
@@ -27,43 +25,47 @@ export default function LocationDDMGroups({
     xl: 'md',
   });
 
-  const filteredOptions: { [key: string]: string[] } = Object.keys(
-    options
-  ).reduce(
-    (acc, category) => {
-      const filteredItems = options[category].filter((item) =>
-        item.toLowerCase().includes(search.toLowerCase())
+  // Filter out city names that don't match the search
+  const filteredOptions = Object.keys(options).reduce(
+    (acc, country) => {
+      const filteredCities = options[country].filter((city) =>
+        city.toLowerCase().includes(search.toLowerCase())
       );
-      if (filteredItems.length) {
-        acc[category] = filteredItems;
+      if (filteredCities.length) {
+        acc[country] = filteredCities;
       }
       return acc;
     },
-    {} as { [key: string]: string[] }
+    {} as { [country: string]: string[] }
   );
-
-  const renderCategoryIcon = (category: Category): JSX.Element => {
-    return categoryIcons[category] || <span />;
-  };
 
   return (
     <>
       {Object.keys(filteredOptions).length > 0 ? (
-        Object.keys(filteredOptions).map((category) => (
-          <MenuGroup title={category} key={category}>
-            {filteredOptions[category as Category].map((item) => (
+        Object.keys(filteredOptions).map((country) => (
+          <MenuGroup title={country} key={country}>
+            {filteredOptions[country].map((city) => (
               <MenuItem
-                key={item}
+                key={city}
                 onClick={() => {
-                  handleSelectLocation(item);
+                  // e.g. "Zagreb, Croatia"
+                  // You could store a combined string:
+                  // handleSelectLocation(`${city}, ${country}`);
+                  handleSelectLocation(`${city}, ${country}`);
                 }}
                 fontSize="sm"
                 gap={2}
               >
+                {/* Icon on the left */}
                 <Box p={2} borderRadius="3px" bg="brandmiddlegray">
-                  {renderCategoryIcon(category as Category)}
+                  <FaCity />
                 </Box>
-                <LocationFormatter input={item} type={category as Category} />
+
+                {/* If you have a special formatter, use it:
+                    <LocationFormatter input={city} />
+                   Otherwise just show the city name */}
+                {/* <LocationFormatter input={city} /> */}
+                {city}
               </MenuItem>
             ))}
           </MenuGroup>

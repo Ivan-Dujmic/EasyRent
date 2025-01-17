@@ -10,6 +10,7 @@ import useSWRMutation from 'swr/mutation';
 import { CustomGet, ICar } from '@/fetchers/homeData';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { useFilterContext } from '@/context/FilterContext/FilterContext';
+import useSWR from 'swr';
 
 // Lokacije iz primjera
 const options: { [key: string]: string[] } = {
@@ -46,6 +47,22 @@ export default function MainFilter() {
   const [dropoffDate, setdropoffDate] = useState<Date | null>(null);
 
   const [isMounted, setIsMounted] = useState(false);
+
+  const { data, error, isLoading } = useSWR('/api/home/cities', CustomGet);
+  const [cityOptions, setCityOptions] = useState<{
+    [country: string]: string[];
+  }>({});
+
+  // Build cityOptions when data arrives
+  useEffect(() => {
+    if (data && Array.isArray(data)) {
+      const newOptions: { [country: string]: string[] } = {};
+      data.forEach((item: { countryName: string; cities: string[] }) => {
+        newOptions[item.countryName] = item.cities;
+      });
+      setCityOptions(newOptions);
+    }
+  }, [data]);
 
   // U ovom efektu označavamo da je komponenta mountana
   useEffect(() => {
@@ -239,7 +256,7 @@ export default function MainFilter() {
       {/* Pick-up location */}
       <Box width={locationWidth}>
         <LocationDDM
-          options={options}
+          options={cityOptions}
           description="Pick-up location"
           placeHolder="From?"
           value={pickupLocation}
@@ -261,7 +278,7 @@ export default function MainFilter() {
       {/* Drop-off location */}
       <Box width={locationWidth}>
         <LocationDDM
-          options={options}
+          options={cityOptions}
           description="Drop-off location"
           placeHolder="To?"
           value={dropoffLocation}
