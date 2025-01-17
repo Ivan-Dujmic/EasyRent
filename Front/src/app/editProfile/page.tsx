@@ -5,8 +5,7 @@ import SubmitButton from '@/components/shared/auth/SubmitButton';
 import SupportButton from '@/components/shared/auth/SupportButton';
 import SuccessWindow from '@/components/shared/SuccessWidnow/SuccessWidnow';
 import { swrKeys } from '@/fetchers/swrKeys';
-import { updateProfile } from '@/mutation/profile';
-import { IEditUser } from '@/typings/users/user.type';
+import { IEditPassword, IEditUser, IGetUser, IRegisterUser } from '@/typings/users/user.type';
 import {
   Box,
   VStack,
@@ -15,71 +14,88 @@ import {
   useBreakpointValue,
   TabPanel,
   TabList,
-  Button,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
   Heading,
-  Input,
   Tab,
   TabPanels,
-  BoxProps,
   Tabs,
-  useDisclosure,
 } from '@chakra-ui/react';
 import { ReactElement, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import useSWRMutation from 'swr/mutation';
 import DeleteButton from '@/components/shared/auth/DeleteButton/DeleteButton';
+import { CustomGet } from '@/fetchers/homeData';
+import useSWR from 'swr';
+import { updateProfile } from '@/mutation/profile';
 
 export default function EditPage() {
   const {
-    handleSubmit,
-    formState: { isSubmitting, errors },
-    setError,
-    clearErrors,
-    setValue,
-    getValues,
-    setFocus,
-    resetField,
-    reset,
-    register,
+    handleSubmit: handleUser,
+    formState: { isSubmitting: isSubUser, errors: errUser },
+    clearErrors : clearErrUser,
+    register : registerUser,
   } = useForm<IEditUser>();
 
-  let [success, setSuccess] = useState(false)
+  const {
+    handleSubmit: handlePass,
+    formState: { isSubmitting: isSubPass, errors: errPass },
+    setError: setErrPass,
+    clearErrors : clearErrPass,
+    getValues : getValPass,
+    register : registerPass,
+  } = useForm<IEditPassword>();
 
-  const { trigger } = useSWRMutation(swrKeys.profileuser, updateProfile, {
+  let [success, setSuccess] = useState(false)
+  const {data: dataGet, error, isLoading} = useSWR(swrKeys.profileuser, CustomGet<IGetUser>)
+
+  const { trigger: updateTrigger } = useSWRMutation(swrKeys.profileuser, updateProfile<IEditUser>, {
     onSuccess: () => {
       setSuccess(true)
       console.log("Saved changes")
     },
     onError: () => {
-      
+      console.log("Something went wrong!")
+    },
+  });
+
+  const { trigger: passTrigger } = useSWRMutation(swrKeys.profileuser, updateProfile<IEditPassword>, {
+    onSuccess: () => {
+      setSuccess(true)
+      console.log("Saved changes")
+    },
+    onError: () => {
+      console.log("Something went wrong!")
     },
   });
 
   const onUpdateProfile = async (data: IEditUser) => {
-    clearErrors();
-    await trigger(data);
+    clearErrUser();
+    await updateTrigger(data);
   };
 
-  const onResetPassword = async (data: IEditUser) => {
+  const onResetPassword = async (data: IEditPassword) => {
+    if (dataGet?.password !== data.oldPassword) {
+      setErrPass('oldPassword', {
+        type: 'manual',
+        message: 'Wrong Password, make sure to enter your original password',
+      });
+      return;
+    }
     if (data.password.length < 8) {
-      setError('password', {
+      setErrPass('password', {
         type: 'manual',
         message: 'Password must be at least 8 characters',
       });
       return;
     }
     if (data.password !== data.confirmPassword) {
-      setError('confirmPassword', {
+      setErrPass('confirmPassword', {
         type: 'manual',
         message: 'Passwords do not match',
       });
       return;
     }
-    clearErrors();
-    await trigger(data);
+    clearErrPass();
+    await passTrigger(data);
   };
   
   const boxWidth = useBreakpointValue({
@@ -117,7 +133,7 @@ export default function EditPage() {
           </TabList>
           <TabPanels>
             <TabPanel>
-              <chakra.form onSubmit={handleSubmit(onUpdateProfile)}>
+              <chakra.form onSubmit={handleUser(onUpdateProfile)}>
                 <Flex
                   direction={{ base: 'column', md: 'row' }}
                   wrap="wrap"
@@ -126,42 +142,46 @@ export default function EditPage() {
                 >
                   <VStack spacing={4} w={inputWidth}>
                     <CustomInput
-                      {...register('firstName', {
+                      {...registerUser('firstName', {
                         required: 'Must enter your first name',
                       })}
                       label="First name"
                       type="text"
+                      defaultValue={dataGet?.firstName}
                       placeholder="Enter your first name"
-                      error={errors.firstName?.message}
+                      error={errUser.firstName?.message}
                     />
                     <CustomInput
-                      {...register('lastName', {
+                      {...registerUser('lastName', {
                         required: 'Must enter your last name',
                       })}
                       label="Last name"
                       type="text"
+                      defaultValue={dataGet?.lastName}
                       placeholder="Enter your last name"
-                      error={errors.lastName?.message}
+                      error={errUser.lastName?.message}
                     />
                     <CustomInput
-                      {...register('driversLicense', {
+                      {...registerUser('driversLicense', {
                         required: "Driver's license is required",
                       })}
                       label="Driver's license"
                       type="text"
+                      defaultValue={dataGet?.driversLicense}
                       placeholder="Enter your driver's license id"
-                      error={errors.driversLicense?.message}
+                      error={errUser.driversLicense?.message}
                     />
                   </VStack>
                   <VStack spacing={4} w={inputWidth}>
                     <CustomInput
-                      {...register('phoneNo', {
+                      {...registerUser('phoneNo', {
                         required: 'Phone number is required',
                       })}
                       label="Phone number"
                       type="tel"
+                      defaultValue={dataGet?.phoneNo}
                       placeholder="Enter your phone number"
-                      error={errors.phoneNo?.message}
+                      error={errUser.phoneNo?.message}
                     />
                   </VStack>
                 </Flex>
@@ -179,26 +199,26 @@ export default function EditPage() {
                   <SubmitButton
                     label="Save changes"
                     submittingLabel="Trying to save..."
-                    isSubmitting={isSubmitting}
+                    isSubmitting={isSubUser}
                     w={{ base: '100%', md: '30%' }}
                   />
                 </Flex>
               </chakra.form>
             </TabPanel>
             <TabPanel>
-              <chakra.form onSubmit={handleSubmit(onResetPassword)}>
+              <chakra.form onSubmit={handlePass(onResetPassword)}>
                 <VStack spacing={4}>
                   <CustomInput
-                    {...register('oldPassword', {
+                    {...registerPass('oldPassword', {
                       required: 'Must enter old password'
                     })}
                     label="Current Password"
                     type="password"
                     placeholder="Enter your old password"
-                    error={errors.password?.message}
+                    error={errPass.oldPassword?.message}
                   />
                   <CustomInput
-                    {...register('password', {
+                    {...registerPass('password', {
                       required: 'Must enter password',
                       minLength: {
                         value: 8,
@@ -208,25 +228,25 @@ export default function EditPage() {
                     label="New Password"
                     type="password"
                     placeholder="Enter new password"
-                    error={errors.password?.message}
+                    error={errPass.password?.message}
                   />
                   <CustomInput
-                    {...register('confirmPassword', {
+                    {...registerPass('confirmPassword', {
                       required: 'Password confirmation is required',
                       validate: (value) =>
-                        value === getValues('password') || 'Passwords do not match',
+                        value === getValPass('password') || 'Passwords do not match',
                     })}
                     label="Confirm New password"
                     type="password"
                     placeholder="Repeat new password"
-                    error={errors.confirmPassword?.message}
+                    error={errPass.confirmPassword?.message}
                   />
                   <SubmitButton
                     mt = {4}
                     alignSelf={'flex-start'} 
                     label="Reset Password"
                     submittingLabel="Trying to reset..."
-                    isSubmitting={isSubmitting}
+                    isSubmitting={isSubPass}
                     w={{ base: '100%', md: '30%' }}
                   />
                 </VStack>
@@ -235,13 +255,13 @@ export default function EditPage() {
             <TabPanel>
             <Box>
               Understand this: things are now in motion that cannot be undone.<br/>
-              - Gandalf the Grey
+              - Gandalf the Gray
             </Box>
             <DeleteButton 
               label = "Delete Account" 
               mt = "4"
+              password = {dataGet?.password}
               float={"right"}
-              onDelete={deleteAccount}
             />
             </TabPanel>
           </TabPanels>
@@ -249,9 +269,5 @@ export default function EditPage() {
       </Flex>
     </Box>
   );
-}
-
-function deleteAccount () {
-    console.log("Deleted account forever!")
 }
 

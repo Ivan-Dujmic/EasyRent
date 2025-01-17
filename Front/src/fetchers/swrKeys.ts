@@ -13,5 +13,6 @@ export const swrKeys = {
     userinfo: `${auth}user-info/`,
     logout: `${auth}logout/`,
     profileuser: `${profile}/user/info`,
+    deleteuser: `${profile}/`,
     cities: `${home}cities/`
-}
+};
