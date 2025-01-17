@@ -13,8 +13,14 @@ import {
   Button,
   Heading,
 } from '@chakra-ui/react';
-import React, { useState } from 'react';
-import Select, { MultiValue, GroupBase, components } from 'react-select';
+import React, { useState, useEffect } from 'react';
+import Select, { MultiValue, GroupBase } from 'react-select';
+import useSWRMutation from 'swr/mutation';
+import { CustomGet, ICar } from '@/fetchers/homeData';
+import { useFilterContext } from '@/context/FilterContext/FilterContext';
+import { useCarContext } from '@/context/CarContext';
+import { useRouter } from 'next/navigation';
+import { swrKeys } from '@/fetchers/swrKeys';
 
 // Define the makes and models data
 const makesAndModels: Record<string, string[]> = {
@@ -23,10 +29,15 @@ const makesAndModels: Record<string, string[]> = {
   Volkswagen: ['Golf', 'Passat', 'Tiguan'],
 };
 
-// Define type for react-select options
+// Define types for react-select options
 type Option = {
   label: string;
   value: string;
+};
+
+type GroupedOption = {
+  label: string;
+  options: Option[];
 };
 
 export default function SideFilter() {
@@ -35,22 +46,43 @@ export default function SideFilter() {
   const [minPrice, setMinPrice] = useState<number>(15);
   const [maxPrice, setMaxPrice] = useState<number>(72);
 
+  // State for checkboxes
+  const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
+  const [selectedCarType, setSelectedCarType] = useState<string[]>([]);
+  const [selectedTransmission, setSelectedTransmission] = useState<string[]>(
+    []
+  );
+
+  //za submit
+  const [url, setUrl] = useState(''); // State za URL
+
+  const { filterData } = useFilterContext();
+  const { setCars } = useCarContext();
+  const router = useRouter();
+
   const makeOptions: Option[] = Object.keys(makesAndModels).map((make) => ({
     label: make,
     value: make,
   }));
 
-  const modelOptions: GroupBase<Option>[] = selectedMakes.map((make) => ({
-    label: make.label,
+  // Grouped model options based on selected makes
+  const modelOptions: GroupedOption[] = selectedMakes.map((make) => ({
+    label: make.label, // Use the selected make as the group label
     options: makesAndModels[make.value]?.map((model) => ({
       label: model,
-      value: model,
+      value: `${make.value}|${model}`, // Use `|` as the delimiter
     })),
   }));
 
   const handleMakeChange = (selected: MultiValue<Option>) => {
     setSelectedMakes(selected);
-    setSelectedModels([]);
+
+    // Filter models based on currently selected makes
+    setSelectedModels((currentModels) =>
+      currentModels.filter((model) =>
+        selected.some((make) => model.value.startsWith(`${make.value}|`))
+      )
+    );
   };
 
   const handleModelChange = (selected: MultiValue<Option>) => {
@@ -92,6 +124,85 @@ export default function SideFilter() {
     </Box>
   );
 
+  const { trigger } = useSWRMutation(url, CustomGet, {
+    onSuccess: (data: ICar[]) => {
+      setCars(data); // Spremanje automobila u globalni kontekst
+      router.push('/listing'); // Preusmjeravanje na novu stranicu
+      console.log(data);
+    },
+    onError: (error) => {
+      console.error('Error fetching data:', error);
+    },
+  });
+
+  useEffect(() => {
+    if (url) {
+      trigger();
+    }
+  }, [url, trigger]);
+
+  const handleApply = () => {
+    // Map models back to make-model pairs
+    const makeModelPairs = selectedModels.map((model) => {
+      const [make, modelName] = model.value.split('|');
+      return { make, model: modelName };
+    });
+
+    // Extract makes without models
+    const makesWithoutModels = selectedMakes
+      .filter(
+        (make) =>
+          !selectedModels.some((model) =>
+            model.value.startsWith(`${make.value}|`)
+          )
+      )
+      .map((make) => ({ make: make.value, model: null }));
+
+    // Combine makes with models and makes without models
+    const makeAndModelData = [...makeModelPairs, ...makesWithoutModels];
+
+    // Check for all selected values in checkboxes
+    const seatsData = selectedSeats.length === 3 ? [] : selectedSeats;
+    const carTypeData = selectedCarType.length === 3 ? [] : selectedCarType;
+
+    // Determine the value for transmission
+    let transmissionValue: string | null = null;
+    if (selectedTransmission.length === 1) {
+      transmissionValue =
+        selectedTransmission[0] === 'Automatic' ? 'true' : 'false';
+    }
+
+    // Combine the SideFilter data with FilterContext data
+    const queryParamsObj: Record<string, string> = {
+      seats: seatsData.join(','),
+      car_type: carTypeData.join(','),
+      transmission: transmissionValue || '',
+      min_price: String(minPrice),
+      max_price: String(maxPrice),
+      makes_and_models: JSON.stringify(makeAndModelData),
+      pick_up_location: filterData.pick_up_location || '',
+      drop_off_location: filterData.drop_off_location || '',
+      pick_up_date: filterData.pick_up_date || '',
+      pick_up_time: filterData.pick_up_time || '',
+      drop_off_date: filterData.drop_off_date || '',
+      drop_off_time: filterData.drop_off_time || '',
+    };
+
+    // Remove any empty string values from the query object
+    Object.keys(queryParamsObj).forEach((key) => {
+      if (!queryParamsObj[key]) {
+        delete queryParamsObj[key];
+      }
+    });
+
+    const queryParams = new URLSearchParams(queryParamsObj);
+
+    const fullUrl = swrKeys.search(queryParams.toString());
+
+    console.log(fullUrl);
+    setUrl(fullUrl); // Postavljamo URL u state
+  };
+
   return (
     <Box
       width="400px"
@@ -111,7 +222,11 @@ export default function SideFilter() {
           Seats:
         </Text>
         <Flex gap={4}>
-          <CheckboxGroup colorScheme="blue">
+          <CheckboxGroup
+            colorScheme="blue"
+            value={selectedSeats}
+            onChange={(values) => setSelectedSeats(values as string[])}
+          >
             <Flex gap={4}>
               <Checkbox value="1-2">1-2</Checkbox>
               <Checkbox value="4-5">4-5</Checkbox>
@@ -126,7 +241,11 @@ export default function SideFilter() {
         <Text fontSize="lg" mb={2} fontWeight="bold">
           Car Type:
         </Text>
-        <CheckboxGroup colorScheme="blue">
+        <CheckboxGroup
+          colorScheme="blue"
+          value={selectedCarType}
+          onChange={(values) => setSelectedCarType(values as string[])}
+        >
           <Flex direction="column" gap={2}>
             <Checkbox value="Compact">Compact</Checkbox>
             <Checkbox value="Limo/Estate">Limo/Estate</Checkbox>
@@ -140,7 +259,11 @@ export default function SideFilter() {
         <Text fontSize="lg" mb={2} fontWeight="bold">
           Transmission:
         </Text>
-        <CheckboxGroup colorScheme="blue">
+        <CheckboxGroup
+          colorScheme="blue"
+          value={selectedTransmission}
+          onChange={(values) => setSelectedTransmission(values as string[])}
+        >
           <Flex direction="row" gap={4}>
             <Checkbox value="Manual">Manual</Checkbox>
             <Checkbox value="Automatic">Automatic</Checkbox>
@@ -201,7 +324,9 @@ export default function SideFilter() {
             isMulti
             options={makeOptions}
             value={selectedMakes}
-            onChange={handleMakeChange}
+            onChange={(selected) =>
+              handleMakeChange(selected as MultiValue<Option>)
+            }
             placeholder="Select Makes"
             closeMenuOnSelect={false}
             components={{
@@ -221,7 +346,9 @@ export default function SideFilter() {
             isMulti
             options={modelOptions}
             value={selectedModels}
-            onChange={handleModelChange}
+            onChange={(selected) =>
+              handleModelChange(selected as MultiValue<Option>)
+            }
             placeholder="Select Models"
             isDisabled={selectedMakes.length === 0}
             components={{
@@ -245,6 +372,7 @@ export default function SideFilter() {
         color="white"
         _hover={{ bg: 'brandyellow', color: 'brandblack' }}
         width="100%"
+        onClick={handleApply}
       >
         Apply
       </Button>
