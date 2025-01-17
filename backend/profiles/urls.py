@@ -26,6 +26,7 @@ urlpatterns = [
         name="completedCompanyRents",
     ),
     path("company/offers", views.companyOffers, name="companyOffers"),
+    path("company/offer/<offerId>", views.getCompanyOffer, name="getCompanyOffer"),
     path("company/reviews/", views.companyReviews, name="companyReviews"),
     path("company/earnings/", views.companyEarnings, name="companyEarnings"),
     path("company/info/", views.companyInfo, name="companyInfo"),

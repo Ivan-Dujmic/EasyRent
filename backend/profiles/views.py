@@ -1652,35 +1652,60 @@ def companyVehicle(request):
     operation_id="get_company_offer",
     tags=["profile"],
     responses={
-        200: GetCompanyOffer(),
-    },
+        200: GetCompanyOffer,
+    }
 )
 @extend_schema(
-    methods=["POST"],
-    operation_id="post_company_offer",
+    methods=["PUT"],
+    operation_id="put_company_offer",
     tags=["profile"],
-    request=CompanyOfferPostSerializer
+    request=CompanyOfferPutSerializer
 )
-@login_required
-@api_view(["GET", "POST", "PUT", "DELETE"])
-def companyOffer(request):
-    if request.method == "PUT":
+@api_view(["GET", "PUT"])
+def getCompanyOffer(request, offerId):
+    if request.method == "GET":
+        user = request.user
+        if user.is_authenticated:
+            try:
+                dealership = Dealership.objects.get(user=user.id)
+                # , makeName, modelName,
+                offer = Offer.objects.get(
+                    dealer_id=dealership.dealership_id,
+                    offer_id=offerId,
+                )
+                model = Model.objects.get(model_id=offer.model_id)
+                retObject = {
+                    "price": offer.price,
+                    "image": request.build_absolute_uri(dealership.image.url) if dealership.image else None,
+                    "description": offer.description,
+                    "model_id": model.model_id,
+                    "makeName": model.makeName,
+                    "modelName": model.modelName,
+                }
+                return JsonResponse(retObject, status=200)
+            except Exception as e:
+                print(e)
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no offers yet!",
+                    },
+                    status=404,
+                )
+    elif request.method == "PUT":
         user = request.user
         if user.is_authenticated:
             data = request.data
-            if not data.get("offerId"):
-                return Response(
-                    {"success": 0, "message": "Offer ID is required"}, status=400
-                )
             try:
                 dealership = Dealership.objects.get(user=user.id)
                 offer = Offer.objects.get(
-                    offer_id=request.GET.get("offerId"),
+                    dealer_id=dealership.dealership_id,
+                    offer_id=offerId,
                 )
                 if data.get("price"):
                     offer.price = data.get("price")
                 if data.get("image"):
-                    offer.image = data.get("image")
+                    offer.image = request.FILES.get("image")
                 if data.get("description"):
                     offer.description = data.get("description")
                 offer.save()
@@ -1693,14 +1718,24 @@ def companyOffer(request):
                         "success": 0,
                         "message": "Company does not exist or has no offers yet!",
                     },
-                    status=200,
+                    status=404,
                 )
         else:
             return Response(
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
 
-    elif request.method == "POST":
+
+@extend_schema(
+    methods=["POST"],
+    operation_id="post_company_offer",
+    tags=["profile"],
+    request=CompanyOfferPostSerializer
+)
+@login_required
+@api_view(["POST", "DELETE"])
+def companyOffer(request):
+    if request.method == "POST":
         user = request.user
         if user.is_authenticated:
             data = request.data
@@ -1717,14 +1752,6 @@ def companyOffer(request):
                 dealership = Dealership.objects.get(user=user.id)
                 model = Model.objects.get(model_id=data.get("model_id"))
 
-                print(f"model_id: {model.model_id}")
-                print(f"dealer_id: {dealership.dealership_id}")
-                print(f"price: {data.get('price')}")
-                print(f"image: {request.FILES.get("image"),}")
-                print(f"description: {data.get('description')}")
-                print("noOfReviews: 0")
-                print("rating: 0")
-
                 offer = Offer.objects.create(
                     model=model,
                     dealer=dealership,
@@ -1738,11 +1765,12 @@ def companyOffer(request):
                 return Response(
                     {"success": 1, "message": "Offer added successfully"}, status=200
                 )
-            except:
+            except Exception as e:
+                print(e)
                 return Response(
                     {
                         "success": 0,
-                        "message": "Company does not exist or wronge vehicle id!",
+                        "message": "Company does not exist or wrong vehicle id!",
                     },
                     status=200,
                 )
@@ -1781,34 +1809,7 @@ def companyOffer(request):
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
 
-    elif request.method == "GET":
-        user = request.user
-        if user.is_authenticated:
-            try:
-                dealership = Dealership.objects.get(user=user.id)
-                # , makeName, modelName,
-                offer = Offer.objects.filter(
-                    # dealer_id=dealership.dealership_id,
-                    offer_id=request.GET.get("offerId"),
-                )
-                model = Model.objects.get(model_id=offer.model_id)
-                retObject = {
-                    "price": offer.price,
-                    "image": offer.image,
-                    "description": offer.description,
-                    "model_id": model.model_id,
-                    "makeName": model.makeName,
-                    "modelName": model.modelName,
-                }
-                return JsonResponse(retObject, status=200)
-            except:
-                return Response(
-                    {
-                        "success": 0,
-                        "message": "Company does not exist or has no offers yet!",
-                    },
-                    status=200,
-                )
+    
 
 
 @extend_schema(
