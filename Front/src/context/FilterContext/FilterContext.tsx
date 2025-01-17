@@ -2,6 +2,21 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
+// Funkcija koja provjerava je li localStorage dostupan
+function isLocalStorageAvailable(): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+  try {
+    const testKey = '__test__';
+    window.localStorage.setItem(testKey, '1');
+    window.localStorage.removeItem(testKey);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
 // Definiraj strukturu podataka
 export interface FilterData {
   pick_up_location: string;
@@ -34,18 +49,26 @@ export const FilterProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Dohvati podatke iz localStorage pri inicijalizaciji
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedFilterData = localStorage.getItem('filterData');
-      if (savedFilterData) {
-        setFilterData(JSON.parse(savedFilterData));
+    if (typeof window !== 'undefined' && isLocalStorageAvailable()) {
+      try {
+        const savedFilterData = localStorage.getItem('filterData');
+        if (savedFilterData) {
+          setFilterData(JSON.parse(savedFilterData));
+        }
+      } catch (error) {
+        console.error('Greška pri čitanju filterData iz localStorage:', error);
       }
     }
   }, []);
 
   // Spremi podatke u localStorage kad god se `filterData` promijeni
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('filterData', JSON.stringify(filterData));
+    if (typeof window !== 'undefined' && isLocalStorageAvailable()) {
+      try {
+        localStorage.setItem('filterData', JSON.stringify(filterData));
+      } catch (error) {
+        console.error('Greška pri spremanju filterData u localStorage:', error);
+      }
     }
   }, [filterData]);
 
