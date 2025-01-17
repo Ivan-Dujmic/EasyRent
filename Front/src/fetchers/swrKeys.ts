@@ -10,4 +10,5 @@ export const swrKeys = {
     search: (queryString: string = ''): string => `${home}search?${queryString}`, // search sa tipovima
     userinfo: `${auth}user-info/`,
     logout: `${auth}logout/`,
+    cities: `${home}cities/`,
 };
