@@ -74,7 +74,7 @@ export default function EditPage() {
 
   const onResetPassword = async (data: IEditPassword) => {
     if (dataGet?.password !== data.oldPassword) {
-      setErrPass('password', {
+      setErrPass('oldPassword', {
         type: 'manual',
         message: 'Wrong Password, make sure to enter your original password',
       });
