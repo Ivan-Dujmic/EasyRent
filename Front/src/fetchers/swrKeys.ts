@@ -11,5 +11,6 @@ export const swrKeys = {
     search: (queryString: string = ''): string => `${home}search?${queryString}`, // search sa tipovima
     userinfo: `${auth}user-info/`,
     logout: `${auth}logout/`,
-    profileuser: `${profile}/user/info`
+    profileuser: `${profile}/user/info`,
+    deleteuser: `${profile}/`
 };
