@@ -76,88 +76,74 @@ export default function HomePage() {
     useBreakpointValue({ base: 1, sm: 1, md: 2, lg: 3, xl: 4 }) || 4;
 
   return (
-    <>
-      <AuthRedirect to={''} condition={'isLoggedIn'} />
-      <Flex direction="column" grow={1} align={'center'} width={'100%'}>
-        {user.role === 'user' && <AuthUserHeader UserData={user} />}
-        {user.role !== 'user' && <Header />}
-        {/* Drugi dio stranice */}
-        <Flex
-          bg="brandlightgray"
-          minHeight="300px"
-          color="brandblue"
-          direction={'column'}
-          align={'center'}
-          justify={'flex-start'}
-          py={gapSize}
-          gap={gapSize}
-          width={'100%'}
-        >
-          <EasyRentMoto />
-          <MainFilter />
-          <Flex gap={gapSize} align={'center'} px={5}>
-            <Heading fontSize={headingSize} color={'brandblue'}>
-              Trusted by the Best:
-            </Heading>
-            <CompanyList companies={data?.showcased_dealerships} />
-          </Flex>
-        </Flex>
-
-        {/* Dio stranice sa Listom automobila */}
-        <Flex
-          justify={'center'}
-          align={'center'}
-          direction={'column'}
-          py={8}
-          gap={2}
-          width={{base : "80vw", lg : "60vw"}}
-        >
-          <VehicleList
-            // vehicles={data?.most_popular}
-            description={'Most popular:'}
-            numCards={numCards}
-          />
-          <VehicleList
-            // vehicles={data?.best_value}
-            description={'Best value:'}
-            numCards={numCards}
-          />
-        </Flex>
-
-        {/* Dio stranice sa benefitima */}
-        <Flex justify={'center'} align={'center'} py={8} gap={2}>
-          <BenefitsSection />
-        </Flex>
-
-        {/* dio stranice s mapom */}
-        <Flex
-          justify={'center'}
-          align={'center'}
-          py={8}
-          gap={7}
-          width={mapWidth}
-          direction={'column'}
-        >
-          <Heading size="lg" color="brandblack" alignSelf="flex-start">
-            Explore Dealerships:
+    <Flex direction="column" grow={1} align={'center'} width={'100%'}>
+      {user.role === 'user' && <AuthUserHeader UserData={user} />}
+      {user.role !== 'user' && <Header />}
+      {/* Drugi dio stranice */}
+      <Flex
+        bg="brandlightgray"
+        minHeight="300px"
+        color="brandblue"
+        direction={'column'}
+        align={'center'}
+        justify={'flex-start'}
+        py={gapSize}
+        gap={gapSize}
+        width={'100%'}
+      >
+        <EasyRentMoto />
+        <MainFilter />
+        <Flex gap={gapSize} align={'center'} px={5}>
+          <Heading fontSize={headingSize} color={'brandblue'}>
+            Trusted by the Best:
           </Heading>
-          <CustomMap locations={dealershipLocations} showInfoWindow={true} />
+          <CompanyList companies={data?.showcased_dealerships} />
         </Flex>
-
-        {/* Dio stranice sa dodatnim informacijama */}
-        <Flex
-          justify={'center'}
-          align={'center'}
-          py={8}
-          gap={2}
-          id="faq-section"
-        >
-          <FQA />
-        </Flex>
-        <ChatbotWidget />
-        {/* footer */}
-        <Footer links={homeGuestFooterLinks} />
       </Flex>
-    </>
+
+      {/* Dio stranice sa Listom automobila */}
+      <Flex
+        justify={'center'}
+        align={'center'}
+        direction={'column'}
+        py={8}
+        gap={2}
+        width={{ base: '80vw', lg: '65vw' }}
+      >
+        <VehicleList
+          vehicles={data?.most_popular}
+          description={'Most popular:'}
+        />
+        <VehicleList vehicles={data?.best_value} description={'Best value:'} />
+      </Flex>
+
+      {/* Dio stranice sa benefitima */}
+      <Flex justify={'center'} align={'center'} py={8} gap={2}>
+        <BenefitsSection />
+      </Flex>
+
+      {/* dio stranice s mapom */}
+      <Flex
+        justify={'center'}
+        align={'center'}
+        py={8}
+        gap={7}
+        width={mapWidth}
+        direction={'column'}
+      >
+        <Heading size="lg" color="brandblack" alignSelf="flex-start">
+          Explore Dealerships:
+        </Heading>
+        <CustomMap locations={dealershipLocations} showInfoWindow={true} />
+      </Flex>
+
+      {/* Dio stranice sa dodatnim informacijama */}
+      <Flex justify={'center'} align={'center'} py={8} gap={2} id="faq-section">
+        <FQA />
+      </Flex>
+      <ChatbotWidget />
+      {/* footer */}
+      <Footer links={homeGuestFooterLinks} />
+    </Flex>
   );
 }
