@@ -16,30 +16,37 @@ export default function CompanyTabsLayout({
 
     const tabs = [
         {
+            label: 'Info',
             name: 'Info',
             href: `/profile/${company}/info`
         },
         {
+            label: 'Vehicles',
             name: 'Vehicles',
             href: `/profile/${company}/vehicles`
         },
         {
+            label: 'Offers',
             name: 'Offers',
             href: `/profile/${company}/offers`
         },
         {
+            label: 'Log',
             name: 'Log',
             href: `/profile/${company}/log`
         },
         {
+            label: 'Chats',
             name: 'Chats',
             href: `/profile/${company}/chats`
         },
         {
+            label: 'Reviews',
             name: 'Reviews',
             href: `/profile/${company}/reviews`
         },
         {
+            label: 'Earnings',
             name: 'Earnings',
             href: `/profile/${company}/earnings`
         },

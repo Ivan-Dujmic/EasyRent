@@ -8,7 +8,7 @@ import {
 import { usePathname } from 'next/navigation';
 
 interface ITab {
-  tabs: { name: string; href: string }[];
+  tabs: { label:string; name: string; href: string }[];
 }
 
 export default function DynamicTabs({ tabs }: ITab) {
@@ -19,7 +19,6 @@ export default function DynamicTabs({ tabs }: ITab) {
   return (
     <Tabs
       variant="unstyled"
-      w="100%"
       index={activeTabIndex}
       mb="10px"
     >
@@ -42,7 +41,7 @@ export default function DynamicTabs({ tabs }: ITab) {
                       shadow: 'none'
              }}   
           >
-            {tab.name}
+            {tab.label}
           </Tab>
         ))}
       </TabList>
