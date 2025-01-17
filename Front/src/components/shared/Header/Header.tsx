@@ -24,7 +24,7 @@ export function HeaderButton({
     as={NextLink}
     bg={'brandblue'}
     color={'brandwhite'}
-    fontWeight={'normal'}
+    fontWeight={'bold'}
     fontSize={fontSize}
     size = {size}
     _hover={{
