@@ -11,7 +11,6 @@ import VehicleList from '@/components/shared/cars/VechileList/VechileList';
 import { AuthRedirect } from '@/components/shared/auth/AuthRedirect/AuthRedirect';
 import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
-import { getShowCaseds } from '@/fetchers/homeData';
 import FQA from '@/components/shared/info/FQA/FQA';
 import BenefitsSection from '@/components/shared/BenefitsSection/BenefitsSection';
 import Footer from '@/components/shared/Footer/Footer';
@@ -28,6 +27,8 @@ import CustomMap from '@/components/shared/Map/CustomMap/CustomMap';
 import { dealershipLocations } from '@/mockData/mockLocations';
 import { useUserContext } from '@/context/UserContext/UserContext';
 import AuthUserHeader from '@/components/shared/Header/AuthUserHeader/AuthUserHeader';
+import { IShowcased } from '@/typings/vehicles/vehicles.type';
+import { CustomGet } from '@/fetchers/get';
 
 const homeGuestFooterLinks = {
   quickLinks: [
@@ -51,7 +52,7 @@ const homeGuestFooterLinks = {
 };
 
 export default function HomePage() {
-  const { data, error, isLoading } = useSWR(swrKeys.showcased, getShowCaseds);
+  const { data, error, isLoading } = useSWR(swrKeys.showcased, CustomGet<IShowcased>);
   const { user } = useUserContext();
 
   const gapSize = useBreakpointValue({

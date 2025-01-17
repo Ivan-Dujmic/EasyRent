@@ -1,3 +1,12 @@
+export interface IUser {
+  role: string; // "guest", "user", "company", "admin"
+  firstName?: string;
+  lastName?: string;
+  companyName?: string;
+  balance?: number;
+  user_id: number
+}
+
 export interface IRegisterUser {
   firstName: string; // Ime korisnika
   lastName: string; // Prezime korisnika

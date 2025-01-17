@@ -1,4 +1,4 @@
-import { ICar } from '@/fetchers/homeData';
+import { ICar } from "@/typings/vehicles/vehicles.type";
 
 export const mockVehicles0: ICar[] = [
   {

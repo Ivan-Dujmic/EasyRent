@@ -1,4 +1,4 @@
-import { IDealership } from '@/fetchers/homeData';
+import { IDealership } from '@/typings/company/company.type';
 import {
   Card,
   CardBody,

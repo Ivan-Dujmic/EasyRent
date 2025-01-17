@@ -1,5 +1,6 @@
 'use client';
 
+import { IUser } from '@/typings/users/user.type';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Funkcija koja provjerava je li localStorage dostupan
@@ -17,18 +18,9 @@ function isLocalStorageAvailable(): boolean {
   }
 }
 
-// Definiraj strukturu podataka
-export interface User {
-  role: string; // "guest", "user", "company", "admin"
-  firstName?: string;
-  lastName?: string;
-  companyName?: string;
-  balance?: number;
-}
-
 interface UserContextType {
-  user: User;
-  setUser: (user: User) => void;
+  user: IUser;
+  setUser: (user: IUser) => void;
 }
 
 // Kreiraj kontekst
@@ -36,7 +28,15 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // Provider komponenta
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User>({ role: 'guest' }); // Default vrijednost
+
+  const [globalId, setGlobalId] = useState(0)
+
+  function newId() : number {
+    setGlobalId(globalId + 1)
+    return globalId - 1
+  }
+
+  const [user, setUser] = useState<IUser>({ role: 'guest', user_id: newId() }); // Default vrijednost
 
   // Dohvati podatke pri inicijalizaciji komponente
   useEffect(() => {

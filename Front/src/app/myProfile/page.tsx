@@ -4,34 +4,26 @@ import "./style.css"
 import VehicleList from '@/components/shared/cars/VechileList/VechileList';
 import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
-import { CustomGet, IRentals } from '@/fetchers/homeData';
-import { FaComments } from 'react-icons/fa';
+import { CustomGet } from '@/fetchers/get';
 import React, { useState} from 'react';
 import {
   Flex,
   useDisclosure,
   Box,
-  IconButton,
   Heading,
   Text,
   Button,
-  VStack,
   Divider,
   useBreakpointValue,
-  PositionProps,
-  Drawer,
-  DrawerBody,
-  DrawerHeader,
   ModalContent,
   ModalFooter,
   ModalHeader,
-  DrawerContent,
   Modal,
-  DrawerOverlay,
   ModalOverlay,
   ModalCloseButton,
   ModalBody,
-  Input
+  Input,
+  chakra
 } from '@chakra-ui/react';
 import {
   FaFacebookF,
@@ -43,15 +35,16 @@ import {
   FaCcStripe,
 } from 'react-icons/fa';
 import {CustomHeader as Header} from '@/components/shared/Header/CustomHeader/CustomHeader';
-import {HeaderButton, LoginButton} from '@/components/shared/Header/Header';
-import ChatbotWidget from '@/components/shared/ChatbotWidget/ChatbotWidget';
-import EasyRentLogo from '@/components/core/EasyRentLogo/EasyRentLogo';
-import { CloseIcon } from '@chakra-ui/icons';
-import CompactFooter from '@/components/shared/Footer/CompactFooter';
+import {HeaderButton} from '@/components/shared/Header/Header';
 import Footer from '@/components/shared/Footer/Footer';
 import { useUserContext } from "@/context/UserContext/UserContext";
 import LogOutButton from "@/components/shared/auth/LogOutButton/LogOutButton";
-
+import { IRentalEntries, IRentals, toCar } from "@/typings/vehicles/vehicles.type"
+import ChatMenu, {ChatIcon} from "@/components/shared/chat/ChatMenu";
+import useSWRMutation from "swr/mutation";
+import { CustomPost } from "@/fetchers/post";
+import CustomInput from "@/components/shared/auth/CustomInput";
+import { useForm } from "react-hook-form";
 
 const userProfileFooterLinks = {
   quickLinks: [
@@ -82,46 +75,73 @@ const Overlay = () => (
 )
 
 export default function UserProfilePage() {
+  const {
+    handleSubmit,
+    formState: { isSubmitting, errors },
+    clearErrors,
+    getValues,
+    register,
+  } = useForm<{amount: number}>();
+
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const { data } = useSWR(swrKeys.registerUser, CustomGet<IRentals>);
+  const { data: entries } = useSWR(swrKeys.userRentals, CustomGet<IRentalEntries[]>);
   const { user } = useUserContext();
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [overlay, setOverlay] = useState(<Overlay/>)
-  const [amount, setAmount] = useState('');
+  const { trigger: walletTrigger } = useSWRMutation(swrKeys.addBalance(user.user_id), CustomPost<{amount: number}>, {
+    onSuccess: () => {
+      console.log("Saved changes")
+    },
+    onError: () => {
+      console.log("Something went wrong!")
+    },
+  });
+
+  const previouslyRented = 
+    entries?.filter(vehicle => vehicle.dateTimeReturned !== undefined)
+    .map(vehicle => {
+      console.log(`rented: ${!vehicle.canReview}`, vehicle)
+      return {car: toCar(vehicle), rated: !(vehicle.canReview)}
+    })
+  
+  const currentRentals = 
+    entries?.filter(vehicle => vehicle.dateTimeReturned === undefined)
+    .map(vehicle => {
+      console.log("current", vehicle)
+      return toCar(vehicle)
+    })
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
   };
 
-  const handleAddFunds = () => {
-    console.log(`Adding funds: ${amount}`);
+  const onAddFunds = async (data: {amount: number}) => {
     onClose();
+    clearErrors()
+    await walletTrigger(data);
   };
 
   const gapSize = useBreakpointValue({
-    base: 8, // Small gap for small screens (mobile)
-    md: 10, // Slightly larger gap for medium screens (laptop/tablet)
+    base: 6, // Small gap for small screens (mobile)
+    md: 8, // Slightly larger gap for medium screens (laptop/tablet)
     lg: 10, // Largest gap for large screens (desktop)
     xl: 10,
   });
-
-  const headingSize = useBreakpointValue({
+  
+  const headingSize = useBreakpointValue({ 
     base: '2xl',
     lg: '2xl',
   });
-
+  
   const rentalswidth = useBreakpointValue({
     base: '100%',
-    lg: '80%',
+    lg: '88%',
   });
-
+  
   const rentalAllignment = useBreakpointValue({
     base: 'center',
     lg: 'space-between'
   })
-
-  const numCards =
-    useBreakpointValue({ base: 1, sm: 1, md: 2, lg: 3, xl: 4 }) || 3;
 
   return (
     <Flex direction="column" grow={1} bg="brandlightgray" minH="100vh">
@@ -129,28 +149,36 @@ export default function UserProfilePage() {
       <Modal isCentered isOpen={isOpen} onClose={onClose}>
         {overlay}
         <ModalContent>
-          <ModalHeader>Add Funds</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Text mb={4}>Enter the amount you want to add:</Text>
-            <Input
-              placeholder="Amount"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              type="number"
-            />
-          </ModalBody>
-          <ModalFooter>
-            <Button onClick={onClose} mr={3}>
-              Cancel
-            </Button>
-            <Button color = "white" bg = "brandblue" _hover = {{
-              color: "brandblack",
-              bg: "brandyellow"
-            }} onClick={handleAddFunds}>
-              Add Funds
-            </Button>
-          </ModalFooter>
+          <chakra.form onSubmit={handleSubmit(onAddFunds)}>
+            <ModalHeader>Add Funds</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <Text mb={4}>Enter the amount you want to add:</Text>
+              <CustomInput
+                {...register('amount', {
+                  required: 'Must enter valid amout',
+                })}
+                label="Amount ($)"
+                type="number"
+                placeholder="Enter amount to add"
+                error={errors.amount?.message}
+              />
+            </ModalBody>
+            <ModalFooter>
+              <Button onClick={onClose} mr={3}>
+                Cancel
+              </Button>
+              <Button 
+                type="submit" color = "white" bg = "brandblue" 
+                  _hover = {{
+                    color: "brandblack",
+                    bg: "brandyellow"
+                  }}
+                >
+                Add Funds
+              </Button>
+            </ModalFooter>
+          </chakra.form>
         </ModalContent>
       </Modal>
 
@@ -176,10 +204,13 @@ export default function UserProfilePage() {
           Add funds
         </Button>
 
-        <HeaderButton href = "/editProfile"> Edit profile </HeaderButton>
+        <HeaderButton href = "/editProfile"> 
+          Edit profile 
+        </HeaderButton>
 
         <LogOutButton useAlt = {false}/>
       </Header>
+
       {/* Main Content */}
       <Box position = "relative" width = "100%">
         {/* Rentals */}
@@ -187,7 +218,7 @@ export default function UserProfilePage() {
           mx="auto"
           justify={isChatOpen ? {rentalAllignment} : "center"}
           align="stretch"
-          width={{ base: '80%', lg: '100%' }}
+          width={'100%'}
           p={gapSize}
           gap={gapSize}
           wrap={"nowrap"}
@@ -204,11 +235,11 @@ export default function UserProfilePage() {
             gap={gapSize}
           >
             <Heading size={headingSize} color="brandblue">
-              Your Profile
+              {`${user.firstName}'s Profile`}
             </Heading>
             <Divider />
-            <VehicleList numCards={numCards} description="Ongoing rentals:" />
-            <VehicleList numCards={numCards} description="Previously rented:" />
+            <VehicleList vehicles={currentRentals} description="Ongoing rentals:" />
+            <VehicleList vehicles={previouslyRented} description="Previously rented:" />
           </Flex>
 
           {/* Chats Section */}
@@ -235,129 +266,3 @@ export default function UserProfilePage() {
   );
 }
 
-class Message {
-  content!: string
-  from!: "Me" | "They";
-}
-
-interface IChat {
-  name : string
-  email?: string
-  messages?: Message[]
-}
-
-function ChatIcon ({
-  onClick,
-  ...rest
-}:ChatIconProps) {
-  return <IconButton
-    aria-label="Open chat"
-    icon={<FaComments />}
-    onClick={onClick}
-    isRound
-    size="lg"
-    bg="brandblue"
-    color="brandwhite"
-    _hover={{ bg: 'brandyellow', color: 'brandblack' }}
-    {...rest}
-  />
-}
-
-interface ChatIconProps extends PositionProps {
-  onClick: () => void
-}
-
-function ChatButton ({
-  name
-}:IChat, key : number) {
-  return <Button
-    key={key}
-    size="sm"
-    variant="outline"
-    color="brandblue"
-    justifyContent="flex-start"
-    _hover={{ bg: 'brandlightgray' }}
-  >{name}</Button>
-}
-
-function ChatMenu({ 
-  onClose,
-  isOpen,
-  chats = []
-}:ChatMenuProps) {
-  const gapSize = useBreakpointValue({
-    base: 8, // Small gap for small screens (mobile)
-    md: 10, // Slightly larger gap for medium screens (laptop/tablet)
-    lg: 10, // Largest gap for large screens (desktop)
-    xl: 10,
-  });
-
-  const screenSize = useBreakpointValue({ base: 'small', lg: 'large' });
-
-  let content = chats.map((props, index) => ChatButton(props, index))
-
-  return screenSize == "large" ? (
-    <Flex
-      direction="column"
-      width="25%"
-      bg="brandwhite"
-      boxShadow="base"
-      borderRadius="md"
-      p={gapSize}
-      gap={gapSize}
-    >
-      <Heading size="md" color="brandblue">
-        Chats
-      </Heading>
-      <Divider />
-      <VStack align="stretch" spacing={3}>
-        {content}
-      </VStack>
-      <Button
-        onClick={onClose}
-        mt={3}
-        size="sm"
-        variant="solid"
-        bg="brandblue"
-        color="brandwhite"
-        _hover={{ bg: 'brandyellow', color: 'brandblack' }}
-      >
-        Close
-      </Button>
-      <ChatbotWidget />
-    </Flex>
-   ) : (
-     <>
-        <Drawer isOpen={isOpen} onClose={onClose}>
-          <DrawerOverlay />
-          <DrawerContent>
-            <DrawerHeader>
-              <Flex justify="space-between" align="center">
-                <Heading size="md" color="brandblue">
-                  Chats
-                </Heading>
-                <IconButton
-                  aria-label="Close Chat"
-                  icon={<CloseIcon />}
-                  variant="ghost"
-                  onClick={onClose}
-                />
-              </Flex>
-            </DrawerHeader>
-            <Divider />
-            <DrawerBody>
-              <VStack align="stretch" spacing={4}>
-                {content}
-              </VStack>
-            </DrawerBody>
-          </DrawerContent>
-        </Drawer>
-      </>
-  );
-}
-
-interface ChatMenuProps {
-  onClose: () => void,
-  isOpen: boolean,
-  chats?: IChat[]
-}

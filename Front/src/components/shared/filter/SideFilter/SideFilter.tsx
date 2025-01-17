@@ -16,11 +16,12 @@ import {
 import React, { useState, useEffect } from 'react';
 import Select, { MultiValue, GroupBase } from 'react-select';
 import useSWRMutation from 'swr/mutation';
-import { CustomGet, ICar } from '@/fetchers/homeData';
+import { CustomGet } from '@/fetchers/get';
 import { useFilterContext } from '@/context/FilterContext/FilterContext';
 import { useCarContext } from '@/context/CarContext';
 import { useRouter } from 'next/navigation';
 import { swrKeys } from '@/fetchers/swrKeys';
+import { ICar } from '@/typings/vehicles/vehicles.type';
 
 // Define the makes and models data
 const makesAndModels: Record<string, string[]> = {

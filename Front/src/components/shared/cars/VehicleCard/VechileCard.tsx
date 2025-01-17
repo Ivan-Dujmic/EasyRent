@@ -13,15 +13,23 @@ import { IoPersonSharp } from 'react-icons/io5';
 import { TbManualGearboxFilled } from 'react-icons/tb';
 import { TbAutomaticGearbox } from 'react-icons/tb';
 import NextLink from 'next/link';
-import { ICar } from '@/fetchers/homeData';
+import { ICar } from '@/typings/vehicles/vehicles.type';
 
 export default function VehicleCard({
-  vehicle,
+  vehicle: maybeVehicle,
   key,
 }: {
-  vehicle: ICar;
+  vehicle: ICar | {car: ICar, rated: boolean};
   key: number;
 }) {
+
+  function isRatable(element: ICar | { car: ICar, rated: boolean }): element is { car: ICar, rated: boolean } {
+    return (element as { car: ICar, rated: boolean }).car !== undefined;
+  }
+
+  let rated = !(isRatable(maybeVehicle) && !maybeVehicle.rated)
+  let vehicle = isRatable(maybeVehicle) ? maybeVehicle.car : maybeVehicle
+
   return (
     <Card
       id={`${key}`}
@@ -57,6 +65,25 @@ export default function VehicleCard({
         flexDirection="column"
         justifyContent="space-between"
       >
+        {!rated && <Box
+          display="flex"
+          position="absolute"
+          top={0}
+          left={0}
+          width="100%"
+          height="100%"
+          bg="rgba(0, 0, 0, 0.4)"
+          color="white"
+          alignItems="center"
+          justifyContent="center"
+          opacity={1}
+          transition="opacity 0.3s ease"
+          _hover={{
+            opacity: 0,
+          }}
+        >
+          Leave Review
+        </Box>}
         <Stack spacing={2} height={'100%'} justify={'space-between'}>
           <Flex direction={'column'}>
             <Flex gap={1} align={'baseline'} justify={'space-between'}>

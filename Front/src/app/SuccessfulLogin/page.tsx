@@ -13,7 +13,7 @@ import {
   Flex,
 } from '@chakra-ui/react';
 import { User, useUserContext } from '@/context/UserContext/UserContext';
-import { CustomGet } from '@/fetchers/homeData';
+import { CustomGet } from '@/fetchers/get';
 import { CheckCircleIcon } from '@chakra-ui/icons';
 import { swrKeys } from '@/fetchers/swrKeys';
 

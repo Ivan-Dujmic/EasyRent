@@ -1,6 +1,6 @@
 'use client';
 
-import { ICar } from '@/fetchers/homeData';
+import { ICar } from '@/typings/vehicles/vehicles.type';
 import React, {
   createContext,
   useContext,
