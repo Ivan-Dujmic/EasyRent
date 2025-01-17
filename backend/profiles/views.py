@@ -999,13 +999,12 @@ def companyEarnings(request):
                 )
 
 
+
 @extend_schema(
-    methods=["GET"],
-    operation_id="get_company_info",
+    methods=["PUT"],
+    operation_id="put_company_info",
     tags=["profile"],
-    responses={
-        200: GetCompanyInfo(many=True),
-    },
+    request=PutCompanyInfo
 )
 @login_required
 @api_view(["PUT", "GET"])
@@ -1014,9 +1013,9 @@ def companyInfo(request):
         user = request.user
         if user.is_authenticated:
             data = request.data
-
-            logo = data.get("companyLogo")
-            name = data.get("companyName")
+            company = User.objects.get(id=user.id)
+            logo = request.FILES.get("logo")
+            name = data.get("name")
             phoneNo = data.get("phoneNo")
             description = data.get("description")
             if not user.check_password(data.get("password")):
@@ -1028,12 +1027,13 @@ def companyInfo(request):
                 if phoneNo:
                     dealership.phoneNo = phoneNo
                 if name:
-                    dealership.companyName = name
+                    company.first_name = name
                 if description:
                     dealership.description = description
                 if logo:
                     dealership.image = logo
                 dealership.save()
+                company.save()
                 return Response(
                     {"success": 1, "message": "Company info updated successfully"},
                     status=200,
@@ -1050,8 +1050,6 @@ def companyInfo(request):
             return Response(
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
-    else:
-        return Response({"success": 0, "message": "Method not allowed"}, status=405)
 
     if request.method == "GET":
         user = request.user
@@ -1059,18 +1057,12 @@ def companyInfo(request):
             try:
                 # Return: {companyLogo, companyName, phoneNo, description}
                 dealership = Dealership.objects.get(user=user.id)
-                workingHours = WorkingHours.objects.get(
-                    dealership_id=dealership.dealership_id
-                )
-                res = []
-                for workingHour in workingHours:
-                    current = {
-                        "day": workingHour.day,
-                        "startTime": workingHour.startTime,
-                        "endTime": workingHour.endTime,
-                    }
-                    res.append(current)
-                retObject = {"results": res, "isLastPage": True}
+                retObject = {
+                    "image": request.build_absolute_uri(dealership.image.url) if dealership.image else None,
+                    "companyName": user.first_name,
+                    "phoneNo": dealership.phoneNo,
+                    "description": dealership.description,
+                }
                 return JsonResponse(retObject, status=200)
             except:
                 return Response(
@@ -1082,6 +1074,12 @@ def companyInfo(request):
                 )
 
 
+@extend_schema(
+    methods=["PUT"],
+    operation_id="put_company_password",
+    tags=["profile"],
+    request=PutCompanyPassword
+)
 @login_required
 @api_view(["PUT"])
 def companyPasswordChange(request):
@@ -1401,10 +1399,16 @@ def companyLocation(request):
         return Response({"success": 0, "message": "Method not allowed"}, status=405)
 
 
+@extend_schema(
+    methods=["POST"],
+    operation_id="delete_company",
+    tags=["profile"],
+    request=DeleteCompanySerializer
+)
 @login_required
-@api_view(["DELETE"])
+@api_view(["POST"])
 def deleteCompany(request):
-    if request.method == "DELETE":
+    if request.method == "POST":
         user = request.user
         if user.is_authenticated:
             data = request.data
@@ -1611,7 +1615,8 @@ def companyVehicle(request):
                 dealership = Dealership.objects.get(user=user.id)
                 model = Model.objects.get(model_id=data.get("model_id"))
                 location = Location.objects.get(
-                    location_id=data.get("location_id")
+                    location_id=data.get("location_id"),
+                    dealership=dealership.dealership_id
                 )
 
                 vehicle = Vehicle.objects.create(
