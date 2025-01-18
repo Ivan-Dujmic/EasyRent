@@ -1,29 +1,10 @@
+import { IOffer } from '@/fetchers/homeData';
 import { StarIcon } from '@chakra-ui/icons';
 import { Box, Flex, Heading, Text, Image, Stack } from '@chakra-ui/react';
 import { IoPersonSharp } from 'react-icons/io5';
 import { TbManualGearboxFilled, TbAutomaticGearbox } from 'react-icons/tb';
 
-export interface IVehicleOffer {
-  image: string; // Car image
-  companyName: string; // Name of the company offering the car
-  companyLogo: string; // Logo of the company
-  makeName: string; // Brand of the car
-  modelName: string; // Model of the car
-  noOfSeats?: string; // Number of seats in the car
-  automatic?: boolean; // Transmission type (true = automatic, false = manual)
-  price?: number; // Price per day in €
-  rating?: number; // Rating out of 5
-  noOfReviews?: number; // Total number of reviews
-  modelType?: string; // Type of model (e.g., Compact, SUV, etc.)
-  description?: string; // Description of the car
-  offer_id?: string; // Unique identifier of the offer
-}
-
-export default function VehicleOfferCard({
-  vehicle,
-}: {
-  vehicle: IVehicleOffer;
-}) {
+export default function VehicleOfferCard({ vehicle }: { vehicle: IOffer }) {
   return (
     <Box
       maxW="800px"
@@ -54,12 +35,14 @@ export default function VehicleOfferCard({
               <Heading size="lg" color="gray.800">
                 {vehicle.makeName} {vehicle.modelName}
               </Heading>
-              <Image
-                src={vehicle.companyLogo}
-                alt={`${vehicle.companyName} Logo`}
-                borderRadius="full"
-                height={'2rem'}
-              />
+              {vehicle.companyLogo ? (
+                <Image
+                  src={vehicle.companyLogo}
+                  alt={`${vehicle.companyName} Logo`}
+                  borderRadius="full"
+                  height={'2rem'}
+                />
+              ) : null}
             </Flex>
             <Text fontSize="sm" color="gray.600" fontWeight="semibold">
               {vehicle.companyName}

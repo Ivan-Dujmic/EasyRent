@@ -10,9 +10,17 @@ import BookingLoginPrompt from '@/components/shared/offer/BookingLoginPrompt/Boo
 import { ReviewList } from '@/components/shared/review/ReviewList/ReviewList';
 import { useUserContext } from '@/context/UserContext/UserContext';
 import { dealershipLocations } from '@/mockData/mockLocations';
-import { mockOffer } from '@/mockData/mockOffer';
 import { mockReviews } from '@/mockData/mockReviews';
-import { Box, Flex, Heading, useBreakpointValue } from '@chakra-ui/react';
+import {
+  Box,
+  Flex,
+  Heading,
+  Spinner,
+  Text,
+  useBreakpointValue,
+} from '@chakra-ui/react';
+import useSWR from 'swr';
+import { CustomGet, IOffer } from '@/fetchers/homeData'; // Your fetcher function
 import {
   FaCcMastercard,
   FaCcStripe,
@@ -22,6 +30,7 @@ import {
   FaLinkedinIn,
   FaTwitter,
 } from 'react-icons/fa';
+import { swrKeys } from '@/fetchers/swrKeys';
 
 const FooterLinks = {
   quickLinks: [
@@ -44,8 +53,18 @@ const FooterLinks = {
   paymentIcons: [FaCcVisa, FaCcMastercard, FaCcStripe],
 };
 
-export default function OfferPage() {
+export default function OfferPage({
+  params,
+}: {
+  params: { offer_id: string };
+}) {
   const { user } = useUserContext();
+  const { offer_id } = params; // Extract `offer_id` from the dynamic segment
+
+  const { data: offer, error } = useSWR<IOffer>(
+    offer_id ? swrKeys.offer(offer_id) : null, // Fetch only if `offer_id` exists
+    CustomGet
+  );
 
   const containerWidth = useBreakpointValue({
     base: '90%', // Width for mobile devices
@@ -54,6 +73,90 @@ export default function OfferPage() {
     lg: '80%', // Width for larger screens
     xl: '80%', // Width for extra-large screens
   });
+
+  if (!offer && !error) {
+    // Show a loading spinner while fetching data
+    return (
+      <Flex
+        height="100vh"
+        width="100%"
+        align="center"
+        justify="center"
+        direction="column"
+        gap={6} // Increased spacing between elements
+        bg="gray.50" // Subtle background for better contrast
+      >
+        <Text
+          fontSize="2xl" // Larger text size
+          fontWeight="extrabold" // More prominent text
+          color="brandblue"
+          textAlign="center"
+        >
+          We are getting your offer...
+        </Text>
+        <Spinner size="xl" color="brandblue" thickness="4px" speed="0.8s" />
+      </Flex>
+    );
+  }
+
+  if (error) {
+    // Handle error state
+    return (
+      <Flex
+        height="100vh"
+        width="100%"
+        align="center"
+        justify="center"
+        direction="column"
+        gap={6} // Increased spacing between elements
+        bg="brandwhite" // Light red background for error indication
+        p={6} // Add padding for better spacing
+      >
+        <Text
+          fontSize="2xl" // Larger text size
+          fontWeight="extrabold" // More prominent text
+          color="brandblue"
+          textAlign="center"
+        >
+          Failed to load the offer
+        </Text>
+        <Text
+          fontSize="lg"
+          color="brandblack"
+          textAlign="center"
+          maxWidth="80%" // Limit text width for better readability
+        >
+          Please check your internet connection or try again later. If the
+          problem persists, contact support.
+        </Text>
+        <Box>
+          <Flex justifyContent="center" mt={4}>
+            <a href="/home">
+              <Box
+                as="button"
+                bg="brandblue"
+                color="brandwhite"
+                px={6}
+                py={3}
+                borderRadius="md"
+                fontWeight="bold"
+                _hover={{
+                  bg: 'brandyellow',
+                  transition: 'background-color 0.3s ease',
+                  color: 'brandblack',
+                }}
+                _active={{
+                  bg: 'blue.700',
+                }}
+              >
+                Go to Home Page
+              </Box>
+            </a>
+          </Flex>
+        </Box>
+      </Flex>
+    );
+  }
 
   return (
     <Flex
@@ -89,10 +192,12 @@ export default function OfferPage() {
           wrap={{ base: 'wrap', xl: 'nowrap' }}
         >
           {/* Offer Card */}
-          <VehicleOfferCard vehicle={mockOffer} />
+          {offer && <VehicleOfferCard vehicle={offer} />}
 
           {/* Booking Form */}
-          {user.role === 'user' && <BookingForm balance={mockOffer.price} />}
+          {user.role === 'user' && (
+            <BookingForm balance={Number(offer ? offer.price : 0)} />
+          )}
           {user.role !== 'user' && <BookingLoginPrompt />}
         </Flex>
       </Flex>

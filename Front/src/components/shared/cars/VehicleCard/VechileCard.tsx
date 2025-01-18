@@ -10,24 +10,16 @@ import {
   Flex,
 } from '@chakra-ui/react';
 import { IoPersonSharp } from 'react-icons/io5';
-import { TbManualGearboxFilled } from 'react-icons/tb';
-import { TbAutomaticGearbox } from 'react-icons/tb';
+import { TbManualGearboxFilled, TbAutomaticGearbox } from 'react-icons/tb';
 import NextLink from 'next/link';
 import { ICar } from '@/fetchers/homeData';
 
-export default function VehicleCard({
-  vehicle,
-  key,
-}: {
-  vehicle: ICar;
-  key: number;
-}) {
+export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
   return (
     <Card
-      id={`${key}`}
       margin={0}
       as={NextLink}
-      href={`/offer/:${vehicle.offer_id}`}
+      href={`/offer/${vehicle.offer_id}`} // Correctly format the URL without ":"
       maxW="260px"
       minW="260px"
       height="250px" // Fixed height for consistency
@@ -66,7 +58,7 @@ export default function VehicleCard({
               <Text fontSize="xs">€{vehicle.price}/day</Text>
             </Flex>
 
-            {/* Kompanija koja nudi vozilo */}
+            {/* Company offering the vehicle */}
             <Text color="brandgray" fontSize="xs" noOfLines={1}>
               {vehicle.companyName}
             </Text>

@@ -14,12 +14,20 @@ export interface ICar {
   companyName: string;
   makeName: string;
   modelName: string;
-  noOfSeats?: number; // Changed from string to number to match API response
-  automatic?: boolean; // Changed from string to boolean to match API response
-  price?: string; // Kept as string to match the API response
-  rating?: number;
-  noOfReviews?: number;
-  offer_id?: number; // Changed from string to number to match API response
+  noOfSeats?: number; // Number of seats
+  automatic?: boolean; // Automatic or manual
+  price?: string; // Price as a string
+  rating?: number; // Rating value
+  noOfReviews?: number; // Number of reviews
+  offer_id?: string;
+}
+
+// Extended interface for offers
+export interface IOffer extends ICar {
+  dealership_id: number; // ID of the dealership
+  modelType: string; // Model type (e.g., SUV)
+  description?: string; // Description of the offer
+  companyLogo?: string;
 }
 
 export interface IShowcased {

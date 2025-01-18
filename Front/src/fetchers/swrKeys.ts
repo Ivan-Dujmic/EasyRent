@@ -18,4 +18,5 @@ export const swrKeys = {
   bestValue: `${home}best-value/?limit=10&page=1`,
   mostPopular: `${home}most-popular/?limit=10&page=1`,
   allLocations: `${home}locations`,
+  offer: (queryString: string = ''): string => `${home}offer/${queryString}/`, // search sa tipovima
 };
