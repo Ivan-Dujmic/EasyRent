@@ -33,7 +33,16 @@ urlpatterns = [
     path("company/pass/", views.companyPasswordChange, name="companyPasswordChange"),
     path("company/locations/", views.companyLocations, name="companyLocations"),
     path("company/setHQ/", views.companySetHQ, name="companySetHQ"),
-    path("company/location/", views.companyLocations, name="companyLocations"),
+    path(
+        "company/location/<int:location_id>/",
+        views.companyLocation,
+        name="companyLocations",
+    ),
+    path(
+        "company/location/",
+        views.postCompanyLocation,
+        name="postCompanyLocations",
+    ),
     path("company/delete/", views.deleteCompany, name="companyDelete"),
     path(
         "company/vehicles/edit-vehicle/", views.companyVehicleEdit, name="editVehicle"
