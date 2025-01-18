@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { Flex, IconButton, Text, useBreakpointValue } from '@chakra-ui/react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
 import VehicleCard from '../VehicleCard/VechileCard';
-import { ICar } from '@/typings/vehicles/vehicles.type';
+import { IOffer } from '@/typings/vehicles/vehicles.type';
 
 interface IVehicleGridProps {
-  vehicles: ICar[];
+  vehicles: IOffer[];
 }
 
 export const VehicleGrid = ({ vehicles }: IVehicleGridProps) => {
