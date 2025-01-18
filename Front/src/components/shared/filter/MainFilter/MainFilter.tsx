@@ -20,10 +20,11 @@ import LocationDDM from '@/components/features/DropDownMenus/LocationDDM/Locatio
 import { useCarContext } from '@/context/CarContext';
 import { useRouter } from 'next/navigation';
 import useSWRMutation from 'swr/mutation';
-import { CustomGet, ICar } from '@/fetchers/homeData';
+import { CustomGet } from '@/fetchers/get';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { useFilterContext } from '@/context/FilterContext/FilterContext';
 import useSWR from 'swr';
+import { IOffer } from '@/typings/vehicles/vehicles.type';
 
 // Lokacije iz primjera
 const options: { [key: string]: string[] } = {
@@ -61,7 +62,7 @@ export default function MainFilter() {
 
     const [isMounted, setIsMounted] = useState(false);
 
-    const { data, error, isLoading } = useSWR<ICityAPIResponse>(swrKeys.cities, CustomGet);
+    const { data, error, isLoading } = useSWR(swrKeys.cities, CustomGet<ICityAPIResponse>);
     const [cityOptions, setCityOptions] = useState<{ [key: string]: string[] }>({});
     // const [cityOptions, setCityOptions] = useState<{
     //     [country: string]: string[];
@@ -113,7 +114,7 @@ export default function MainFilter() {
 
     // 3) Kada god url dobije vrijednost, fetchaj podatke (useSWRMutation)
     const { trigger } = useSWRMutation(url, CustomGet, {
-        onSuccess: (data: ICar[]) => {
+        onSuccess: (data: IOffer[]) => {
             setCars(data);
             router.push('/listing');
         },

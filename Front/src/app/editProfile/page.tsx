@@ -17,15 +17,16 @@ import {
   Heading,
   Tab,
   TabPanels,
-  Tabs,
+  Tabs
 } from '@chakra-ui/react';
 import { ReactElement, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import useSWRMutation from 'swr/mutation';
 import DeleteButton from '@/components/shared/auth/DeleteButton/DeleteButton';
-import { CustomGet } from '@/fetchers/homeData';
+import { CustomGet } from '@/fetchers/get';
 import useSWR from 'swr';
-import { updateProfile } from '@/mutation/profile';
+import { CustomPost } from '@/fetchers/post';
+import { Blockquote } from "flowbite-react";
 
 export default function EditPage() {
   const {
@@ -45,9 +46,9 @@ export default function EditPage() {
   } = useForm<IEditPassword>();
 
   let [success, setSuccess] = useState(false)
-  const {data: dataGet, error, isLoading} = useSWR(swrKeys.profileuser, CustomGet<IGetUser>)
+  const {data: dataGet, error, isLoading} = useSWR(swrKeys.profileUser, CustomGet<IGetUser>)
 
-  const { trigger: updateTrigger } = useSWRMutation(swrKeys.profileuser, updateProfile<IEditUser>, {
+  const { trigger: updateTrigger } = useSWRMutation(swrKeys.profileUser, CustomPost<IEditUser>, {
     onSuccess: () => {
       setSuccess(true)
       console.log("Saved changes")
@@ -57,7 +58,7 @@ export default function EditPage() {
     },
   });
 
-  const { trigger: passTrigger } = useSWRMutation(swrKeys.profileuser, updateProfile<IEditPassword>, {
+  const { trigger: passTrigger } = useSWRMutation(swrKeys.profileUser, CustomPost<IEditPassword>, {
     onSuccess: () => {
       setSuccess(true)
       console.log("Saved changes")
@@ -253,13 +254,24 @@ export default function EditPage() {
               </chakra.form>
             </TabPanel>
             <TabPanel>
-            <Box>
-              Understand this: things are now in motion that cannot be undone.<br/>
-              - Gandalf the Gray
-            </Box>
+            <Flex direction={"column"} align={"center"} width={"100%"}>   
+              <Box
+                width={"100%"}
+                my={2}
+                color="brandblack"
+                fontWeight={500}
+                borderLeftWidth={4}
+                borderColor="gray.400"
+                bg="gray.100"
+                p={4}
+              >
+                <cite>{`"Understand this: things are now in motion that cannot be undone."`}</cite>
+              </Box>
+              <Box textAlign={'right'} width={"80%"}>- <cite>Gandalf the Gray</cite></Box>
+            </Flex>
             <DeleteButton 
               label = "Delete Account" 
-              mt = "4"
+              mt = "10"
               password = {dataGet?.password}
               float={"right"}
             />

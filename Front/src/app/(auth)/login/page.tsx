@@ -12,10 +12,8 @@ import {
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { ILogIn } from '@/typings/logIn/logIn.type';
-// import ReCAPTCHA from 'react-google-recaptcha'
 import useSWRMutation from 'swr/mutation';
 import { swrKeys } from '@/fetchers/swrKeys';
-import { logIn } from '@/mutation/login';
 import { useRouter } from 'next/navigation';
 import SucessLoginWindow from '@/components/shared/SuccessWidnow/SucessLoginWindow';
 import { FcGoogle } from 'react-icons/fc';
@@ -23,6 +21,7 @@ import CustomInput from '@/components/shared/auth/CustomInput';
 import SubmitButton from '@/components/shared/auth/SubmitButton';
 import SupportButton from '@/components/shared/auth/SupportButton';
 import { useRef } from 'react';
+import { CustomPost } from '@/fetchers/post';
 export default function HomePage() {
     const {
         register,
@@ -33,10 +32,10 @@ export default function HomePage() {
     } = useForm<ILogIn>();
     const router = useRouter();
 
-    const { trigger } = useSWRMutation(swrKeys.logIn, logIn, {
+    const { trigger } = useSWRMutation(swrKeys.logIn, CustomPost<ILogIn>, {
         onSuccess: (data) => {
             if (data?.success == 1)
-                /*Tu bi potneicjlano moglo doci do greske */
+                localStorage.setItem('userData', JSON.stringify(data));
                 router.push('/SuccessfulLogin');
         },
         onError: () => {

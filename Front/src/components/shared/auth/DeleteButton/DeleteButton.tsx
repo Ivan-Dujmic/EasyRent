@@ -9,7 +9,7 @@ import CustomInput from '../CustomInput';
 import SubmitButton from '../SubmitButton';
 import { IDelete, IEditUser } from '@/typings/users/user.type';
 import { useForm } from 'react-hook-form';
-import { updateProfile } from '@/mutation/profile';
+import { CustomPost } from '@/fetchers/post';
 
 interface DeleteButtonProps extends ButtonProps {
   label?: string;
@@ -33,7 +33,7 @@ export default function DeleteButton({
   const cancelRef = useRef<HTMLButtonElement>(null);
   const { isOpen, onOpen, onClose } = useDisclosure()
   
-  const { trigger } = useSWRMutation(swrKeys.deleteuser, updateProfile<IDelete>, {
+  const { trigger } = useSWRMutation(swrKeys.deleteUser, CustomPost<IDelete>, {
     onSuccess: () => {
       console.log("Account deleted")
     },

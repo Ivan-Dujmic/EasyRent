@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import { Flex, IconButton, Text, useBreakpointValue } from '@chakra-ui/react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
-import { ICar } from '@/fetchers/homeData';
 import VehicleCard from '../VehicleCard/VechileCard';
+import { IOffer } from '@/typings/vehicles/vehicles.type';
 
 interface IVehicleGridProps {
-  vehicles: ICar[];
+  vehicles: IOffer[];
 }
 
 export const VehicleGrid = ({ vehicles }: IVehicleGridProps) => {
