@@ -24,7 +24,7 @@ import { CustomGet } from '@/fetchers/get';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { useFilterContext } from '@/context/FilterContext/FilterContext';
 import useSWR from 'swr';
-import { ICar } from '@/typings/vehicles/vehicles.type';
+import { IOffer } from '@/typings/vehicles/vehicles.type';
 
 // Lokacije iz primjera
 const options: { [key: string]: string[] } = {
@@ -114,7 +114,7 @@ export default function MainFilter() {
 
     // 3) Kada god url dobije vrijednost, fetchaj podatke (useSWRMutation)
     const { trigger } = useSWRMutation(url, CustomGet, {
-        onSuccess: (data: ICar[]) => {
+        onSuccess: (data: IOffer[]) => {
             setCars(data);
             router.push('/listing');
         },

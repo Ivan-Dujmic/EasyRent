@@ -21,7 +21,7 @@ import { useFilterContext } from '@/context/FilterContext/FilterContext';
 import { useCarContext } from '@/context/CarContext';
 import { useRouter } from 'next/navigation';
 import { swrKeys } from '@/fetchers/swrKeys';
-import { ICar } from '@/typings/vehicles/vehicles.type';
+import { IOffer } from '@/typings/vehicles/vehicles.type';
 
 // Define the makes and models data
 const makesAndModels: Record<string, string[]> = {
@@ -126,7 +126,7 @@ export default function SideFilter() {
   );
 
   const { trigger } = useSWRMutation(url, CustomGet, {
-    onSuccess: (data: ICar[]) => {
+    onSuccess: (data: IOffer[]) => {
       setCars(data); // Spremanje automobila u globalni kontekst
       router.push('/listing'); // Preusmjeravanje na novu stranicu
       console.log(data);
