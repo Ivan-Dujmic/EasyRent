@@ -1679,7 +1679,12 @@ def companyVehicle(request):
     tags=["profile"],
     request=CompanyOfferPutSerializer
 )
-@api_view(["GET", "PUT"])
+@extend_schema(
+    methods=["DELETE"],
+    operation_id="delete_company_offer",
+    tags=["profile"]
+)
+@api_view(["GET", "PUT", "DELETE"])
 def getCompanyOffer(request, offerId):
     if request.method == "GET":
         user = request.user
@@ -1742,7 +1747,36 @@ def getCompanyOffer(request, offerId):
             return Response(
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
-
+        
+    elif request.method == "DELETE":
+        user = request.user
+        if user.is_authenticated:
+            data = request.data
+            if not data.get("offerId"):
+                return Response(
+                    {"success": 0, "message": "Offer ID is required"}, status=400
+                )
+            try:
+                dealership = Dealership.objects.get(user=user.id)
+                offer = Offer.objects.get(
+                    offer_id=request.data.get("offerId"),
+                )
+                offer.delete()
+                return Response(
+                    {"success": 1, "message": "Offer deleted successfully"}, status=200
+                )
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no offers yet!",
+                    },
+                    status=200,
+                )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
 
 @extend_schema(
     methods=["POST"],
@@ -1751,7 +1785,7 @@ def getCompanyOffer(request, offerId):
     request=CompanyOfferPostSerializer
 )
 @login_required
-@api_view(["POST", "DELETE"])
+@api_view(["POST"])
 def companyOffer(request):
     if request.method == "POST":
         user = request.user
@@ -1796,39 +1830,7 @@ def companyOffer(request):
             return Response(
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
-
-    elif request.method == "DELETE":
-        user = request.user
-        if user.is_authenticated:
-            data = request.data
-            if not data.get("offerId"):
-                return Response(
-                    {"success": 0, "message": "Offer ID is required"}, status=400
-                )
-            try:
-                dealership = Dealership.objects.get(user=user.id)
-                offer = Offer.objects.get(
-                    offer_id=request.GET.get("offerId"),
-                )
-                offer.delete()
-                return Response(
-                    {"success": 1, "message": "Offer deleted successfully"}, status=200
-                )
-            except:
-                return Response(
-                    {
-                        "success": 0,
-                        "message": "Company does not exist or has no offers yet!",
-                    },
-                    status=200,
-                )
-        else:
-            return Response(
-                {"success": 0, "message": "User not authenticated"}, status=401
-            )
-
     
-
 
 @extend_schema(
     methods=["GET"],
