@@ -87,10 +87,19 @@ def isUserRentalExpired(rental):
 def canUserReview(rental):
     oneMonthAfterExpiry = rental.dateTimeReturned + timedelta(days=30)
     hasReviewed = Review.objects.filter(rent=rental).exists()
-    return rental.dateTimeReturned < now() and not hasReviewed and now() <= oneMonthAfterExpiry
+    return (
+        rental.dateTimeReturned < now()
+        and not hasReviewed
+        and now() <= oneMonthAfterExpiry
+    )
+
 
 def calculateReviewsForOffer(offer):
-    rentals = Rent.objects.filter(vehicle__dealer=offer.dealer).filter(vehicle__model=offer.model).values('rent_id')
+    rentals = (
+        Rent.objects.filter(vehicle__dealer=offer.dealer)
+        .filter(vehicle__model=offer.model)
+        .values("rent_id")
+    )
     reviews = Review.objects.filter(rent__in=rentals).all()
     rating = 0
     for review in reviews:
@@ -99,8 +108,9 @@ def calculateReviewsForOffer(offer):
     offer.noOfReviews = reviews.count()
     offer.save()
 
+
 def calculateReviewsForVehicle(vehicle):
-    rentals = Rent.objects.filter(vehicle=vehicle).values('rent_id')
+    rentals = Rent.objects.filter(vehicle=vehicle).values("rent_id")
     reviews = Review.objects.filter(rent__in=rentals).all()
     rating = 0
     for review in reviews:
@@ -109,28 +119,31 @@ def calculateReviewsForVehicle(vehicle):
     vehicle.noOfReviews = reviews.count()
     vehicle.save()
 
+
 def calculateReviewsForAllOffers():
     offers = Offer.objects.all()
     for offer in offers:
         calculateReviewsForOffer(offer)
+
 
 def calculateReviewsForAllVehicles():
     vehicles = Vehicle.objects.all()
     for vehicle in vehicles:
         calculateReviewsForVehicle(vehicle)
 
+
 @extend_schema(
     methods=["POST"],
     operation_id="post_review",
     tags=["profile"],
-    request=PostReviewSerializer
+    request=PostReviewSerializer,
 )
 @api_view(["POST"])
 def postReview(request, rent_id):
     try:
         rent = Rent.objects.get(pk=rent_id)
         user = request.user
-        if (not user.is_authenticated or not canUserReview(rent)):
+        if not user.is_authenticated or not canUserReview(rent):
             return Response({"error": "User can't review"}, status=404)
         rentoid = Rentoid.objects.get(user=user)
         if Review.objects.filter(rent=rent).exists():
@@ -145,7 +158,9 @@ def postReview(request, rent_id):
             return Response({"error": "Invalid rating format"}, status=404)
         if rating < 1 or rating > 5:
             return Response({"error": "Invalid rating format"}, status=404)
-        review = Review(rent=rent, rating=rating, description=description, reviewDate=datetime.now())
+        review = Review(
+            rent=rent, rating=rating, description=description, reviewDate=datetime.now()
+        )
         review.save()
         offer = Offer.objects.get(model=rent.vehicle.model, dealer=rent.vehicle.dealer)
         calculateReviewsForOffer(offer)
@@ -999,12 +1014,11 @@ def companyEarnings(request):
                 )
 
 
-
 @extend_schema(
     methods=["PUT"],
     operation_id="put_company_info",
     tags=["profile"],
-    request=PutCompanyInfo
+    request=PutCompanyInfo,
 )
 @login_required
 @api_view(["PUT", "GET"])
@@ -1058,7 +1072,11 @@ def companyInfo(request):
                 # Return: {companyLogo, companyName, phoneNo, description}
                 dealership = Dealership.objects.get(user=user.id)
                 retObject = {
-                    "image": request.build_absolute_uri(dealership.image.url) if dealership.image else None,
+                    "image": (
+                        request.build_absolute_uri(dealership.image.url)
+                        if dealership.image
+                        else None
+                    ),
                     "companyName": user.first_name,
                     "phoneNo": dealership.phoneNo,
                     "description": dealership.description,
@@ -1078,7 +1096,7 @@ def companyInfo(request):
     methods=["PUT"],
     operation_id="put_company_password",
     tags=["profile"],
-    request=PutCompanyPassword
+    request=PutCompanyPassword,
 )
 @login_required
 @api_view(["PUT"])
@@ -1403,7 +1421,7 @@ def companyLocation(request):
     methods=["POST"],
     operation_id="delete_company",
     tags=["profile"],
-    request=DeleteCompanySerializer
+    request=DeleteCompanySerializer,
 )
 @login_required
 @api_view(["POST"])
@@ -1616,7 +1634,7 @@ def companyVehicle(request):
                 model = Model.objects.get(model_id=data.get("model_id"))
                 location = Location.objects.get(
                     location_id=data.get("location_id"),
-                    dealership=dealership.dealership_id
+                    dealership=dealership.dealership_id,
                 )
 
                 vehicle = Vehicle.objects.create(
@@ -1756,7 +1774,7 @@ def companyOffer(request):
                     model=model,
                     dealer=dealership,
                     price=data.get("price"),
-                    image = request.FILES.get("image"),
+                    image=request.FILES.get("image"),
                     description=data.get("description"),
                     noOfReviews=0,
                     rating=0,
