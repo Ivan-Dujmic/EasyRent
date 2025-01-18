@@ -88,7 +88,7 @@ export default function ReviewForm({
                 ):(
                     <chakra.form onSubmit={handleSubmit(onAddFunds)}>
                         <ModalHeader width={"90%"}>
-                            Leave a Review for {vehicle.companyName}'s {vehicle.makeName} {vehicle.modelName}
+                            {`Leave a Review for ${vehicle.companyName}'s ${vehicle.makeName} ${vehicle.modelName}`}
                         </ModalHeader>
                         <ModalCloseButton />
                         <ModalBody>

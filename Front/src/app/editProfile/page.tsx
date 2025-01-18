@@ -265,7 +265,7 @@ export default function EditPage() {
                 bg="gray.100"
                 p={4}
               >
-                <cite>"Understand this: things are now in motion that cannot be undone."</cite>
+                <cite>{`"Understand this: things are now in motion that cannot be undone."`}</cite>
               </Box>
               <Box textAlign={'right'} width={"80%"}>- <cite>Gandalf the Gray</cite></Box>
             </Flex>

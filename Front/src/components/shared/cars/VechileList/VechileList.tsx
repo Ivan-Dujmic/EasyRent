@@ -33,9 +33,10 @@ export default function VehicleList({
   let [numCards_d, setNumCard] = useState(numCards);
 
   useEffect(() => {
+    const current = containerRef.current
     const updateContainerWidth = () => {
-      if (containerRef.current) {
-        const { width } = containerRef.current.getBoundingClientRect();
+      if (current) {
+        const { width } = current.getBoundingClientRect();
         setContainerWidth(width);
       }
     };
@@ -46,13 +47,13 @@ export default function VehicleList({
       updateContainerWidth();
     });
 
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
+    if (current) {
+      resizeObserver.observe(current);
     }
 
     return () => {
-      if (containerRef.current) {
-        resizeObserver.unobserve(containerRef.current);
+      if (current) {
+        resizeObserver.unobserve(current);
       }
     };
   });
