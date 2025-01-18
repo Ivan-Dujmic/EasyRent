@@ -37,7 +37,7 @@ export default function VehicleCard({
     <Card
       margin={0}
       as={NextLink}
-      href={isReviewable ? `/offer/:${vehicle.offer_id}` : {}}
+      href={!isReviewable ? `/offer/:${vehicle.offer_id}` : {}}
       maxW="260px"
       minW="260px"
       height="250px" // Fixed height for consistency
@@ -69,7 +69,7 @@ export default function VehicleCard({
       >
         <GrayFilter 
           onClick={onOpenReview} 
-          show={isReviewed}
+          show={!isReviewed}
             _hover={{
               opacity: 0,
           }}>
