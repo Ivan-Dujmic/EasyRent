@@ -722,6 +722,24 @@ def toggleOfferVisibility(request):
     responses={
         200: GetCompanyRents(many=True),
     },
+    parameters=[
+        OpenApiParameter(
+            name="page",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Page as integer",
+            required=False,
+            default=1,
+        ),
+        OpenApiParameter(
+            name="limit",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Limit as integer",
+            required=False,
+            default=1,
+        ),
+    ],
 )
 @login_required
 @api_view(["GET"])
@@ -739,22 +757,24 @@ def upcomingCompanyRents(request):
                     rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
                     rentUser = User.objects.get(id=rentoid.user_id)
                     vehicle = Vehicle.objects.get(vehicle_id=rent.vehicle_id)
-                    offer = Offer.objects.filter(
-                        dealer=rent.dealer, model=vehicle.model
-                    )
+                    offer = Offer.objects.get(dealer=rent.dealer, model=vehicle.model)
                     model = Model.objects.get(model_id=vehicle.model_id)
-                    if rent.dateTimeRented < datetime.now():
+                    if rent.dateTimeRented > make_aware(datetime.now()):
                         item = {
                             "dateTimePickup": rent.dateTimeRented,
                             "dateTimeReturned": rent.dateTimeReturned,
                             "firstName": rentUser.first_name,
                             "lastName": rentUser.last_name,
                             "price": offer.price,
-                            "vehicleId": offer.vehicle_id,
+                            "vehicleId": vehicle.vehicle_id,
                             "registration": vehicle.registration,
                             "makeName": model.makeName,
                             "modelName": model.modelName,
-                            "image": offer.image,
+                            "image": (
+                                request.build_absolute_uri(offer.image.url)
+                                if offer.image
+                                else None
+                            ),
                         }
                         res.append(item)
                 retObject = {
@@ -768,7 +788,7 @@ def upcomingCompanyRents(request):
                         "success": 0,
                         "message": "User has no upcoming rents yet or does not exist!",
                     },
-                    status=200,
+                    status=404,
                 )
         else:
             return Response(
@@ -783,6 +803,24 @@ def upcomingCompanyRents(request):
     responses={
         200: GetCompanyRents(many=True),
     },
+    parameters=[
+        OpenApiParameter(
+            name="page",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Page as integer",
+            required=False,
+            default=1,
+        ),
+        OpenApiParameter(
+            name="limit",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Limit as integer",
+            required=False,
+            default=1,
+        ),
+    ],
 )
 @login_required
 @api_view(["GET"])
@@ -800,25 +838,27 @@ def ongoingCompanyRents(request):
                     rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
                     rentUser = User.objects.get(id=rentoid.user_id)
                     vehicle = Vehicle.objects.get(vehicle_id=rent.vehicle_id)
-                    offer = Offer.objects.filter(
-                        dealer=rent.dealer, model=vehicle.model
-                    )
+                    offer = Offer.objects.get(dealer=rent.dealer, model=vehicle.model)
                     model = Model.objects.get(model_id=vehicle.model_id)
-                    if (
-                        rent.dateTimeRented >= datetime.now()
-                        and rent.dateTimeReturned < datetime.now()
-                    ):
+                    if rent.dateTimeReturned > make_aware(
+                        datetime.now()
+                    ) and rent.dateTimeRented <= make_aware(datetime.now()):
+
                         item = {
                             "dateTimePickup": rent.dateTimeRented,
                             "dateTimeReturned": rent.dateTimeReturned,
                             "firstName": rentUser.first_name,
                             "lastName": rentUser.last_name,
                             "price": offer.price,
-                            "vehicleId": offer.vehicle_id,
+                            "vehicleId": vehicle.vehicle_id,
                             "registration": vehicle.registration,
                             "makeName": model.makeName,
                             "modelName": model.modelName,
-                            "image": offer.image,
+                            "image": (
+                                request.build_absolute_uri(offer.image.url)
+                                if offer.image
+                                else None
+                            ),
                         }
                         res.append(item)
                 retObject = {
@@ -832,7 +872,7 @@ def ongoingCompanyRents(request):
                         "success": 0,
                         "message": "User has no upcoming rents yet or does not exist!",
                     },
-                    status=200,
+                    status=404,
                 )
         else:
             return Response(
@@ -878,28 +918,28 @@ def completedCompanyRents(request):
                 limit = int(request.GET.get("limit", 10))
                 rents = Rent.objects.filter(dealer=dealership)
                 res = []
-                i = 1
                 for rent in rents:
-                    i += 1
                     rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
                     rentUser = User.objects.get(id=rentoid.user_id)
                     vehicle = Vehicle.objects.get(vehicle_id=rent.vehicle_id)
                     offer = Offer.objects.get(dealer=rent.dealer, model=vehicle.model)
-                    model = Model.objects.filter(model_id=vehicle.model.model_id)
-                    print(i)
+                    model = Model.objects.get(model_id=vehicle.model_id)
                     if rent.dateTimeReturned <= make_aware(datetime.now()):
-                        print("tu")
                         item = {
                             "dateTimePickup": rent.dateTimeRented,
                             "dateTimeReturned": rent.dateTimeReturned,
                             "firstName": rentUser.first_name,
                             "lastName": rentUser.last_name,
                             "price": offer.price,
-                            "vehicleId": rent.vehicle_id,
+                            "vehicleId": vehicle.vehicle_id,
                             "registration": vehicle.registration,
                             "makeName": model.makeName,
                             "modelName": model.modelName,
-                            "image": offer.image,
+                            "image": (
+                                request.build_absolute_uri(offer.image.url)
+                                if offer.image
+                                else None
+                            ),
                         }
                         res.append(item)
                 retObject = {
@@ -928,6 +968,24 @@ def completedCompanyRents(request):
     responses={
         200: GetCompanyReviews(many=True),
     },
+    parameters=[
+        OpenApiParameter(
+            name="page",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Page as integer",
+            required=False,
+            default=1,
+        ),
+        OpenApiParameter(
+            name="limit",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Limit as integer",
+            required=False,
+            default=1,
+        ),
+    ],
 )
 @login_required
 @api_view(["GET"])
@@ -939,43 +997,48 @@ def companyReviews(request):
                 dealership = Dealership.objects.get(user=user.id)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
-
-                rents = Rent.objects.get(dealer=dealership)
+                rents = Rent.objects.filter(dealer=dealership)
                 res = []
                 for rent in rents:
-                    reviews = Review.objects.get(rent_id=rent.rent_id)
+                    try:
+                        review = Review.objects.get(rent=rent)
+                    except:
+                        continue
                     vehicle = Vehicle.objects.get(vehicle_id=rent.vehicle_id)
                     model = Model.objects.get(model_id=vehicle.model_id)
                     offer = Offer.objects.get(
                         dealer=dealership, model_id=vehicle.model_id
                     )
-                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
-                    rentUser = User.objects.get(id=rentoid.user_id)
-
+                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid.rentoid_id)
+                    rentUser = User.objects.get(id=rentoid.user.id)
                     current = {
-                        "image": offer.image,
+                        "image": (
+                            request.build_absolute_uri(dealership.image.url)
+                            if dealership.image
+                            else None
+                        ),
                         "makeName": model.makeName,
                         "modelName": model.modelName,
                         "registration": vehicle.registration,
                         "firstName": rentUser.first_name,
                         "lastName": rentUser.last_name,
-                        "descriptions": [review.description for review in reviews],
-                        "ratings": [review.rating for review in reviews],
+                        "descriptions": review.description,
+                        "ratings": review.rating,
                         "vehicleId": vehicle.vehicle_id,
                     }
                     res.append(current)
-                    retObject = {
-                        "results": res[(page - 1) * limit : page * limit],
-                        "isLastPage": True if len(res) <= page * limit else False,
-                    }
-                    return JsonResponse(retObject, status=200)
+                retObject = {
+                    "results": res[(page - 1) * limit : page * limit],
+                    "isLastPage": True if len(res) <= page * limit else False,
+                }
+                return JsonResponse(retObject, status=200)
             except:
                 return Response(
                     {
                         "success": 0,
                         "message": "Company does not exist or has no offers yet!",
                     },
-                    status=200,
+                    status=404,
                 )
 
 
@@ -1773,7 +1836,6 @@ def getCompanyOffer(request, offerId):
                 }
                 return JsonResponse(retObject, status=200)
             except Exception as e:
-                print(e)
                 return Response(
                     {
                         "success": 0,
@@ -1885,7 +1947,6 @@ def companyOffer(request):
                     {"success": 1, "message": "Offer added successfully"}, status=200
                 )
             except Exception as e:
-                print(e)
                 return Response(
                     {
                         "success": 0,
