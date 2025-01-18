@@ -31,6 +31,7 @@ import {
   FaTwitter,
 } from 'react-icons/fa';
 import { swrKeys } from '@/fetchers/swrKeys';
+import { LocationsResponse } from '@/typings/locations/locations';
 
 const FooterLinks = {
   quickLinks: [
@@ -65,6 +66,12 @@ export default function OfferPage({
     offer_id ? swrKeys.offer(offer_id) : null, // Fetch only if `offer_id` exists
     CustomGet
   );
+
+  const { data: offerLocations = { locations: [] } } =
+    useSWR<LocationsResponse>(
+      offer_id ? swrKeys.offerLocations(offer_id) : null,
+      CustomGet
+    );
 
   const containerWidth = useBreakpointValue({
     base: '90%', // Width for mobile devices
@@ -217,7 +224,10 @@ export default function OfferPage({
             Pickup Locations:
           </Heading>
           {/* Map Component */}
-          <CustomMap locations={dealershipLocations} showInfoWindow={true} />
+          <CustomMap
+            locations={offerLocations.locations}
+            showInfoWindow={true}
+          />
         </Box>
 
         {/* Reviews section */}

@@ -1,5 +1,5 @@
 export interface Location {
-  companyName: string;
+  companyName?: string;
   dealership_id: number;
   streetName: string;
   streetNo: string;
@@ -7,6 +7,7 @@ export interface Location {
   latitude: string;
   longitude: string;
   location_id: number;
+  isHQ?: boolean;
 }
 
 export interface ExtraLocationInfo extends Location {
