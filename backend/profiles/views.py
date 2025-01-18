@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from django.contrib.auth.decorators import *
 from django import forms
 from datetime import datetime
+from django.utils.timezone import make_aware, make_naive
 import random
 from .models import *
 from .serializers import *
@@ -846,6 +847,24 @@ def ongoingCompanyRents(request):
     responses={
         200: GetCompanyRents(many=True),
     },
+    parameters=[
+        OpenApiParameter(
+            name="page",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Page as integer",
+            required=False,
+            default=1,
+        ),
+        OpenApiParameter(
+            name="limit",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Limit as integer",
+            required=False,
+            default=1,
+        ),
+    ],
 )
 @login_required
 @api_view(["GET"])
@@ -859,22 +878,24 @@ def completedCompanyRents(request):
                 limit = int(request.GET.get("limit", 10))
                 rents = Rent.objects.filter(dealer=dealership)
                 res = []
+                i = 1
                 for rent in rents:
+                    i += 1
                     rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
                     rentUser = User.objects.get(id=rentoid.user_id)
                     vehicle = Vehicle.objects.get(vehicle_id=rent.vehicle_id)
-                    offer = Offer.objects.filter(
-                        dealer=rent.dealer, model=vehicle.model
-                    )
-                    model = Model.objects.get(model_id=vehicle.model_id)
-                    if rent.dateTimeReturned >= datetime.now():
+                    offer = Offer.objects.get(dealer=rent.dealer, model=vehicle.model)
+                    model = Model.objects.filter(model_id=vehicle.model.model_id)
+                    print(i)
+                    if rent.dateTimeReturned <= make_aware(datetime.now()):
+                        print("tu")
                         item = {
                             "dateTimePickup": rent.dateTimeRented,
                             "dateTimeReturned": rent.dateTimeReturned,
                             "firstName": rentUser.first_name,
                             "lastName": rentUser.last_name,
                             "price": offer.price,
-                            "vehicleId": offer.vehicle_id,
+                            "vehicleId": rent.vehicle_id,
                             "registration": vehicle.registration,
                             "makeName": model.makeName,
                             "modelName": model.modelName,
@@ -892,7 +913,7 @@ def completedCompanyRents(request):
                         "success": 0,
                         "message": "User has no upcoming rents yet or does not exist!",
                     },
-                    status=200,
+                    status=404,
                 )
         else:
             return Response(
@@ -1156,13 +1177,16 @@ def companyLocations(request):
             try:
                 dealership = Dealership.objects.get(user=user.id)
                 # Return: [streetName, streetNo, cityName, location_id]
-                locations = Location.objects.get(dealership_id=dealership.dealership_id)
+                locations = Location.objects.filter(
+                    dealership_id=dealership.dealership_id
+                )
                 res = [{}]
                 for location in locations:
                     current = {
                         "cityName": location.cityName,
                         "streetName": location.streetName,
                         "streetNo": location.streetNo,
+                        "countryName": location.countryName,
                         "locationId": location.location_id,
                     }
                     if location.isHQ:
@@ -1888,7 +1912,7 @@ def companyOffer(request):
 def companyVehicleLog(request):
     if request.method == "GET":
         user = request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             try:
                 vehicle_id = request.GET.get("vehicleId")
                 dealership = Dealership.objects.get(user=user.id)
@@ -1962,32 +1986,47 @@ def companyVehicleLog(request):
     responses={
         200: GetCompanyLog(many=True),
     },
+    parameters=[
+        OpenApiParameter(
+            name="page",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Page as integer",
+            required=False,
+            default=1,
+        ),
+        OpenApiParameter(
+            name="limit",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Limit as integer",
+            required=False,
+            default=1,
+        ),
+    ],
 )
 @login_required
 @api_view(["GET"])
-def companyLogUpcoming(request):
+def companyLogUpcoming(request, vehicle_id):
     if request.method == "GET":
         user = request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             try:
                 dealership = Dealership.objects.get(user=user.id)
-                rents = Rent.objects.get(
+                rents = Rent.objects.filter(
                     dealer=dealership,
-                    vehicle_id=request.GET.get("vehicleId"),
+                    vehicle=vehicle_id,
                 )
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
-                vehicle_id = request.GET.get("vehicleId")
                 res = []
-                for rent in rents:
-                    if (
-                        rent.vehicle_id != vehicle_id
-                        or rent.dateTimeRented < datetime.now()
-                    ):
+                for i, rent in enumerate(rents):
+                    rentDateTimeRented = rent.dateTimeRented
+                    if rent.dateTimeRented < make_aware(datetime.now()):
                         continue
                     rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
                     rentUser = User.objects.get(id=rentoid.user_id)
-                    if rent.dateTimeRented >= datetime.now():
+                    if rent.dateTimeRented >= make_aware(datetime.now()):
                         item = {
                             "dateTimePickup": rent.dateTimeRented,
                             "dateTimeReturned": rent.dateTimeReturned,
@@ -2010,7 +2049,7 @@ def companyLogUpcoming(request):
                         "success": 0,
                         "message": "Company does not exist or has no offers yet!",
                     },
-                    status=200,
+                    status=404,
                 )
 
 
@@ -2021,36 +2060,44 @@ def companyLogUpcoming(request):
     responses={
         200: GetCompanyLog(many=True),
     },
+    parameters=[
+        OpenApiParameter(
+            name="page",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Page as integer",
+            required=False,
+            default=1,
+        ),
+        OpenApiParameter(
+            name="limit",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Limit as integer",
+            required=False,
+            default=1,
+        ),
+    ],
 )
 @login_required
 @api_view(["GET"])
-def companyLogOngoing(request):
+def companyLogOngoing(request, vehicle_id):
     if request.method == "GET":
         user = request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             try:
                 dealership = Dealership.objects.get(user=user.id)
-                rents = Rent.objects.get(
-                    dealer=dealership,
-                    vehicle_id=request.GET.get("vehicleId"),
-                )
+                rents = Rent.objects.filter(dealer=dealership, vehicle=vehicle_id)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
-                vehicle_id = request.GET.get("vehicleId")
                 res = []
                 for rent in rents:
-                    if (
-                        rent.vehicle_id != vehicle_id
-                        or rent.dateTimeRented > datetime.now()
-                        or (
-                            rent.dateTimeReturned < datetime.now()
-                            and rent.DateTimeRented >= datetime.now()
-                        )
-                    ):
-                        continue
-                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
-                    rentUser = User.objects.get(id=rentoid.user_id)
-                    if rent.dateTimeRented >= datetime.now():
+
+                    if rent.dateTimeRented <= make_aware(
+                        datetime.now()
+                    ) and rent.dateTimeReturned > make_aware(datetime.now()):
+                        rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                        rentUser = User.objects.get(id=rentoid.user_id)
                         item = {
                             "dateTimePickup": rent.dateTimeRented,
                             "dateTimeReturned": rent.dateTimeReturned,
@@ -2073,44 +2120,52 @@ def companyLogOngoing(request):
                         "success": 0,
                         "message": "Company does not exist or has no offers yet!",
                     },
-                    status=200,
+                    status=404,
                 )
 
 
 @extend_schema(
     methods=["GET"],
-    operation_id="get_company_log_ongoing",
+    operation_id="get_company_log_completed",
     tags=["profile"],
     responses={
         200: GetCompanyLog(many=True),
     },
+    parameters=[
+        OpenApiParameter(
+            name="page",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Page as integer",
+            required=False,
+            default=1,
+        ),
+        OpenApiParameter(
+            name="limit",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Limit as integer",
+            required=False,
+            default=1,
+        ),
+    ],
 )
 @login_required
 @api_view(["GET"])
-def companyLogCompleted(request):
+def companyLogCompleted(request, vehicle_id):
     if request.method == "GET":
         user = request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             try:
                 dealership = Dealership.objects.get(user=user.id)
-                rents = Rent.objects.get(
-                    dealer=dealership,
-                    vehicle_id=request.GET.get("vehicleId"),
-                )
+                rents = Rent.objects.filter(dealer=dealership, vehicle_id=vehicle_id)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
-                vehicle_id = request.GET.get("vehicleId")
                 res = []
                 for rent in rents:
-                    if (
-                        rent.vehicle_id != vehicle_id
-                        or rent.dateTimeReturned > datetime.now()
-                        or rent.dateTimeRented > datetime.now()
-                    ):
-                        continue
-                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
-                    rentUser = User.objects.get(id=rentoid.user_id)
-                    if rent.dateTimeRented >= datetime.now():
+                    if rent.dateTimeReturned <= make_aware(datetime.now()):
+                        rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                        rentUser = User.objects.get(id=rentoid.user_id)
                         item = {
                             "dateTimePickup": rent.dateTimeRented,
                             "dateTimeReturned": rent.dateTimeReturned,
@@ -2150,7 +2205,7 @@ def companyLogCompleted(request):
 def companyLogReviews(request, query):
     if request.method == "GET":
         user = request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             try:
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
@@ -2187,5 +2242,5 @@ def companyLogReviews(request, query):
                         "success": 0,
                         "message": "Company does not exist or has no offers yet!",
                     },
-                    status=200,
+                    status=404,
                 )

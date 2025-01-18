@@ -50,10 +50,24 @@ urlpatterns = [
     path("company/vehicle/", views.companyVehicle, name="companyVehicle"),
     path("company/offer/", views.companyOffer, name="companyOffer"),
     path("company/vehicle-log/", views.companyVehicleLog, name="companyVehicleLog"),
-    path("company/log-upcoming/", views.companyLogUpcoming, name="companyLogUpcoming"),
-    path("company/log-ongoing/", views.companyLogOngoing, name="companyLogOngoing"),
     path(
-        "company/log-completed/", views.companyLogCompleted, name="companyLogCompleted"
+        "company/log-upcoming/<int:vehicle_id>",
+        views.companyLogUpcoming,
+        name="companyLogUpcoming",
     ),
-    path("company/log-reviews/", views.companyLogReviews, name="companyLogReviews"),
+    path(
+        "company/log-ongoing/<int:vehicle_id>",
+        views.companyLogOngoing,
+        name="companyLogOngoing",
+    ),
+    path(
+        "company/log-completed/<int:vehicle_id>",
+        views.companyLogCompleted,
+        name="companyLogCompleted",
+    ),
+    path(
+        "company/log-reviews/<int:vehicle_id>",
+        views.companyLogReviews,
+        name="companyLogReviews",
+    ),
 ]

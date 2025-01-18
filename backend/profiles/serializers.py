@@ -126,6 +126,7 @@ class GetCompanyLocations(serializers.Serializer):
     cityName = serializers.CharField()
     streetName = serializers.CharField()
     streetNo = serializers.CharField()
+    countryName = serializers.CharField()
     locationId = serializers.IntegerField()
 
 
