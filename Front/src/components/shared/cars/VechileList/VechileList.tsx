@@ -11,10 +11,11 @@ import { FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import React, { useState, useRef, useEffect } from 'react';
 import VehicleCard from '../VehicleCard/VechileCard';
 import { mockVehicles } from '@/mockData/mockVehicles';
-import { ICar } from '@/typings/vehicles/vehicles.type';
+import { IOffer } from '@/typings/vehicles/vehicles.type';
+import { NextRouter } from 'next/router';
 
 interface VehicleListProps {
-  vehicles?: Array<ICar | {car: ICar, rated: boolean}>;
+  vehicles?: Array<IOffer>;
   description?: string;
   numCards?: number;
   cardGap?: number;
@@ -120,7 +121,7 @@ export default function VehicleList({
           py={'2px'}
         >
           {visibleVehicles.map((vehicle, index) => (
-            <VehicleCard vehicle={vehicle} key={index} />
+            <VehicleCard vehicle={vehicle} key={index}/>
           ))}
         </Flex>
 

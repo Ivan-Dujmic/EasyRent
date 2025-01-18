@@ -17,5 +17,6 @@ export const swrKeys = {
     deleteUser: `${profile}user/delete`,
     userRentals: `${profile}user/rentals`,
     cities: `${home}cities/`,
-    addBalance: (amount: number) => `${wallet}addMoney/${amount}`
+    addBalance: (amount: number) => `${wallet}addMoney/${amount}`,
+    review: (id: string) => `${home}addReview/${id}` // TODO
 };

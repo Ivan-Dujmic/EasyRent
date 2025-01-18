@@ -39,12 +39,15 @@ import {HeaderButton} from '@/components/shared/Header/Header';
 import Footer from '@/components/shared/Footer/Footer';
 import { useUserContext } from "@/context/UserContext/UserContext";
 import LogOutButton from "@/components/shared/auth/LogOutButton/LogOutButton";
-import { IRentalEntries, IRentals, toCar } from "@/typings/vehicles/vehicles.type"
+import { IRentalEntry, IRentals, IReviewable, toOffer } from "@/typings/vehicles/vehicles.type"
 import ChatMenu, {ChatIcon} from "@/components/shared/chat/ChatMenu";
 import useSWRMutation from "swr/mutation";
 import { CustomPost } from "@/fetchers/post";
 import CustomInput from "@/components/shared/auth/CustomInput";
 import { useForm } from "react-hook-form";
+import { Overlay } from "@/components/shared/filter/overlay/Overlay";
+import { useRouter } from 'next/navigation';
+import GrayFilter from "@/components/shared/filter/overlay/GrayFilter";
 
 const userProfileFooterLinks = {
   quickLinks: [
@@ -67,27 +70,20 @@ const userProfileFooterLinks = {
   paymentIcons: [FaCcVisa, FaCcMastercard, FaCcStripe],
 };
 
-const Overlay = () => (
-  <ModalOverlay
-    bg='blackAlpha.300'
-    backdropFilter='blur(10px)'
-  />
-)
-
 export default function UserProfilePage() {
+
   const {
     handleSubmit,
-    formState: { isSubmitting, errors },
+    formState: { errors },
     clearErrors,
-    getValues,
     register,
   } = useForm<{amount: number}>();
 
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const { data: entries } = useSWR(swrKeys.userRentals, CustomGet<IRentalEntries[]>);
+  const { data: entries } = useSWR(swrKeys.userRentals, CustomGet<IRentalEntry[]>);
   const { user } = useUserContext();
   const { isOpen, onOpen, onClose } = useDisclosure()
-  const [overlay, setOverlay] = useState(<Overlay/>)
+ 
   const { trigger: walletTrigger } = useSWRMutation(swrKeys.addBalance(user.user_id), CustomPost<{amount: number}>, {
     onSuccess: () => {
       console.log("Saved changes")
@@ -101,14 +97,16 @@ export default function UserProfilePage() {
     entries?.filter(vehicle => vehicle.dateTimeReturned !== undefined)
     .map(vehicle => {
       console.log(`rented: ${!vehicle.canReview}`, vehicle)
-      return {car: toCar(vehicle), rated: !(vehicle.canReview)}
+      let item = toOffer(vehicle) as IReviewable
+      item.rated = !(vehicle.canReview)
+      return item
     })
   
   const currentRentals = 
     entries?.filter(vehicle => vehicle.dateTimeReturned === undefined)
     .map(vehicle => {
       console.log("current", vehicle)
-      return toCar(vehicle)
+      return toOffer(vehicle)
     })
 
   const toggleChat = () => {
@@ -147,7 +145,7 @@ export default function UserProfilePage() {
     <Flex direction="column" grow={1} bg="brandlightgray" minH="100vh">
       {/* Add Funds Modal */}
       <Modal isCentered isOpen={isOpen} onClose={onClose}>
-        {overlay}
+        <Overlay/>
         <ModalContent>
           <chakra.form onSubmit={handleSubmit(onAddFunds)}>
             <ModalHeader>Add Funds</ModalHeader>
@@ -158,7 +156,7 @@ export default function UserProfilePage() {
                 {...register('amount', {
                   required: 'Must enter valid amout',
                 })}
-                label="Amount ($)"
+                label="Amount (€)"
                 type="number"
                 placeholder="Enter amount to add"
                 error={errors.amount?.message}
@@ -185,12 +183,11 @@ export default function UserProfilePage() {
       {/* Header */}
       <Header>
         <Text fontSize="md" fontWeight="bold" color="brandblue">
-          {`Balance: ${user.balance}$`}
+          {`Balance: ${user.balance? user.balance : 0}€`}
         </Text>
 
         <Button
           onClick={() => {
-            setOverlay(<Overlay />)
             onOpen()
           }}
           bgColor={'brandblue'}
@@ -235,14 +232,14 @@ export default function UserProfilePage() {
             gap={gapSize}
           >
             <Heading size={headingSize} color="brandblue">
-              {`${user.firstName}'s Profile`}
+              {`${user.firstName? `${user.firstName}'s` : "Your"} Profile`}
             </Heading>
             <Divider />
             <VehicleList vehicles={currentRentals} description="Ongoing rentals:" />
             <VehicleList vehicles={previouslyRented} description="Previously rented:" />
           </Flex>
 
-          {/* Chats Section */}
+          {/* Chats Section (UNIMPLEMENTED) */}
           {isChatOpen ? (
             <ChatMenu onClose={toggleChat} isOpen={isChatOpen} chats={
               [

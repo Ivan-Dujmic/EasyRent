@@ -1,19 +1,26 @@
 import { IDealership } from "../company/company.type";
 
-export interface ICar {
-  image: string;
-  companyName: string;
+export interface IVehicle {
   makeName: string;
   modelName: string;
+  image?: string;
   noOfSeats?: string;
   automatic?: string;
+}
+
+export interface IOffer extends IVehicle {
+  companyName: string;
   price?: number;
   rating?: number;
   noOfReviews?: number;
   offer_id?: string;
 }
 
-export function toCar (car: IRentalEntries): ICar {
+export interface IReviewable extends IOffer {
+  rated: boolean
+}
+
+export function toOffer (car: IRentalEntry): IOffer {
   return {
     image: car.image,
     companyName: car.companyName,
@@ -30,16 +37,16 @@ export function toCar (car: IRentalEntries): ICar {
 
 export interface IShowcased {
   showcased_dealerships: Array<IDealership>;
-  most_popular: Array<ICar>;
-  best_value: Array<ICar>;
+  most_popular: Array<IOffer>;
+  best_value: Array<IOffer>;
 }
 
 export interface IRentals {
-  ongoing_rentals: Array<ICar>;
-  previously_rented: Array<{car: ICar, rated: boolean}>;
+  ongoing_rentals: Array<IOffer>;
+  previously_rented: Array<{car: IOffer, rated: boolean}>;
 }
 
-export interface IRentalEntries {
+export interface IRentalEntry {
   makeName: string;
   modelName: string;
   companyName: string;

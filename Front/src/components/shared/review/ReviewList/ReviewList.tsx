@@ -4,17 +4,10 @@ import React, { useState } from 'react';
 import { Flex, IconButton, Box, Text } from '@chakra-ui/react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
 import { ReviewItem } from '../ReviewItem/ReviewItem';
-
-interface Review {
-  rating: number;
-  firstName: string;
-  lastName: string;
-  reviewDate: string;
-  description: string;
-}
+import { IReview } from '@/typings/users/user.type';
 
 interface ReviewListProps {
-  reviews: Review[];
+  reviews: IReview[];
 }
 
 export const ReviewList: React.FC<ReviewListProps> = ({ reviews }) => {

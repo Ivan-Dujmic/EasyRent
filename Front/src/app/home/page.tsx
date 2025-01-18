@@ -73,9 +73,6 @@ export default function HomePage() {
     md: '60vw', // Širina mape za srednje i velike ekrane
   });
 
-  const numCards =
-    useBreakpointValue({ base: 1, sm: 1, md: 2, lg: 3, xl: 4 }) || 4;
-
   return (
     <Flex direction="column" grow={1} align={'center'} width={'100%'}>
       {user.role === 'user' && <AuthUserHeader UserData={user} />}

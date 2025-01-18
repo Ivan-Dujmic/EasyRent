@@ -29,14 +29,8 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 // Provider komponenta
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
-  const [globalId, setGlobalId] = useState(0)
 
-  function newId() : number {
-    setGlobalId(globalId + 1)
-    return globalId - 1
-  }
-
-  const [user, setUser] = useState<IUser>({ role: 'guest', user_id: newId() }); // Default vrijednost
+  const [user, setUser] = useState<IUser>({role: 'guest', user_id: 0}); // Default vrijednost (user_id: 0 su svi guestovi)
 
   // Dohvati podatke pri inicijalizaciji komponente
   useEffect(() => {

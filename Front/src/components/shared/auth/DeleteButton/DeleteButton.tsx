@@ -33,7 +33,7 @@ export default function DeleteButton({
   const cancelRef = useRef<HTMLButtonElement>(null);
   const { isOpen, onOpen, onClose } = useDisclosure()
   
-  const { trigger } = useSWRMutation(swrKeys.deleteuser, CustomPost<IDelete>, {
+  const { trigger } = useSWRMutation(swrKeys.deleteUser, CustomPost<IDelete>, {
     onSuccess: () => {
       console.log("Account deleted")
     },
