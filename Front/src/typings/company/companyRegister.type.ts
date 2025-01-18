@@ -17,3 +17,13 @@ export interface IRegisterCompany {
   password: string; // lozinka kompanije
   confirmPassword: string; // potvrda lozinke
 }
+
+export interface Company {
+  companyName: string;
+  companyLogo: string;
+  dealership_id: number;
+}
+
+export interface CompaniesResponse {
+  companies: Company[];
+}

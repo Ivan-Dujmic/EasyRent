@@ -11,7 +11,7 @@ import VehicleList from '@/components/shared/cars/VechileList/VechileList';
 import { AuthRedirect } from '@/components/shared/auth/AuthRedirect/AuthRedirect';
 import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
-import { getShowCaseds } from '@/fetchers/homeData';
+import { CustomGet, getShowCaseds } from '@/fetchers/homeData';
 import FQA from '@/components/shared/info/FQA/FQA';
 import BenefitsSection from '@/components/shared/BenefitsSection/BenefitsSection';
 import Footer from '@/components/shared/Footer/Footer';
@@ -28,6 +28,8 @@ import CustomMap from '@/components/shared/Map/CustomMap/CustomMap';
 import { dealershipLocations } from '@/mockData/mockLocations';
 import { useUserContext } from '@/context/UserContext/UserContext';
 import AuthUserHeader from '@/components/shared/Header/AuthUserHeader/AuthUserHeader';
+import { CompaniesResponse } from '@/typings/company/companyRegister.type';
+import { useEffect } from 'react';
 
 const homeGuestFooterLinks = {
   quickLinks: [
@@ -52,6 +54,10 @@ const homeGuestFooterLinks = {
 
 export default function HomePage() {
   const { data, error, isLoading } = useSWR(swrKeys.showcased, getShowCaseds);
+  const { data: CompaniesResponse } = useSWR<CompaniesResponse>(
+    swrKeys.companies,
+    CustomGet
+  );
   const { user } = useUserContext();
 
   const gapSize = useBreakpointValue({
@@ -97,7 +103,9 @@ export default function HomePage() {
           <Heading fontSize={headingSize} color={'brandblue'}>
             Trusted by the Best:
           </Heading>
-          <CompanyList companies={data?.showcased_dealerships} />
+          {CompaniesResponse ? (
+            <CompanyList companies={CompaniesResponse.companies} />
+          ) : null}
         </Flex>
       </Flex>
 
