@@ -1,5 +1,9 @@
 import { fetcher } from './fetcher';
 
+export interface OffersResponse {
+  offers: ICar[];
+}
+
 export interface IDealership {
   companyName: string;
   image: string;
@@ -10,12 +14,12 @@ export interface ICar {
   companyName: string;
   makeName: string;
   modelName: string;
-  noOfSeats?: string;
-  automatic?: string;
-  price?: number;
+  noOfSeats?: number; // Changed from string to number to match API response
+  automatic?: boolean; // Changed from string to boolean to match API response
+  price?: string; // Kept as string to match the API response
   rating?: number;
   noOfReviews?: number;
-  offer_id?: string;
+  offer_id?: number; // Changed from string to number to match API response
 }
 
 export interface IShowcased {

@@ -11,7 +11,7 @@ import VehicleList from '@/components/shared/cars/VechileList/VechileList';
 import { AuthRedirect } from '@/components/shared/auth/AuthRedirect/AuthRedirect';
 import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
-import { CustomGet, getShowCaseds } from '@/fetchers/homeData';
+import { CustomGet, getShowCaseds, OffersResponse } from '@/fetchers/homeData';
 import FQA from '@/components/shared/info/FQA/FQA';
 import BenefitsSection from '@/components/shared/BenefitsSection/BenefitsSection';
 import Footer from '@/components/shared/Footer/Footer';
@@ -53,9 +53,12 @@ const homeGuestFooterLinks = {
 };
 
 export default function HomePage() {
-  const { data, error, isLoading } = useSWR(swrKeys.showcased, getShowCaseds);
   const { data: CompaniesResponse } = useSWR<CompaniesResponse>(
     swrKeys.companies,
+    CustomGet
+  );
+  const { data: best_value } = useSWR<OffersResponse>(
+    swrKeys.bestValue,
     CustomGet
   );
   const { user } = useUserContext();
@@ -118,11 +121,18 @@ export default function HomePage() {
         gap={2}
         width={{ base: '80vw', lg: '65vw' }}
       >
-        <VehicleList
-          vehicles={data?.most_popular}
-          description={'Most popular:'}
-        />
-        <VehicleList vehicles={data?.best_value} description={'Best value:'} />
+        {best_value ? (
+          <>
+            <VehicleList
+              vehicles={best_value?.offers}
+              description="Most popular:"
+            />
+            <VehicleList
+              vehicles={best_value?.offers}
+              description="Best value:"
+            />
+          </>
+        ) : null}
       </Flex>
 
       {/* Dio stranice sa benefitima */}

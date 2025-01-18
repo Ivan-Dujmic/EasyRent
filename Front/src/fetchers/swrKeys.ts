@@ -8,7 +8,6 @@ export const swrKeys = {
   registerUser: `${auth}register-user/`,
   registerCompany: `${auth}register-company/`,
   logIn: `${auth}login/`,
-  showcased: `${home}showcased/`,
   search: (queryString: string = ''): string => `${home}search?${queryString}`, // search sa tipovima
   userinfo: `${auth}user-info/`,
   logout: `${auth}logout/`,
@@ -16,4 +15,5 @@ export const swrKeys = {
   deleteuser: `${profile}/`,
   cities: `${home}cities/`,
   companies: `${home}showcased-companies/?limit=6`,
+  bestValue: `${home}best-value/?limit=10&page=1`,
 };

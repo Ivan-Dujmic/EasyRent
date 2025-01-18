@@ -78,7 +78,7 @@ export default function VehicleCard({
             </Flex>
 
             <Flex align="flex-start">
-              {vehicle.automatic === 'true' ? (
+              {vehicle.automatic === true ? (
                 <>
                   <TbAutomaticGearbox />
                   <Box fontSize="xs" ml="1">
