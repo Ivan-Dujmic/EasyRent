@@ -19,10 +19,8 @@ import {
   ModalFooter,
   ModalHeader,
   Modal,
-  ModalOverlay,
   ModalCloseButton,
   ModalBody,
-  Input,
   chakra
 } from '@chakra-ui/react';
 import {
@@ -46,8 +44,6 @@ import { CustomPost } from "@/fetchers/post";
 import CustomInput from "@/components/shared/auth/CustomInput";
 import { useForm } from "react-hook-form";
 import { Overlay } from "@/components/shared/filter/overlay/Overlay";
-import { useRouter } from 'next/navigation';
-import GrayFilter from "@/components/shared/filter/overlay/GrayFilter";
 
 const userProfileFooterLinks = {
   quickLinks: [
