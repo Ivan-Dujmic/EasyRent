@@ -30,6 +30,7 @@ import { useUserContext } from '@/context/UserContext/UserContext';
 import AuthUserHeader from '@/components/shared/Header/AuthUserHeader/AuthUserHeader';
 import { CompaniesResponse } from '@/typings/company/companyRegister.type';
 import { useEffect } from 'react';
+import { LocationsResponse } from '@/typings/locations/locations';
 
 const homeGuestFooterLinks = {
   quickLinks: [
@@ -65,6 +66,9 @@ export default function HomePage() {
     swrKeys.mostPopular,
     CustomGet
   );
+
+  const { data: allDealershipLocations = { locations: [] } } =
+    useSWR<LocationsResponse>(swrKeys.allLocations, CustomGet);
 
   const { user } = useUserContext();
 
@@ -157,7 +161,10 @@ export default function HomePage() {
         <Heading size="lg" color="brandblack" alignSelf="flex-start">
           Explore Dealerships:
         </Heading>
-        <CustomMap locations={dealershipLocations} showInfoWindow={true} />
+        <CustomMap
+          locations={allDealershipLocations.locations}
+          showInfoWindow={true}
+        />
       </Flex>
 
       {/* Dio stranice sa dodatnim informacijama */}
