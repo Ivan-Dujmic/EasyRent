@@ -61,6 +61,11 @@ export default function HomePage() {
     swrKeys.bestValue,
     CustomGet
   );
+  const { data: most_popular } = useSWR<OffersResponse>(
+    swrKeys.mostPopular,
+    CustomGet
+  );
+
   const { user } = useUserContext();
 
   const gapSize = useBreakpointValue({
@@ -121,17 +126,17 @@ export default function HomePage() {
         gap={2}
         width={{ base: '80vw', lg: '65vw' }}
       >
+        {most_popular ? (
+          <VehicleList
+            vehicles={most_popular?.offers}
+            description="Most popular:"
+          />
+        ) : null}
         {best_value ? (
-          <>
-            <VehicleList
-              vehicles={best_value?.offers}
-              description="Most popular:"
-            />
-            <VehicleList
-              vehicles={best_value?.offers}
-              description="Best value:"
-            />
-          </>
+          <VehicleList
+            vehicles={best_value?.offers}
+            description="Best value:"
+          />
         ) : null}
       </Flex>
 

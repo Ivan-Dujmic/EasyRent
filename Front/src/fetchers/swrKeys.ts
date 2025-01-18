@@ -16,4 +16,5 @@ export const swrKeys = {
   cities: `${home}cities/`,
   companies: `${home}showcased-companies/?limit=6`,
   bestValue: `${home}best-value/?limit=10&page=1`,
+  mostPopular: `${home}most-popular/?limit=10&page=1`,
 };
