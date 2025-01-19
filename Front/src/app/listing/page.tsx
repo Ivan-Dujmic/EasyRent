@@ -12,6 +12,7 @@ import { useCarContext } from '@/context/CarContext';
 import { useUserContext } from '@/context/UserContext/UserContext';
 import { Box, Button, Flex, Spinner, Text } from '@chakra-ui/react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import {
   FaFacebookF,
   FaInstagram,
@@ -48,20 +49,47 @@ export default function ResultsPage() {
   const pathname = usePathname(); // Get current path for comparison
   const { cars } = useCarContext();
   const { user } = useUserContext();
-  const storedErrorMessage = localStorage.getItem('errorMessage') || null;
+  const [storedErrorMessage, setStoredErrorMessage] = useState<string | null>(
+    null
+  );
+
+  // Fetch the error message safely on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const errorMessage = localStorage.getItem('errorMessage');
+      setStoredErrorMessage(errorMessage);
+    }
+  }, []);
 
   // Check if cars are still being loaded from localStorage
   if (cars === null) {
     return (
-      <Flex justify="center" align="center" minHeight="50vh" width={'100%'}>
-        <Spinner size="xl" color="brandblue" />
-        <Text ml={4} fontSize="lg">
-          Loading offers...
+      <Flex
+        direction="column"
+        justify="center"
+        align="center"
+        minHeight="60vh"
+        width="100%"
+        bg="brandlightgray"
+        borderRadius="lg"
+        boxShadow="lg"
+        p={8}
+      >
+        <Spinner size="xl" thickness="4px" color="brandblue" speed="0.65s" />
+        <Text
+          mt={6}
+          fontSize={{ base: 'lg', md: 'xl' }}
+          fontWeight="semibold"
+          color="brandblack"
+        >
+          Loading offers, please wait...
+        </Text>
+        <Text fontSize="md" color="gray.500" mt={2} textAlign="center">
+          We are searching for the best offers tailored to your needs.
         </Text>
       </Flex>
     );
   }
-
   return (
     <Flex direction="column" grow={1} align={'center'} width={'100%'}>
       {user.role === 'user' && <AuthUserHeader UserData={user} />}

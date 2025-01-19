@@ -45,6 +45,7 @@ export default function MainFilter() {
   const [dropoffDate, setdropoffDate] = useState<Date | null>(null);
 
   const [isMounted, setIsMounted] = useState(false);
+  const [didntChange, setDidntChange] = useState(false);
 
   const { data, error, isLoading } = useSWR<ICityAPIResponse>(
     swrKeys.cities,
@@ -53,10 +54,11 @@ export default function MainFilter() {
   const [cityOptions, setCityOptions] = useState<{ [key: string]: string[] }>(
     {}
   );
-  // const [cityOptions, setCityOptions] = useState<{
-  //     [country: string]: string[];
-  // }>({});
-  // Build cityOptions when data arrives
+
+  // Check if any changes have been made
+  useEffect(() => {
+    setDidntChange(false);
+  }, [pickupLocation, dropoffLocation, pickupDate, dropoffDate]);
 
   useEffect(() => {
     if (!data || !data.countries) return;
@@ -258,6 +260,11 @@ export default function MainFilter() {
     });
     const fullUrl = swrKeys.search(queryParams.toString());
     console.log(fullUrl);
+    if (fullUrl == url) {
+      setDidntChange(true);
+      return;
+    }
+    setDidntChange(false); // inace resetiraj
     setUrl(fullUrl); // Pokrenut će se fetch (useSWRMutation) u gorešnjem useEffectu
   };
 
@@ -412,7 +419,7 @@ export default function MainFilter() {
       </Box>
 
       {/* Gumb za pretragu */}
-      <Box width={buttonWidth} mt={{ base: 2, md: 4 }}>
+      <Box width={buttonWidth} mt={{ base: 2, md: 4 }} textAlign="center">
         <Button
           bg="brandblue"
           size="lg"
@@ -421,9 +428,27 @@ export default function MainFilter() {
           width="100%"
           onClick={handleSearch}
           isDisabled={isMutating} // Disable button while fetching
+          fontWeight="bold"
         >
           {isMutating ? <Spinner size="sm" color="white" /> : 'Search'}
         </Button>
+        {didntChange && (
+          <Flex
+            align="center"
+            justify="center"
+            mt={3}
+            bg="brandyellow"
+            borderRadius="md"
+            p={2}
+            boxShadow="md"
+            maxW="80%"
+            mx="auto"
+          >
+            <Text color="brandblack" fontSize="sm" fontWeight="medium">
+              Please modify the search criteria before searching.
+            </Text>
+          </Flex>
+        )}
       </Box>
     </Flex>
   );
