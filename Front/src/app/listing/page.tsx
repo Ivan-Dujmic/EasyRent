@@ -53,14 +53,29 @@ export default function ResultsPage() {
     null
   );
 
-  // Fetch the error message safely on mount
+  // Fetch the error message safely on mount and listen for storage updates
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const errorMessage = localStorage.getItem('errorMessage');
-      setStoredErrorMessage(errorMessage);
-    }
-  }, []);
+    const fetchErrorMessage = () => {
+      if (typeof window !== 'undefined') {
+        const errorMessage = localStorage.getItem('errorMessage');
+        setStoredErrorMessage(errorMessage);
+      }
+    };
 
+    // Initial fetch
+    fetchErrorMessage();
+
+    // Event listener to update error message when localStorage changes
+    const handleStorageChange = () => {
+      fetchErrorMessage();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
   // Check if cars are still being loaded from localStorage
   if (cars === null) {
     return (

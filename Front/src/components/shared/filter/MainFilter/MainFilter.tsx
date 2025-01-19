@@ -127,13 +127,13 @@ export default function MainFilter() {
         if (data?.offers?.length > 0) {
           setCars(data.offers);
           localStorage.removeItem('errorMessage'); // Clear any previous error message
+          window.dispatchEvent(new Event('storage')); // Trigger an event to notify components
         } else {
           console.warn('No offers found for the selected criteria.');
           setCars([]);
-          localStorage.setItem(
-            'errorMessage',
-            'No offers found for the selected criteria.'
-          );
+          const errorMsg = 'No offers found for the selected criteria.';
+          localStorage.setItem('errorMessage', errorMsg);
+          window.dispatchEvent(new Event('storage')); // Notify the page about localStorage update
         }
 
         // Navigate to the listing page if not already there
@@ -163,8 +163,9 @@ export default function MainFilter() {
           console.error('Failed to parse error response:', parseError);
         }
 
-        // Store error message in local storage
+        // Store error message in local storage and trigger state update
         localStorage.setItem('errorMessage', errorMessage);
+        window.dispatchEvent(new Event('storage')); // Notify other components
 
         // Navigate to the listing page if not already there
         if (pathname !== '/listing') {
@@ -378,7 +379,7 @@ export default function MainFilter() {
           initialDate={pickupDate}
           description="Pick-up date/time"
           placeHolder="Start?"
-          minDate={
+          maxDate={
             dropoffDate
               ? new Date(dropoffDate.getTime() - 24 * 60 * 60 * 1000)
               : undefined
