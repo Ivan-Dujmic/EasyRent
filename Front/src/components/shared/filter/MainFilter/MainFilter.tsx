@@ -122,15 +122,52 @@ export default function MainFilter() {
     CustomGet,
     {
       onSuccess: (data) => {
-        console.log(data);
-        setCars(data.offers);
+        if (data?.offers?.length > 0) {
+          setCars(data.offers);
+          localStorage.removeItem('errorMessage'); // Clear any previous error message
+        } else {
+          console.warn('No offers found for the selected criteria.');
+          setCars([]);
+          localStorage.setItem(
+            'errorMessage',
+            'No offers found for the selected criteria.'
+          );
+        }
 
+        // Navigate to the listing page if not already there
         if (pathname !== '/listing') {
-          router.push('/listing'); // Navigate if not already on listing page
+          router.push('/listing');
         }
       },
       onError: (error) => {
-        console.error('Error fetching data:', error);
+        let errorMessage = 'An unexpected error occurred.';
+
+        try {
+          // Extract status code from error message
+          const statusMatch = error.message.match(/Response status:\s(\d{3})/);
+          const statusCode = statusMatch ? parseInt(statusMatch[1], 10) : null;
+
+          // Extract error details from JSON inside the message
+          const jsonMatch = error.message.match(/\{.*\}/);
+          const parsedError = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+          const errorText = parsedError?.error || 'No results found.';
+
+          if (statusCode === 404) {
+            console.warn('No results found for the selected search criteria.');
+            errorMessage = errorText;
+            setCars([]); // Set empty results
+          }
+        } catch (parseError) {
+          console.error('Failed to parse error response:', parseError);
+        }
+
+        // Store error message in local storage
+        localStorage.setItem('errorMessage', errorMessage);
+
+        // Navigate to the listing page if not already there
+        if (pathname !== '/listing') {
+          router.push('/listing');
+        }
       },
     }
   );
