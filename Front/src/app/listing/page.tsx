@@ -10,16 +10,15 @@ import AuthUserHeader from '@/components/shared/Header/AuthUserHeader/AuthUserHe
 import Header from '@/components/shared/Header/Header';
 import { useCarContext } from '@/context/CarContext';
 import { useUserContext } from '@/context/UserContext/UserContext';
-import { mockVehicles } from '@/mockData/mockVehicles';
-import { Box, Text, Flex, useBreakpointValue } from '@chakra-ui/react';
+import { Box, Flex, Spinner, Text } from '@chakra-ui/react';
 import {
-  FaCcMastercard,
-  FaCcStripe,
-  FaCcVisa,
   FaFacebookF,
   FaInstagram,
-  FaLinkedinIn,
   FaTwitter,
+  FaLinkedinIn,
+  FaCcVisa,
+  FaCcMastercard,
+  FaCcStripe,
 } from 'react-icons/fa';
 
 const ListinGuestFooterLinks = {
@@ -46,6 +45,18 @@ const ListinGuestFooterLinks = {
 export default function ResultsPage() {
   const { cars } = useCarContext();
   const { user } = useUserContext();
+
+  // Check if cars are still being loaded from localStorage
+  if (cars === null) {
+    return (
+      <Flex justify="center" align="center" minHeight="50vh" width={'100%'}>
+        <Spinner size="xl" color="brandblue" />
+        <Text ml={4} fontSize="lg">
+          Loading offers...
+        </Text>
+      </Flex>
+    );
+  }
 
   return (
     <Flex direction="column" grow={1} align={'center'} width={'100%'}>
@@ -89,7 +100,13 @@ export default function ResultsPage() {
           display={{ base: 'flex', md: 'block' }}
           justifyContent={{ base: 'center', md: 'flex-start' }}
         >
-          <VehicleGrid vehicles={cars} />
+          {cars.length > 0 ? (
+            <VehicleGrid vehicles={cars} />
+          ) : (
+            <Text fontSize="xl" color="brandblue">
+              No cars found. Please try searching again.
+            </Text>
+          )}
         </Box>
       </Flex>
       <ChatbotWidget />

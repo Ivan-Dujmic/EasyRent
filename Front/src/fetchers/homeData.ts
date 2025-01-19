@@ -2,6 +2,7 @@ import { fetcher } from './fetcher';
 
 export interface OffersResponse {
   offers: ICar[];
+  last?: boolean;
 }
 
 export interface IDealership {

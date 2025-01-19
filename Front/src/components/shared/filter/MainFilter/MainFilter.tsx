@@ -14,42 +14,27 @@ export interface ICityAPIResponse {
 }
 
 import { useEffect, useState } from 'react';
-import { Button, Flex, Box, Text, useBreakpointValue } from '@chakra-ui/react';
+import {
+  Button,
+  Flex,
+  Box,
+  Text,
+  useBreakpointValue,
+  Spinner,
+} from '@chakra-ui/react';
 import DateTimeDDM from '@/components/features/DropDownMenus/DateTimeDDM/DateTimeDDM';
 import LocationDDM from '@/components/features/DropDownMenus/LocationDDM/LocationDDM';
 import { useCarContext } from '@/context/CarContext';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import useSWRMutation from 'swr/mutation';
-import { CustomGet, ICar } from '@/fetchers/homeData';
+import { CustomGet, ICar, OffersResponse } from '@/fetchers/homeData';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { useFilterContext } from '@/context/FilterContext/FilterContext';
 import useSWR from 'swr';
 
-// Lokacije iz primjera
-const options: { [key: string]: string[] } = {
-  'Cities (including airports)': [
-    'Zagreb, Croatia',
-    'Sesvete, Croatia',
-    'Velika Gorica, Croatia',
-    'Samobor, Croatia',
-    'Split, Croatia',
-    'Rijeka, Croatia',
-  ],
-  Airports: [
-    'Franjo Tuđman, ZAG, Zagreb, Croatia',
-    'Split Airport, SPU, Split, Croatia',
-    'Dubrovnik Airport, DBV, Dubrovnik, Croatia',
-  ],
-  'Train stations': [
-    'Zagreb Central Station, Zagreb, Croatia',
-    'Split Train Station, Split, Croatia',
-    'Osijek Train Station, Osijek, Croatia',
-    'Rijeka Train Station, Rijeka, Croatia',
-  ],
-};
-
 export default function MainFilter() {
   const router = useRouter();
+  const pathname = usePathname(); // Get current pathname
   const { setCars } = useCarContext();
   const { setFilterData } = useFilterContext();
 
@@ -132,16 +117,23 @@ export default function MainFilter() {
   });
 
   // 3) Kada god url dobije vrijednost, fetchaj podatke (useSWRMutation)
-  const { trigger } = useSWRMutation(url, CustomGet, {
-    onSuccess: (data: ICar[]) => {
-      console.log(data);
-      setCars(data);
-      router.push('/listing');
-    },
-    onError: (error) => {
-      console.error('Error fetching data:', error);
-    },
-  });
+  const { trigger, isMutating } = useSWRMutation<OffersResponse>(
+    url,
+    CustomGet,
+    {
+      onSuccess: (data) => {
+        console.log(data);
+        setCars(data.offers);
+
+        if (pathname !== '/listing') {
+          router.push('/listing'); // Navigate if not already on listing page
+        }
+      },
+      onError: (error) => {
+        console.error('Error fetching data:', error);
+      },
+    }
+  );
 
   useEffect(() => {
     if (url) {
@@ -391,8 +383,9 @@ export default function MainFilter() {
           _hover={{ bg: 'brandyellow', color: 'brandblack' }}
           width="100%"
           onClick={handleSearch}
+          isDisabled={isMutating} // Disable button while fetching
         >
-          Search
+          {isMutating ? <Spinner size="sm" color="white" /> : 'Search'}
         </Button>
       </Box>
     </Flex>
