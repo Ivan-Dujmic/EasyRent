@@ -83,7 +83,7 @@ class OfferListSerializer(serializers.Serializer):
 #for GET api/home/showcased-companies
 class ShowcasedCompanySerializer(serializers.Serializer):
     companyName = serializers.CharField()
-    companyLogo = serializers.CharField(default="base64")
+    companyLogo = serializers.FileField()
     dealership_id = serializers.IntegerField()
 
 class ShowcasedCompanyListSerializer(serializers.Serializer):

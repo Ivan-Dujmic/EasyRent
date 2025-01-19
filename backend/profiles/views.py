@@ -64,8 +64,9 @@ def userRentals(request):
                     "dateTimeRented": rental.dateTimeRented,
                     "dateTimeReturned": rental.dateTimeReturned,
                     "expired": isUserRentalExpired(rental),
-                    "canReview": canUserReview(user, rental),
+                    "canReview": canUserReview(rental),
                     "offer_id": offer.offer_id,
+                    "rent_id": rental.rent_id,
                     "image": offer.image.url if offer.image else None,
                 }
 
@@ -83,14 +84,91 @@ def isUserRentalExpired(rental):
     return rental.dateTimeReturned < now()
 
 
-def canUserReview(user, rental):
+def canUserReview(rental):
     oneMonthAfterExpiry = rental.dateTimeReturned + timedelta(days=30)
-    hasReviewed = Review.objects.filter(user=user, rental=rental).exists()
+    hasReviewed = Review.objects.filter(rent=rental).exists()
     return (
         rental.dateTimeReturned < now()
         and not hasReviewed
         and now() <= oneMonthAfterExpiry
     )
+
+
+def calculateReviewsForOffer(offer):
+    rentals = (
+        Rent.objects.filter(vehicle__dealer=offer.dealer)
+        .filter(vehicle__model=offer.model)
+        .values("rent_id")
+    )
+    reviews = Review.objects.filter(rent__in=rentals).all()
+    rating = 0
+    for review in reviews:
+        rating += review.rating
+    offer.rating = rating / reviews.count()
+    offer.noOfReviews = reviews.count()
+    offer.save()
+
+
+def calculateReviewsForVehicle(vehicle):
+    rentals = Rent.objects.filter(vehicle=vehicle).values("rent_id")
+    reviews = Review.objects.filter(rent__in=rentals).all()
+    rating = 0
+    for review in reviews:
+        rating += review.rating
+    vehicle.rating = rating / reviews.count()
+    vehicle.noOfReviews = reviews.count()
+    vehicle.save()
+
+
+def calculateReviewsForAllOffers():
+    offers = Offer.objects.all()
+    for offer in offers:
+        calculateReviewsForOffer(offer)
+
+
+def calculateReviewsForAllVehicles():
+    vehicles = Vehicle.objects.all()
+    for vehicle in vehicles:
+        calculateReviewsForVehicle(vehicle)
+
+
+@extend_schema(
+    methods=["POST"],
+    operation_id="post_review",
+    tags=["profile"],
+    request=PostReviewSerializer,
+)
+@api_view(["POST"])
+def postReview(request, rent_id):
+    try:
+        rent = Rent.objects.get(pk=rent_id)
+        user = request.user
+        if not user.is_authenticated or not canUserReview(rent):
+            return Response({"error": "User can't review"}, status=404)
+        rentoid = Rentoid.objects.get(user=user)
+        if Review.objects.filter(rent=rent).exists():
+            return Response({"error": "Review already exists"}, status=404)
+        rating = request.data.get("rating")
+        description = request.data.get("description")
+        if rating == None:
+            return Response({"error": "Rating not specified"}, status=404)
+        try:
+            rating = int(rating)
+        except:
+            return Response({"error": "Invalid rating format"}, status=404)
+        if rating < 1 or rating > 5:
+            return Response({"error": "Invalid rating format"}, status=404)
+        review = Review(
+            rent=rent, rating=rating, description=description, reviewDate=datetime.now()
+        )
+        review.save()
+        offer = Offer.objects.get(model=rent.vehicle.model, dealer=rent.vehicle.dealer)
+        calculateReviewsForOffer(offer)
+        vehicle = Vehicle.objects.get(pk=rent.vehicle.vehicle_id)
+        calculateReviewsForVehicle(vehicle)
+        return Response({"message": "Review added"}, status=200)
+    except Rent.DoesNotExist:
+        return Response({"error": "Rent not found"}, status=404)
 
 
 @extend_schema(
@@ -340,7 +418,7 @@ def userPass(request):
 
 
 @extend_schema(
-    methods=["DELETE"],
+    methods=["POST"],
     operation_id="delete_user",
     tags=["profile"],
     request=DeleteUserSerializer,
@@ -383,13 +461,13 @@ def userPass(request):
         ),
     },
 )
-@api_view(["DELETE"])
+@login_required
+@api_view(["POST"])
 def userDelete(request):
-    if request.method == "DELETE":
+    if request.method == "POST":
         user = request.user
         if user.is_authenticated:
             data = request.data
-
             if not data.get("password"):
                 return Response(
                     {"success": 0, "message": "Password is required"}, status=400
@@ -937,12 +1015,10 @@ def companyEarnings(request):
 
 
 @extend_schema(
-    methods=["GET"],
-    operation_id="get_company_info",
+    methods=["PUT"],
+    operation_id="put_company_info",
     tags=["profile"],
-    responses={
-        200: GetCompanyInfo(many=True),
-    },
+    request=PutCompanyInfo,
 )
 @login_required
 @api_view(["PUT", "GET"])
@@ -951,9 +1027,9 @@ def companyInfo(request):
         user = request.user
         if user.is_authenticated:
             data = request.data
-
-            logo = data.get("companyLogo")
-            name = data.get("companyName")
+            company = User.objects.get(id=user.id)
+            logo = request.FILES.get("logo")
+            name = data.get("name")
             phoneNo = data.get("phoneNo")
             description = data.get("description")
             if not user.check_password(data.get("password")):
@@ -965,12 +1041,13 @@ def companyInfo(request):
                 if phoneNo:
                     dealership.phoneNo = phoneNo
                 if name:
-                    dealership.companyName = name
+                    company.first_name = name
                 if description:
                     dealership.description = description
                 if logo:
                     dealership.image = logo
                 dealership.save()
+                company.save()
                 return Response(
                     {"success": 1, "message": "Company info updated successfully"},
                     status=200,
@@ -987,8 +1064,6 @@ def companyInfo(request):
             return Response(
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
-    else:
-        return Response({"success": 0, "message": "Method not allowed"}, status=405)
 
     if request.method == "GET":
         user = request.user
@@ -996,18 +1071,16 @@ def companyInfo(request):
             try:
                 # Return: {companyLogo, companyName, phoneNo, description}
                 dealership = Dealership.objects.get(user=user.id)
-                workingHours = WorkingHours.objects.get(
-                    dealership_id=dealership.dealership_id
-                )
-                res = []
-                for workingHour in workingHours:
-                    current = {
-                        "day": workingHour.day,
-                        "startTime": workingHour.startTime,
-                        "endTime": workingHour.endTime,
-                    }
-                    res.append(current)
-                retObject = {"results": res, "isLastPage": True}
+                retObject = {
+                    "image": (
+                        request.build_absolute_uri(dealership.image.url)
+                        if dealership.image
+                        else None
+                    ),
+                    "companyName": user.first_name,
+                    "phoneNo": dealership.phoneNo,
+                    "description": dealership.description,
+                }
                 return JsonResponse(retObject, status=200)
             except:
                 return Response(
@@ -1019,6 +1092,12 @@ def companyInfo(request):
                 )
 
 
+@extend_schema(
+    methods=["PUT"],
+    operation_id="put_company_password",
+    tags=["profile"],
+    request=PutCompanyPassword,
+)
 @login_required
 @api_view(["PUT"])
 def companyPasswordChange(request):
@@ -1338,10 +1417,16 @@ def companyLocation(request):
         return Response({"success": 0, "message": "Method not allowed"}, status=405)
 
 
+@extend_schema(
+    methods=["POST"],
+    operation_id="delete_company",
+    tags=["profile"],
+    request=DeleteCompanySerializer,
+)
 @login_required
-@api_view(["DELETE"])
+@api_view(["POST"])
 def deleteCompany(request):
-    if request.method == "DELETE":
+    if request.method == "POST":
         user = request.user
         if user.is_authenticated:
             data = request.data
@@ -1548,7 +1633,8 @@ def companyVehicle(request):
                 dealership = Dealership.objects.get(user=user.id)
                 model = Model.objects.get(model_id=data.get("model_id"))
                 location = Location.objects.get(
-                    location_id=data.get("location_id")
+                    location_id=data.get("location_id"),
+                    dealership=dealership.dealership_id,
                 )
 
                 vehicle = Vehicle.objects.create(
@@ -1591,7 +1677,7 @@ def companyVehicle(request):
     methods=["POST"],
     operation_id="post_company_offer",
     tags=["profile"],
-    request=CompanyOfferPostSerializer
+    request=CompanyOfferPostSerializer,
 )
 @login_required
 @api_view(["GET", "POST", "PUT", "DELETE"])
@@ -1649,19 +1735,19 @@ def companyOffer(request):
                 dealership = Dealership.objects.get(user=user.id)
                 model = Model.objects.get(model_id=data.get("model_id"))
 
-                print(f"model_id: {model.model_id}")
-                print(f"dealer_id: {dealership.dealership_id}")
-                print(f"price: {data.get('price')}")
-                print(f"image: {request.FILES.get("image"),}")
-                print(f"description: {data.get('description')}")
-                print("noOfReviews: 0")
-                print("rating: 0")
+                # print(f"model_id: {model.model_id}")
+                # print(f"dealer_id: {dealership.dealership_id}")
+                # print(f"price: {data.get('price')}")
+                # print(f"image: {request.FILES.get("image"),}")
+                # print(f"description: {data.get('description')}")
+                # print("noOfReviews: 0")
+                # print("rating: 0")
 
                 offer = Offer.objects.create(
                     model=model,
                     dealer=dealership,
                     price=data.get("price"),
-                    image = request.FILES.get("image"),
+                    image=request.FILES.get("image"),
                     description=data.get("description"),
                     noOfReviews=0,
                     rating=0,

@@ -10,11 +10,12 @@ import {
 import { FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import React, { useState, useRef, useEffect } from 'react';
 import VehicleCard from '../VehicleCard/VechileCard';
-import { ICar } from '@/fetchers/homeData';
 import { mockVehicles } from '@/mockData/mockVehicles';
+import { IOffer } from '@/typings/vehicles/vehicles.type';
+import { NextRouter } from 'next/router';
 
 interface VehicleListProps {
-  vehicles?: Array<ICar>;
+  vehicles?: Array<IOffer>;
   description?: string;
   numCards?: number;
   cardGap?: number;
@@ -32,9 +33,10 @@ export default function VehicleList({
   let [numCards_d, setNumCard] = useState(numCards);
 
   useEffect(() => {
+    const current = containerRef.current
     const updateContainerWidth = () => {
-      if (containerRef.current) {
-        const { width } = containerRef.current.getBoundingClientRect();
+      if (current) {
+        const { width } = current.getBoundingClientRect();
         setContainerWidth(width);
       }
     };
@@ -45,13 +47,13 @@ export default function VehicleList({
       updateContainerWidth();
     });
 
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
+    if (current) {
+      resizeObserver.observe(current);
     }
 
     return () => {
-      if (containerRef.current) {
-        resizeObserver.unobserve(containerRef.current);
+      if (current) {
+        resizeObserver.unobserve(current);
       }
     };
   });
@@ -116,10 +118,11 @@ export default function VehicleList({
           justify="center"
           align="center"
           gap={`${cardGap}px`}
+          minWidth={cardWidth + cardGap}
           py={'2px'}
         >
           {visibleVehicles.map((vehicle, index) => (
-            <VehicleCard vehicle={vehicle} key={index} />
+            <VehicleCard vehicle={vehicle} key={index}/>
           ))}
         </Flex>
 

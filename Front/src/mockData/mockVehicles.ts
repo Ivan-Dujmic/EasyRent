@@ -1,6 +1,6 @@
-import { ICar } from '@/fetchers/homeData';
+import { IOffer } from "@/typings/vehicles/vehicles.type";
 
-export const mockVehicles0: ICar[] = [
+export const mockVehicles0: IOffer[] = [
   {
     image:
       'https://content.r9cdn.net/rimg/car-images/generic/04_premium.png?height=116',
@@ -107,7 +107,7 @@ export const mockVehicles0: ICar[] = [
   },
 ];
 
-export const mockVehicles: ICar[] = [
+export const mockVehicles: IOffer[] = [
   ...Array.from({ length: 48 }, (_, index) => {
     const baseVehicle = mockVehicles0[Math.floor(Math.random() * 8)];
     return {

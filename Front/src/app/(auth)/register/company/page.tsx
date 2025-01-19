@@ -6,8 +6,7 @@ import SupportButton from '@/components/shared/auth/SupportButton';
 import SuccessWindowCompany from '@/components/shared/SuccessWidnow/SuccessWinodwCompany';
 import WorkingHoursForm from '@/components/shared/auth/WorkingHoursForm';
 import { swrKeys } from '@/fetchers/swrKeys';
-import { registerCompany } from '@/mutation/authCompany';
-import { IRegisterCompany } from '@/typings/company/companyRegister.type';
+import { IRegisterCompany } from '@/typings/company/company.type';
 import {
   Box,
   VStack,
@@ -18,6 +17,7 @@ import {
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import useSWRMutation from 'swr/mutation';
+import { CustomPost } from '@/fetchers/post';
 
 export default function RegisterCompanyPage() {
   const [registered, setRegistered] = useState(false);
@@ -30,7 +30,7 @@ export default function RegisterCompanyPage() {
     getValues,
   } = useForm<IRegisterCompany>();
 
-  const { trigger } = useSWRMutation(swrKeys.registerCompany, registerCompany, {
+  const { trigger } = useSWRMutation(swrKeys.registerCompany, CustomPost<IRegisterCompany>, {
     onSuccess: () => {
       setRegistered(true);
     },

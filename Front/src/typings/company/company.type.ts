@@ -1,3 +1,8 @@
+export interface IDealership {
+  companyName: string;
+  image: string;
+}
+
 export interface IRegisterCompany {
   name: string; // ime kompanije
   email: string; // email kompanije

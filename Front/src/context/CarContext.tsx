@@ -1,6 +1,6 @@
 'use client';
 
-import { ICar } from '@/fetchers/homeData';
+import { IOffer } from '@/typings/vehicles/vehicles.type';
 import React, {
   createContext,
   useContext,
@@ -10,8 +10,8 @@ import React, {
 } from 'react';
 
 interface CarContextType {
-  cars: ICar[] | null;
-  setCars: (cars: ICar[]) => void;
+  cars: IOffer[] | null;
+  setCars: (cars: IOffer[]) => void;
 }
 
 // Kreiraj kontekst
@@ -19,10 +19,10 @@ const CarContext = createContext<CarContextType | undefined>(undefined);
 
 // Provider za wrapanje aplikacije
 export const CarProvider = ({ children }: { children: ReactNode }) => {
-  const [cars, setCarsState] = useState<ICar[] | null>(null);
+  const [cars, setCarsState] = useState<IOffer[] | null>(null);
 
   // Funkcija koja ažurira stanje i localStorage
-  const setCars = (newCars: ICar[]) => {
+  const setCars = (newCars: IOffer[]) => {
     setCarsState(newCars);
     if (typeof window !== 'undefined') {
       localStorage.setItem('cars', JSON.stringify(newCars)); // Spremi automobile u localStorage

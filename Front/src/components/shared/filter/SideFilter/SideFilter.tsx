@@ -16,11 +16,12 @@ import {
 import React, { useState, useEffect } from 'react';
 import Select, { MultiValue, GroupBase } from 'react-select';
 import useSWRMutation from 'swr/mutation';
-import { CustomGet, ICar } from '@/fetchers/homeData';
+import { CustomGet } from '@/fetchers/get';
 import { useFilterContext } from '@/context/FilterContext/FilterContext';
 import { useCarContext } from '@/context/CarContext';
 import { useRouter } from 'next/navigation';
 import { swrKeys } from '@/fetchers/swrKeys';
+import { IOffer } from '@/typings/vehicles/vehicles.type';
 
 // Define the makes and models data
 const makesAndModels: Record<string, string[]> = {
@@ -125,7 +126,7 @@ export default function SideFilter() {
   );
 
   const { trigger } = useSWRMutation(url, CustomGet, {
-    onSuccess: (data: ICar[]) => {
+    onSuccess: (data: IOffer[]) => {
       setCars(data); // Spremanje automobila u globalni kontekst
       router.push('/listing'); // Preusmjeravanje na novu stranicu
       console.log(data);
