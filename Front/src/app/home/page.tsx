@@ -6,12 +6,10 @@ import ChatbotWidget from '@/components/shared/ChatbotWidget/ChatbotWidget';
 import Header from '@/components/shared/Header/Header';
 import CompanyList from '@/components/shared/company/CompanyList/CompanyList';
 import { Flex, Heading, useBreakpointValue } from '@chakra-ui/react';
-import { mockVehicles } from '@/mockData/mockVehicles';
 import VehicleList from '@/components/shared/cars/VechileList/VechileList';
-import { AuthRedirect } from '@/components/shared/auth/AuthRedirect/AuthRedirect';
 import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
-import { CustomGet, getShowCaseds, OffersResponse } from '@/fetchers/homeData';
+import { CustomGet, OffersResponse } from '@/fetchers/homeData';
 import FQA from '@/components/shared/info/FQA/FQA';
 import BenefitsSection from '@/components/shared/BenefitsSection/BenefitsSection';
 import Footer from '@/components/shared/Footer/Footer';
@@ -25,11 +23,9 @@ import {
   FaCcStripe,
 } from 'react-icons/fa';
 import CustomMap from '@/components/shared/Map/CustomMap/CustomMap';
-import { dealershipLocations } from '@/mockData/mockLocations';
 import { useUserContext } from '@/context/UserContext/UserContext';
 import AuthUserHeader from '@/components/shared/Header/AuthUserHeader/AuthUserHeader';
 import { CompaniesResponse } from '@/typings/company/companyRegister.type';
-import { useEffect } from 'react';
 import { LocationsResponse } from '@/typings/locations/locations';
 
 const homeGuestFooterLinks = {

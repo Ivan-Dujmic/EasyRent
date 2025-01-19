@@ -134,6 +134,7 @@ export default function MainFilter() {
   // 3) Kada god url dobije vrijednost, fetchaj podatke (useSWRMutation)
   const { trigger } = useSWRMutation(url, CustomGet, {
     onSuccess: (data: ICar[]) => {
+      console.log(data);
       setCars(data);
       router.push('/listing');
     },

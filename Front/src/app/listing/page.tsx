@@ -47,8 +47,6 @@ export default function ResultsPage() {
   const { cars } = useCarContext();
   const { user } = useUserContext();
 
-  const isSmallScreen = useBreakpointValue({ base: true, md: false });
-
   return (
     <Flex direction="column" grow={1} align={'center'} width={'100%'}>
       {user.role === 'user' && <AuthUserHeader UserData={user} />}
@@ -91,7 +89,7 @@ export default function ResultsPage() {
           display={{ base: 'flex', md: 'block' }}
           justifyContent={{ base: 'center', md: 'flex-start' }}
         >
-          <VehicleGrid vehicles={mockVehicles} />
+          <VehicleGrid vehicles={cars} />
         </Box>
       </Flex>
       <ChatbotWidget />

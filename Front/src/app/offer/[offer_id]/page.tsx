@@ -14,6 +14,7 @@ import {
 import { useUserContext } from '@/context/UserContext/UserContext';
 import { dealershipLocations } from '@/mockData/mockLocations';
 import { mockReviews } from '@/mockData/mockReviews';
+import { use } from 'react';
 import {
   Box,
   Flex,
@@ -60,10 +61,11 @@ const FooterLinks = {
 export default function OfferPage({
   params,
 }: {
-  params: { offer_id: string };
+  params: Promise<{ offer_id: string }>;
 }) {
+  const { offer_id } = use(params); // Unwrap the params promise
+
   const { user } = useUserContext();
-  const { offer_id } = params; // Extract `offer_id` from the dynamic segment
 
   const { data: offer, error } = useSWR<IOffer>(
     offer_id ? swrKeys.offer(offer_id) : null, // Fetch only if `offer_id` exists
@@ -82,15 +84,14 @@ export default function OfferPage({
   );
 
   const containerWidth = useBreakpointValue({
-    base: '90%', // Width for mobile devices
-    sm: '85%', // Width for tablets
-    md: '80%', // Width for medium-sized screens
-    lg: '80%', // Width for larger screens
-    xl: '80%', // Width for extra-large screens
+    base: '90%',
+    sm: '85%',
+    md: '80%',
+    lg: '80%',
+    xl: '80%',
   });
 
   if (!offer && !error) {
-    // Show a loading spinner while fetching data
     return (
       <Flex
         height="100vh"
@@ -98,12 +99,12 @@ export default function OfferPage({
         align="center"
         justify="center"
         direction="column"
-        gap={6} // Increased spacing between elements
-        bg="gray.50" // Subtle background for better contrast
+        gap={6}
+        bg="gray.50"
       >
         <Text
-          fontSize="2xl" // Larger text size
-          fontWeight="extrabold" // More prominent text
+          fontSize="2xl"
+          fontWeight="extrabold"
           color="brandblue"
           textAlign="center"
         >
@@ -115,7 +116,6 @@ export default function OfferPage({
   }
 
   if (error) {
-    // Handle error state
     return (
       <Flex
         height="100vh"
@@ -123,13 +123,13 @@ export default function OfferPage({
         align="center"
         justify="center"
         direction="column"
-        gap={6} // Increased spacing between elements
-        bg="brandwhite" // Light red background for error indication
-        p={6} // Add padding for better spacing
+        gap={6}
+        bg="brandwhite"
+        p={6}
       >
         <Text
-          fontSize="2xl" // Larger text size
-          fontWeight="extrabold" // More prominent text
+          fontSize="2xl"
+          fontWeight="extrabold"
           color="brandblue"
           textAlign="center"
         >
@@ -139,10 +139,9 @@ export default function OfferPage({
           fontSize="lg"
           color="brandblack"
           textAlign="center"
-          maxWidth="80%" // Limit text width for better readability
+          maxWidth="80%"
         >
-          Please check your internet connection or try again later. If the
-          problem persists, contact support.
+          Please check your internet connection or try again later.
         </Text>
         <Box>
           <Flex justifyContent="center" mt={4}>
@@ -182,11 +181,9 @@ export default function OfferPage({
       gap={5}
       justifyContent={'flex-start'}
     >
-      {/* Conditional Header Based on User Role */}
       {user.role === 'user' && <AuthUserHeader UserData={user} />}
       {user.role !== 'user' && <Header />}
 
-      {/* Offer Section */}
       <Flex
         justify={'flex-start'}
         align={'flex-start'}
@@ -200,16 +197,13 @@ export default function OfferPage({
         </Heading>
         <Flex
           direction={'row'}
-          gap={{ base: 6, md: 8 }} // Adjust spacing for mobile vs. desktop
+          gap={{ base: 6, md: 8 }}
           align="flex-start"
           justify="center"
           width="100%"
           wrap={{ base: 'wrap', xl: 'nowrap' }}
         >
-          {/* Offer Card */}
           {offer && <VehicleOfferCard vehicle={offer} />}
-
-          {/* Booking Form */}
           {user.role === 'user' && (
             <BookingForm balance={Number(offer ? offer.price : 0)} />
           )}
@@ -217,7 +211,6 @@ export default function OfferPage({
         </Flex>
       </Flex>
 
-      {/* Booking Form & Map Section */}
       <Flex
         direction={{ base: 'column', lg: 'row' }}
         width={containerWidth}
@@ -226,24 +219,20 @@ export default function OfferPage({
         align="flex-start"
         wrap={'wrap'}
       >
-        {/* Map Section */}
         <Box flex="1" width={{ base: '100%', lg: '65%' }}>
           <Heading fontSize="2xl" color={'brandblack'} mb={5}>
             Pickup Locations:
           </Heading>
-          {/* Map Component */}
           <CustomMap
             locations={offerLocations.locations}
             showInfoWindow={true}
           />
         </Box>
 
-        {/* Reviews section */}
         <Box flex="1" width={{ base: '100%', lg: '50%' }}>
           <Heading fontSize="2xl" color={'brandblack'} mb={5}>
             Reviews:
           </Heading>
-          {/* reviews */}
           <ReviewList
             reviews={reviewsData?.reviews}
             error={reviewsData?.error || reviewsError?.message}
@@ -251,7 +240,6 @@ export default function OfferPage({
         </Box>
       </Flex>
 
-      {/* footer */}
       <Footer links={FooterLinks} />
     </Flex>
   );
