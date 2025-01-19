@@ -38,7 +38,7 @@ export const ReviewList: React.FC<ReviewListProps> = ({ reviews, error }) => {
   if (!reviews || reviews.length === 0) {
     return (
       <Flex direction="column" align="center" gap={4} width="100%">
-        <Text fontSize="xl" fontWeight="bold" color="gray.500">
+        <Text fontSize="xl" fontWeight="bold" color="brandblue">
           No reviews available.
         </Text>
         <Text fontSize="md" color="gray.600">
