@@ -21,4 +21,6 @@ export const swrKeys = {
   offer: (queryString: string = ''): string => `${home}offer/${queryString}/`,
   offerLocations: (queryString: string = ''): string =>
     `${home}offer-locations/${queryString}/`,
+  reviews: (queryString: string = ''): string =>
+    `${home}reviews/${queryString}/?limit=16&page=1`,
 };

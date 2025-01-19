@@ -7,7 +7,10 @@ import Header from '@/components/shared/Header/Header';
 import CustomMap from '@/components/shared/Map/CustomMap/CustomMap';
 import BookingForm from '@/components/shared/offer/BookingForm/BookingForm';
 import BookingLoginPrompt from '@/components/shared/offer/BookingLoginPrompt/BookingLoginPrompt';
-import { ReviewList } from '@/components/shared/review/ReviewList/ReviewList';
+import {
+  ReviewList,
+  ReviewListProps,
+} from '@/components/shared/review/ReviewList/ReviewList';
 import { useUserContext } from '@/context/UserContext/UserContext';
 import { dealershipLocations } from '@/mockData/mockLocations';
 import { mockReviews } from '@/mockData/mockReviews';
@@ -72,6 +75,11 @@ export default function OfferPage({
       offer_id ? swrKeys.offerLocations(offer_id) : null,
       CustomGet
     );
+
+  const { data: reviewsData, error: reviewsError } = useSWR<ReviewListProps>(
+    offer_id ? swrKeys.reviews(offer_id) : null,
+    CustomGet
+  );
 
   const containerWidth = useBreakpointValue({
     base: '90%', // Width for mobile devices
@@ -236,7 +244,10 @@ export default function OfferPage({
             Reviews:
           </Heading>
           {/* reviews */}
-          <ReviewList reviews={mockReviews} />
+          <ReviewList
+            reviews={reviewsData?.reviews}
+            error={reviewsData?.error || reviewsError?.message}
+          />
         </Box>
       </Flex>
 
