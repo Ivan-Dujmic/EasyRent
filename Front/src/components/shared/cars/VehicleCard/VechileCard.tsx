@@ -37,7 +37,6 @@ export default function VehicleCard({
   let isReviewable = vehicle.rated !== undefined;
   let isReviewed = !isReviewable || vehicle.rated;
 
-  console.log(vehicle.image);
   return (
     <Card
       margin={0}
@@ -49,8 +48,8 @@ export default function VehicleCard({
       borderWidth="2px"
       borderRadius="lg"
       overflow="hidden"
-      borderColor={'brandwhite'}
-      bg={'brandwhite'}
+      borderColor={'#ffffff'} // {"#brandwhite"}
+      bg={'#ffffff'} // {"#brandwhite"}
       px={2}
       _hover={{
         borderColor: 'brandblack',
