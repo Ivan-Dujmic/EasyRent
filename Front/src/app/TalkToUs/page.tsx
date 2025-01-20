@@ -41,6 +41,7 @@ export default function TalkToUs() {
   // Correcting the data structure to match ExtraLocationInfo
   const ferLocation: ExtraLocationInfo[] = [
     {
+      companyName: 'EasyRent',
       dealership_id: 1,
       streetName: 'Unska ul.',
       streetNo: '3',
