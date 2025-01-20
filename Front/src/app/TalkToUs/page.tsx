@@ -24,6 +24,7 @@ import {
 import CustomMap from '@/components/shared/Map/CustomMap/CustomMap';
 import FQA from '@/components/shared/info/FQA/FQA';
 import ChatbotWidget from '@/components/shared/ChatbotWidget/ChatbotWidget';
+import { ExtraLocationInfo } from '@/typings/locations/locations';
 
 export default function TalkToUs() {
   const headingSize = useBreakpointValue({
@@ -37,13 +38,16 @@ export default function TalkToUs() {
     md: '200px', // Square size for larger screens
   });
 
-  const ferLocation = [
+  // Correcting the data structure to match ExtraLocationInfo
+  const ferLocation: ExtraLocationInfo[] = [
     {
-      id: 1,
-      name: 'FER - Unska 3',
-      lat: 45.80072,
-      lng: 15.97189,
-      address: 'Unska ul. 3, 10000, Zagreb',
+      dealership_id: 1,
+      streetName: 'Unska ul.',
+      streetNo: '3',
+      cityName: 'Zagreb',
+      latitude: '45.80072',
+      longitude: '15.97189',
+      location_id: 1,
       workingHours: 'Mon-Fri: 9 AM - 5 PM',
       availableCars: 0,
     },

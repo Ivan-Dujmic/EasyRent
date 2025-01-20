@@ -66,29 +66,6 @@ const generateRandomWorkingHours = () => {
   return `${openingHour}:00-${closingHour}:00`;
 };
 
-// Funkcija za izračun najbliže lokacije
-const getClosestLocation = (
-  lat: number,
-  lng: number,
-  locations: ExtraLocationInfo[]
-) => {
-  let closestLocation = locations[0];
-  let minDistance = Number.MAX_VALUE;
-
-  locations.forEach((location) => {
-    const distance = Math.sqrt(
-      Math.pow(lat - parseFloat(location.latitude), 2) +
-        Math.pow(lng - parseFloat(location.longitude), 2)
-    );
-    if (distance < minDistance) {
-      closestLocation = location;
-      minDistance = distance;
-    }
-  });
-
-  return closestLocation;
-};
-
 const CustomMap: React.FC<CustomMapProps> = ({
   locations,
   showInfoWindow = true,
