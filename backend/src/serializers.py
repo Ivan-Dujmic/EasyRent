@@ -41,5 +41,6 @@ class LoginUserSerializer(serializers.Serializer):
 
 class UserInfoSerializer(serializers.Serializer):
     role = serializers.CharField(default="guest/user/company")
-    name = serializers.CharField(default="name if not guest, balance only for user")
+    firstName = serializers.CharField(default="name if not guest, balance only for user")
+    lastName = serializers.CharField(default="last name if not guest")
     balance = serializers.DecimalField(max_digits=10, decimal_places=2, default=1.00)
