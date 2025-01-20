@@ -4,6 +4,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django import forms
 import random
+import json
+import urllib.parse
 from .models import *
 from .serializers import *
 from src.models import *
@@ -521,7 +523,7 @@ def getCities(request):
     try:
         countryCity = {}
         response_array = []
-        locations = Location.objects.all()
+        locations = Location.objects.distinct('countryName', 'cityName').all()
         for location in locations:
             if not countryCity.__contains__(location.countryName):
                 countryCity[location.countryName] = []
@@ -573,7 +575,7 @@ def getCities(request):
             location=OpenApiParameter.QUERY,
             description="Format: cityName-countryName",
             required=True,
-            default="Obrera-Mexico",
+            default="Zagreb-Croatia",
         ),
         OpenApiParameter(
             name="drop_off_location",
@@ -581,15 +583,15 @@ def getCities(request):
             location=OpenApiParameter.QUERY,
             description="Format: cityName-countryName",
             required=False,
-            default="Corbetta-Italy",
+            default=None,
         ),
         OpenApiParameter(
             name="pick_up_date",
             type=date,
             location=OpenApiParameter.QUERY,
-            description="Format: year-month-day, zero padded",
+            description="Format: day-month-year, zero padded",
             required=True,
-            default="2012-05-03",
+            default="01-02-2025",
         ),
         OpenApiParameter(
             name="pick_up_time",
@@ -603,9 +605,9 @@ def getCities(request):
             name="drop_off_date",
             type=date,
             location=OpenApiParameter.QUERY,
-            description="Format: year-month-day, zero padded",
+            description="Format: day-month-year, zero padded",
             required=True,
-            default="2220-06-15",
+            default="02-02-2025",
         ),
         OpenApiParameter(
             name="drop_off_time",
@@ -617,11 +619,11 @@ def getCities(request):
         ),
         OpenApiParameter(
             name="seats",
-            type=int,
+            type=str,
             location=OpenApiParameter.QUERY,
             description="Number of seats",
             required=False,
-            default=5,
+            default=None,
         ),
         OpenApiParameter(
             name="car_type",
@@ -645,7 +647,7 @@ def getCities(request):
             location=OpenApiParameter.QUERY,
             description="Min price per day",
             required=False,
-            default=14,
+            default=None,
         ),
         OpenApiParameter(
             name="max_price",
@@ -653,24 +655,16 @@ def getCities(request):
             location=OpenApiParameter.QUERY,
             description="Max price per day",
             required=False,
-            default=15,
+            default=None,
         ),
         OpenApiParameter(
-            name="make",
+            name="makes_and_models",
             type=str,
             location=OpenApiParameter.QUERY,
-            description="Car make",
+            description="Car make and model",
             required=False,
-            default="Volkswagen",
-        ),
-        OpenApiParameter(
-            name="model",
-            type=str,
-            location=OpenApiParameter.QUERY,
-            description="Car model",
-            required=False,
-            default="Tiguan",
-        ),
+            default="[{'make': 'Kia', 'model': 'Ceed'}]"
+        )
     ],
 )
 @api_view(["GET"])
@@ -728,8 +722,7 @@ def getFilteredOffers(request):
         automatic = request.GET.get("automatic")
         min_price = request.GET.get("min_price")
         max_price = request.GET.get("max_price")
-        make = request.GET.get("make")
-        model = request.GET.get("model")
+        make_model = request.GET.get("makes_and_models")
         # get offers at the pick up location
         pick_up_locations = Location.objects.filter(
             cityName=pick_up_cityName, countryName=pick_up_countryName
@@ -796,11 +789,29 @@ def getFilteredOffers(request):
         offers = Offer.objects.filter(dealer__in=pick_up_dealers)
         # filter by seats
         if seats != None:
-            offers = offers.filter(model__noOfSeats=seats)
+            try:
+                seats_list = seats.split(",")
+                seats_temp = []
+                print(seats_list)
+                for elem in seats_list:
+                    range = elem.split("-")
+                    for num in range:
+                        seats_temp.append(int(num))
+                print(seats_temp)
+            except:
+                return Response({"error": "Wrong seats format"}, status=404)
+            offers = offers.filter(model__noOfSeats__in=seats_temp)
         # filter by car type
         if car_type != None:
+            type_list = car_type.split(",")
+            type_temp = []
+            for type in type_list:
+                if type.lower().startswith("limo"):
+                    type_temp.append("Limo")
+                else:
+                    type_temp.append(type.capitalize())
             offers = offers.filter(
-                model__modelType__modelTypeName=car_type.capitalize()
+                model__modelType__modelTypeName__in=type_temp
             )
         # filter by automatic
         if automatic != None:
@@ -811,13 +822,19 @@ def getFilteredOffers(request):
             offers = offers.filter(price__gte=min_price)
         if max_price != None:
             offers = offers.filter(price__lte=max_price)
-        # filter by make
-        if make != None:
-            offers = offers.filter(model__makeName=make)
-        # filter by model
-        if model != None:
-            offers = offers.filter(model__modelName=model)
-
+        # filter by make an model
+        if make_model != None:
+            try:
+                make_model_query = Q()
+                make_model = json.loads(make_model)
+                for obj in make_model:
+                    if obj["model"]:
+                        make_model_query |= Q(model__makeName=obj['make'], model__modelName=obj['model'])
+                    else:
+                        make_model_query |= Q(model__makeName=obj['make'])
+                offers = offers.filter(make_model_query)
+            except:
+                Response({"error": "Wrong make-model format"}, status=404)
         # check if any vehicles are available for the specified time period, we will get all vehicles that
         # are parts of offers that are available for the specified time period, that are at the pick up location
         # and that are owned by the dealers that own the pick up and drop off locations
