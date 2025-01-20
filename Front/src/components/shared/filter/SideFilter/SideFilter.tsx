@@ -241,12 +241,12 @@ export default function SideFilter() {
         selectedTransmission[0] === 'Automatic' ? 'true' : 'false';
     }
 
-    console.log(filterData);
+    console.log(makeAndModelData);
     // Combine the SideFilter data with FilterContext data
     const queryParamsObj: Record<string, string> = {
       seats: seatsData.join(','),
       car_type: carTypeData.join(','),
-      transmission: transmissionValue || '',
+      automatic: transmissionValue || '',
       min_price: String(minPrice),
       max_price: String(maxPrice),
       makes_and_models:
