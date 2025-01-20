@@ -10,16 +10,17 @@ import AuthUserHeader from '@/components/shared/Header/AuthUserHeader/AuthUserHe
 import Header from '@/components/shared/Header/Header';
 import { useCarContext } from '@/context/CarContext';
 import { useUserContext } from '@/context/UserContext/UserContext';
-import { mockVehicles } from '@/mockData/mockVehicles';
-import { Box, Text, Flex, useBreakpointValue } from '@chakra-ui/react';
+import { Box, Button, Flex, Spinner, Text } from '@chakra-ui/react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import {
-  FaCcMastercard,
-  FaCcStripe,
-  FaCcVisa,
   FaFacebookF,
   FaInstagram,
-  FaLinkedinIn,
   FaTwitter,
+  FaLinkedinIn,
+  FaCcVisa,
+  FaCcMastercard,
+  FaCcStripe,
 } from 'react-icons/fa';
 
 const ListinGuestFooterLinks = {
@@ -44,11 +45,66 @@ const ListinGuestFooterLinks = {
 };
 
 export default function ResultsPage() {
+  const router = useRouter();
+  const pathname = usePathname(); // Get current path for comparison
   const { cars } = useCarContext();
   const { user } = useUserContext();
+  const [storedErrorMessage, setStoredErrorMessage] = useState<string | null>(
+    null
+  );
 
-  const isSmallScreen = useBreakpointValue({ base: true, md: false });
+  // Fetch the error message safely on mount and listen for storage updates
+  useEffect(() => {
+    const fetchErrorMessage = () => {
+      if (typeof window !== 'undefined') {
+        const errorMessage = localStorage.getItem('errorMessage');
+        setStoredErrorMessage(errorMessage);
+      }
+    };
 
+    // Initial fetch
+    fetchErrorMessage();
+
+    // Event listener to update error message when localStorage changes
+    const handleStorageChange = () => {
+      fetchErrorMessage();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+  // Check if cars are still being loaded from localStorage
+  if (cars === null) {
+    return (
+      <Flex
+        direction="column"
+        justify="center"
+        align="center"
+        minHeight="60vh"
+        width="100%"
+        bg="brandlightgray"
+        borderRadius="lg"
+        boxShadow="lg"
+        p={8}
+      >
+        <Spinner size="xl" thickness="4px" color="brandblue" speed="0.65s" />
+        <Text
+          mt={6}
+          fontSize={{ base: 'lg', md: 'xl' }}
+          fontWeight="semibold"
+          color="brandblack"
+        >
+          Loading offers, please wait...
+        </Text>
+        <Text fontSize="md" color="gray.500" mt={2} textAlign="center">
+          We are searching for the best offers tailored to your needs.
+        </Text>
+      </Flex>
+    );
+  }
   return (
     <Flex direction="column" grow={1} align={'center'} width={'100%'}>
       {user.role === 'user' && <AuthUserHeader UserData={user} />}
@@ -71,9 +127,9 @@ export default function ResultsPage() {
 
       <Flex
         direction={{ base: 'column', md: 'row' }}
-        py={10}
-        gap={10}
-        width={'81vw'}
+        py={{ base: 6, md: 10 }}
+        gap={{ base: 6, md: 10 }}
+        width="81vw"
         align={{ base: 'center', md: 'flex-start' }}
         justify={{ base: 'center', md: 'space-between' }}
       >
@@ -82,6 +138,7 @@ export default function ResultsPage() {
           width={{ base: '100%', md: '25%' }}
           display="flex"
           justifyContent="center"
+          px={{ base: 4, md: 0 }}
         >
           <SideFilter />
         </Box>
@@ -90,10 +147,55 @@ export default function ResultsPage() {
           width={{ base: '100%', md: '75%' }}
           display={{ base: 'flex', md: 'block' }}
           justifyContent={{ base: 'center', md: 'flex-start' }}
+          px={{ base: 4, md: 0 }}
         >
-          <VehicleGrid vehicles={mockVehicles} />
+          {cars.length > 0 ? (
+            <VehicleGrid vehicles={cars} />
+          ) : (
+            <Flex
+              justify="center"
+              align="center"
+              minHeight="50vh"
+              width="100%"
+              direction="column"
+              bg="brandlightgray"
+              p={{ base: 6, md: 8 }}
+              borderRadius="lg"
+              boxShadow="lg"
+              textAlign="center"
+            >
+              <Text
+                fontSize={{ base: '2xl', md: '3xl' }}
+                fontWeight="bold"
+                color="brandred"
+              >
+                Oops! No Offers Found
+              </Text>
+              <Text
+                fontSize={{ base: 'md', md: 'lg' }}
+                color="gray.600"
+                mt={4}
+                maxW="500px"
+              >
+                {storedErrorMessage
+                  ? storedErrorMessage
+                  : "We couldn't find any offers matching your search criteria. Try adjusting your filters and searching again."}
+              </Text>
+              <Button
+                mt={6}
+                bg="brandblue"
+                size="lg"
+                color="white"
+                _hover={{ bg: 'brandyellow', color: 'brandblack' }}
+                onClick={() => router.push('/home')}
+              >
+                Back to Home
+              </Button>
+            </Flex>
+          )}
         </Box>
       </Flex>
+
       <ChatbotWidget />
       <Footer links={ListinGuestFooterLinks} />
     </Flex>

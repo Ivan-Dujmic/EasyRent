@@ -1,3 +1,20 @@
+export interface IUser {
+  role: "guest" | "user" | "company" | "admin"
+  firstName?: string;
+  lastName?: string;
+  companyName?: string;
+  balance?: number;
+  user_id: number
+}
+
+export interface IReview {
+  rating: number;
+  firstName: string;
+  lastName: string;
+  reviewDate: string;
+  description: string;
+}
+
 export interface IRegisterUser {
   firstName: string; // Ime korisnika
   lastName: string; // Prezime korisnika

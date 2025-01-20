@@ -1,5 +1,6 @@
 'use client';
 
+import { ExtraLocationInfo } from '@/typings/locations/locations';
 import { Box, Text, Icon, Flex, Spinner } from '@chakra-ui/react';
 import {
   GoogleMap,
@@ -10,19 +11,8 @@ import {
 import { useMemo, useState, useEffect } from 'react';
 import { FaMapMarkerAlt, FaClock, FaCar } from 'react-icons/fa';
 
-// Tip za lokacije
-interface DealershipLocation {
-  id: number;
-  name: string;
-  lat: number;
-  lng: number;
-  address: string;
-  workingHours: string;
-  availableCars: number;
-}
-
 interface CustomMapProps {
-  locations: DealershipLocation[]; // Lista lokacija
+  locations: ExtraLocationInfo[]; // Lista lokacija
   showInfoWindow?: boolean; // Opcionalno prikazivanje InfoWindow
 }
 
@@ -69,26 +59,11 @@ const mapStyles = [
   },
 ];
 
-// Funkcija za izračun najbliže lokacije
-const getClosestLocation = (
-  lat: number,
-  lng: number,
-  locations: DealershipLocation[]
-) => {
-  let closestLocation = locations[0];
-  let minDistance = Number.MAX_VALUE;
-
-  locations.forEach((location) => {
-    const distance = Math.sqrt(
-      Math.pow(lat - location.lat, 2) + Math.pow(lng - location.lng, 2)
-    );
-    if (distance < minDistance) {
-      closestLocation = location;
-      minDistance = distance;
-    }
-  });
-
-  return closestLocation;
+// Funkcija za generiranje random radnog vremena
+const generateRandomWorkingHours = () => {
+  const openingHour = Math.floor(Math.random() * (10 - 6 + 1)) + 6; // Between 6 and 10
+  const closingHour = Math.floor(Math.random() * (20 - 17 + 1)) + 17; // Between 17 and 20
+  return `${openingHour}:00-${closingHour}:00`;
 };
 
 const CustomMap: React.FC<CustomMapProps> = ({
@@ -99,8 +74,19 @@ const CustomMap: React.FC<CustomMapProps> = ({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
   });
 
+  const enrichedLocations = useMemo(() => {
+    return locations.map((location) => ({
+      ...location,
+      workingHours: location.workingHours || generateRandomWorkingHours(), // Generate random working hours
+      availableCars:
+        location.availableCars !== undefined
+          ? location.availableCars
+          : Math.floor(Math.random() * (25 - 7 + 1)) + 7, // Random between 7-25
+    }));
+  }, [locations]);
+
   const [selectedLocation, setSelectedLocation] =
-    useState<DealershipLocation | null>(null);
+    useState<ExtraLocationInfo | null>(null);
   const [center, setCenter] = useState({ lat: 45.815399, lng: 15.966568 }); // Default Zagreb center
   const [userLocation, setUserLocation] = useState<{
     lat: number;
@@ -117,15 +103,8 @@ const CustomMap: React.FC<CustomMapProps> = ({
           // Spremi korisnikovu lokaciju
           setUserLocation({ lat: latitude, lng: longitude });
 
-          // Pronađi najbližu lokaciju
-          const closestLocation = getClosestLocation(
-            latitude,
-            longitude,
-            locations
-          );
-
-          // Postavi centar na središte najbližeg grada
-          setCenter({ lat: closestLocation.lat, lng: closestLocation.lng });
+          // Postavi centar na korisnikovu lokaciju
+          setCenter({ lat: latitude, lng: longitude });
         },
         (error) => {
           console.error('Error getting location:', error);
@@ -134,7 +113,7 @@ const CustomMap: React.FC<CustomMapProps> = ({
         }
       );
     }
-  }, [locations]);
+  }, []);
 
   const mapContainerStyle = useMemo(
     () => ({
@@ -171,11 +150,14 @@ const CustomMap: React.FC<CustomMapProps> = ({
       }}
     >
       {/* Prikaz markera za svaku lokaciju */}
-      {locations.map((location: DealershipLocation) => (
+      {enrichedLocations.map((location: ExtraLocationInfo) => (
         <Marker
-          key={location.id}
-          position={{ lat: location.lat, lng: location.lng }}
-          title={location.name}
+          key={location.location_id}
+          position={{
+            lat: parseFloat(location.latitude),
+            lng: parseFloat(location.longitude),
+          }}
+          title={location.companyName}
           onClick={() => {
             setSelectedLocation(location);
             setShowUserInfoWindow(false);
@@ -206,7 +188,7 @@ const CustomMap: React.FC<CustomMapProps> = ({
             >
               <Box bg="white" p={2} borderRadius="md" boxShadow="md">
                 <Text fontSize="sm" fontWeight="bold">
-                  Yes this little blue dot is you!
+                  Yes, this little blue dot is you!
                 </Text>
               </Box>
             </InfoWindow>
@@ -217,20 +199,25 @@ const CustomMap: React.FC<CustomMapProps> = ({
       {/* Prikaz InfoWindow za odabranu lokaciju */}
       {showInfoWindow && selectedLocation && (
         <InfoWindow
-          position={{ lat: selectedLocation.lat, lng: selectedLocation.lng }}
+          position={{
+            lat: parseFloat(selectedLocation.latitude),
+            lng: parseFloat(selectedLocation.longitude),
+          }}
           onCloseClick={() => setSelectedLocation(null)}
         >
           <Box bg="white" borderRadius="md" maxWidth="300px">
             <Box px={3} py={2}>
               <Flex align="center" justify="space-between" mb={2}>
                 <Text fontWeight="bold" fontSize="lg">
-                  {selectedLocation.name}
+                  {selectedLocation.companyName}
                 </Text>
               </Flex>
 
               <Flex align="center" mb={2}>
                 <Icon as={FaMapMarkerAlt} color="brandblue" mr={2} />
-                <Text fontSize="sm">{selectedLocation.address}</Text>
+                <Text fontSize="sm">
+                  {`${selectedLocation.streetName} ${selectedLocation.streetNo}, ${selectedLocation.cityName}`}
+                </Text>
               </Flex>
 
               <Flex align="center" mb={2}>

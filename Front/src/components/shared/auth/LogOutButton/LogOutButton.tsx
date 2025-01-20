@@ -19,6 +19,7 @@ import { useUserContext } from '@/context/UserContext/UserContext';
 import useSWRMutation from 'swr/mutation';
 import { CustomPost } from '@/fetchers/post';
 import { swrKeys } from '@/fetchers/swrKeys';
+import { IUser } from '@/typings/users/user.type';
 
 interface LogOutProps {
     useAlt? : boolean
@@ -39,7 +40,7 @@ export default function LogOutButton({
                 // Reset user context to guest
                 Cookies.remove('sessionid');
                 Cookies.remove('csrftoken');
-                setUser({ role: 'guest' });
+                setUser({ role: 'guest' } as IUser);
                 router.push('/home');
             },
             onError: (error) => {

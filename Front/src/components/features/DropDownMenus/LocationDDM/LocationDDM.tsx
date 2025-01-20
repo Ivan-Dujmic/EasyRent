@@ -6,6 +6,8 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
+  InputRightElement,
+  IconButton,
   Stack,
   Text,
   useOutsideClick,
@@ -13,6 +15,7 @@ import {
 } from '@chakra-ui/react';
 import { useState, useRef, useEffect } from 'react';
 import { FaCarAlt } from 'react-icons/fa';
+import { CloseIcon } from '@chakra-ui/icons';
 import LocationDDMGroups from './LocationDDMGroups/LocationDDMGroups';
 import { LocationDDMProps } from '@/typings/DDM-DropDownMenu/DDM';
 
@@ -76,6 +79,11 @@ export default function LocationDDM({
     if (!isOpen) setIsOpen(true);
   };
 
+  const handleClearInput = () => {
+    setSearch(null);
+    onLocationChange?.('');
+  };
+
   return (
     <Stack gap={0} position="relative" ref={ref} width="100%">
       <Menu isOpen={isOpen}>
@@ -113,6 +121,19 @@ export default function LocationDDM({
             _focus={{ borderColor: 'none', boxShadow: 'none' }}
             fontSize={inputTextSize}
           />
+          {search && (
+            <InputRightElement>
+              <IconButton
+                aria-label="Clear location"
+                icon={<CloseIcon />}
+                size="sm"
+                onClick={handleClearInput}
+                bg="transparent"
+                color="brandblack"
+                _hover={{ color: 'brandred' }}
+              />
+            </InputRightElement>
+          )}
         </InputGroup>
         <MenuList
           position="absolute"
