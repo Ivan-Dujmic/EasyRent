@@ -1,4 +1,4 @@
-import { CompaniesResponse } from '@/typings/company/companyRegister.type';
+import { CompaniesResponse } from '@/typings/company/company';
 import {
   Card,
   CardBody,

@@ -4,17 +4,10 @@ import React, { useState } from 'react';
 import { Flex, IconButton, Box, Text } from '@chakra-ui/react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
 import { ReviewItem } from '../ReviewItem/ReviewItem';
-
-interface Review {
-  rating: number;
-  firstName: string;
-  lastName: string;
-  reviewDate: string;
-  description: string;
-}
+import { IReview } from '@/typings/users/user.type';
 
 export interface ReviewListProps {
-  reviews?: Review[]; // Optional because it can be undefined if there's an error
+  reviews?: IReview[]; // Optional because it can be undefined if there's an error
   error?: string; // Error message if no reviews are found
 }
 

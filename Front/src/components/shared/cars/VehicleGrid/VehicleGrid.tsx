@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { Flex, IconButton, Text, useBreakpointValue } from '@chakra-ui/react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
-import { ICar } from '@/fetchers/homeData';
 import VehicleCard from '../VehicleCard/VechileCard';
+import { ICar } from '@/fetchers/homeData';
 
 interface IVehicleGridProps {
   vehicles: ICar[] | null;

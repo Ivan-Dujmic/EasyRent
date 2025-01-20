@@ -8,18 +8,40 @@ import {
   Text,
   Image,
   Flex,
+  useDisclosure,
 } from '@chakra-ui/react';
 import { IoPersonSharp } from 'react-icons/io5';
 import { TbManualGearboxFilled, TbAutomaticGearbox } from 'react-icons/tb';
 import NextLink from 'next/link';
+import { IReviewable } from '@/typings/vehicles/vehicles.type';
+import ReviewForm from '../../review/ReviewForm';
+import { useRouter } from 'next/navigation';
+import GrayFilter from '../../filter/overlay/GrayFilter';
 import { ICar } from '@/fetchers/homeData';
 
-export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
+interface VehicleCardProps {
+  vehicle: ICar;
+  key: number;
+}
+
+export default function VehicleCard({
+  vehicle: maybeVehicle,
+}: VehicleCardProps) {
+  const {
+    onOpen: onOpenReview,
+    isOpen: isOpenREview,
+    onClose: onCloseReview,
+  } = useDisclosure();
+
+  let vehicle = maybeVehicle as IReviewable;
+  let isReviewable = vehicle.rated !== undefined;
+  let isReviewed = !isReviewable || vehicle.rated;
+
   return (
     <Card
       margin={0}
       as={NextLink}
-      href={`/offer/${vehicle.offer_id}`} // Correctly format the URL without ":"
+      href={!isReviewable ? `/offer/${vehicle.offer_id}` : {}}
       maxW="260px"
       minW="260px"
       height="250px" // Fixed height for consistency
@@ -49,6 +71,20 @@ export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
         flexDirection="column"
         justifyContent="space-between"
       >
+        <GrayFilter
+          onClick={onOpenReview}
+          show={!isReviewed}
+          _hover={{
+            opacity: 0,
+          }}
+        >
+          Leave Review
+        </GrayFilter>
+        <ReviewForm
+          isOpen={isOpenREview}
+          onClose={onCloseReview}
+          vehicle={vehicle as ICar}
+        />
         <Stack spacing={2} height={'100%'} justify={'space-between'}>
           <Flex direction={'column'}>
             <Flex gap={1} align={'baseline'} justify={'space-between'}>

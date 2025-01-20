@@ -1,17 +1,12 @@
 'use client';
 
-import {
-  Flex,
-  Heading,
-  IconButton,
-  Box,
-  useBreakpointValue,
-} from '@chakra-ui/react';
+import { Flex, Heading, IconButton } from '@chakra-ui/react';
 import { FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import React, { useState, useRef, useEffect } from 'react';
 import VehicleCard from '../VehicleCard/VechileCard';
-import { ICar } from '@/fetchers/homeData';
 import { mockVehicles } from '@/mockData/mockVehicles';
+import { NextRouter } from 'next/router';
+import { ICar } from '@/fetchers/homeData';
 
 interface VehicleListProps {
   vehicles?: Array<ICar>;
@@ -32,9 +27,10 @@ export default function VehicleList({
   let [numCards_d, setNumCard] = useState(numCards);
 
   useEffect(() => {
+    const current = containerRef.current;
     const updateContainerWidth = () => {
-      if (containerRef.current) {
-        const { width } = containerRef.current.getBoundingClientRect();
+      if (current) {
+        const { width } = current.getBoundingClientRect();
         setContainerWidth(width);
       }
     };
@@ -45,13 +41,13 @@ export default function VehicleList({
       updateContainerWidth();
     });
 
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
+    if (current) {
+      resizeObserver.observe(current);
     }
 
     return () => {
-      if (containerRef.current) {
-        resizeObserver.unobserve(containerRef.current);
+      if (current) {
+        resizeObserver.unobserve(current);
       }
     };
   });
@@ -116,6 +112,7 @@ export default function VehicleList({
           justify="center"
           align="center"
           gap={`${cardGap}px`}
+          minWidth={cardWidth + cardGap}
           py={'2px'}
         >
           {visibleVehicles.map((vehicle, index) => (

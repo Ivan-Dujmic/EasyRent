@@ -25,8 +25,8 @@ import {
 import CustomMap from '@/components/shared/Map/CustomMap/CustomMap';
 import { useUserContext } from '@/context/UserContext/UserContext';
 import AuthUserHeader from '@/components/shared/Header/AuthUserHeader/AuthUserHeader';
-import { CompaniesResponse } from '@/typings/company/companyRegister.type';
 import { LocationsResponse } from '@/typings/locations/locations';
+import { CompaniesResponse } from '@/typings/company/company';
 
 const homeGuestFooterLinks = {
   quickLinks: [
@@ -85,9 +85,6 @@ export default function HomePage() {
     base: '80vw', // Širina mape za mobilne uređaje i male ekrane
     md: '60vw', // Širina mape za srednje i velike ekrane
   });
-
-  const numCards =
-    useBreakpointValue({ base: 1, sm: 1, md: 2, lg: 3, xl: 4 }) || 4;
 
   return (
     <Flex direction="column" grow={1} align={'center'} width={'100%'}>

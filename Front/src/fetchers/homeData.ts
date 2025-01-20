@@ -11,6 +11,7 @@ export interface IDealership {
 }
 
 export interface ICar {
+  // dode isto kao i I offer prije koji je nasljedi IVechile
   image: string;
   companyName: string;
   makeName: string;
