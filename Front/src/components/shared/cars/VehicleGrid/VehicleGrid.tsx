@@ -16,8 +16,18 @@ export const VehicleGrid = ({ vehicles }: IVehicleGridProps) => {
   const rowsPerPage = 3; // Fixed number of rows per page
   const itemsPerPage = (itemsPerRow || 1) * rowsPerPage;
 
+  // Funkcija za nasumično miješanje niza (Fisher-Yates shuffle algoritam)
+  const shuffleArray = (array: ICar[]) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
   // Provjera da li je vehicles validan niz, ako nije postavi prazan niz
-  const validVehicles = Array.isArray(vehicles) ? vehicles : [];
+  const validVehicles = Array.isArray(vehicles) ? shuffleArray(vehicles) : [];
 
   // Provjeri da li ima vozila za prikaz
   if (validVehicles.length === 0) {
