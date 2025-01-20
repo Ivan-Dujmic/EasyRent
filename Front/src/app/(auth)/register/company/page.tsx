@@ -1,30 +1,25 @@
 'use client';
 
+import CustomInput from '@/components/shared/auth/CustomInput';
+import SubmitButton from '@/components/shared/auth/SubmitButton';
+import SupportButton from '@/components/shared/auth/SupportButton';
+import SuccessWindowCompany from '@/components/shared/SuccessWidnow/SuccessWinodwCompany';
+import WorkingHoursForm from '@/components/shared/auth/WorkingHoursForm';
+import { swrKeys } from '@/fetchers/swrKeys';
+import { registerCompany } from '@/mutation/authCompany';
+import { IRegisterCompany } from '@/typings/company/companyRegister.type';
 import {
-  FormErrorMessage,
-  chakra,
   Box,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
   VStack,
   Flex,
-  Spacer,
+  chakra,
+  useBreakpointValue,
 } from '@chakra-ui/react';
-import { useForm } from 'react-hook-form';
 import { useState } from 'react';
-import WorkingHoursForm from '@/components/shared/auth/WorkingHoursForm';
-import { IRegisterCompany } from '@/typings/company/companyRegister.type';
+import { useForm } from 'react-hook-form';
 import useSWRMutation from 'swr/mutation';
 
-//ovo sam ja napravio novo za company
-import { registerCompany } from '@/mutation/authCompany';
-//nezz dali su ovo dobri inportovi ili napravit nove fileove za company register
-import { swrKeys } from '@/fetchers/swrKeys';
-import SuccessWindowComapny from '@/components/shared/SuccessWidnow/SuccessWinodwCompany';
-
-export default function HomePage() {
+export default function RegisterCompanyPage() {
   const [registered, setRegistered] = useState(false);
   const {
     register,
@@ -48,178 +43,140 @@ export default function HomePage() {
   });
 
   const onRegister = async (data: IRegisterCompany) => {
-    // ja sam ovdje sve errore napravio unutar input componenti
     clearErrors();
-    console.log('On register:', data);
     await trigger(data);
   };
 
-  const suppButtons = {
-    bg: 'brandlightgray',
-    p: 5,
-    m: 5,
-    BorderRadius: 'md',
-  };
+  const boxWidth = useBreakpointValue({
+    base: '90vw', // Small screens
+    md: '70vw', // Medium screens
+    lg: '50vw', // Large screens
+  });
 
-  const inputText = {
-    w: '40%',
-  };
+  const inputWidth = useBreakpointValue({
+    base: '100%', // Full width for small screens
+    md: '48%', // Half width for medium and larger screens
+  });
 
   return registered ? (
-    <SuccessWindowComapny />
+    <SuccessWindowCompany />
   ) : (
     <Box
-      minWidth="800px"
-      maxW="1200px"
-      w="80vw"
+      width={boxWidth}
       margin="0 auto"
       mt="8"
-      p="6"
+      p={{ base: 4, md: 6 }}
       boxShadow="0 0 15px rgba(0, 0, 0, 0.2)"
       borderRadius="md"
       bg="brandwhite"
       mb={12}
     >
       <chakra.form onSubmit={handleSubmit(onRegister)}>
-        <Flex justifyContent="space-between">
-          <VStack spacing="4" w="45%">
-            <FormControl isRequired>
-              <FormLabel>Company name</FormLabel>
-              <Input
-                {...register('name')}
-                type="text"
-                placeholder="Enter company name"
-              />
-            </FormControl>
-
-            <FormControl isRequired isInvalid={!!errors.email}>
-              <FormLabel>Company email</FormLabel>
-              <Input
-                {...register('email')}
-                type="email"
-                placeholder="Enter company email"
-              />
-              {errors.email && (
-                <FormErrorMessage color="red">
-                  {errors.email.message}
-                </FormErrorMessage>
-              )}
-            </FormControl>
-
-            <FormControl isRequired>
-              <FormLabel>Phone number</FormLabel>
-              <Input
-                {...register('phoneNo')}
-                type="tel"
-                placeholder="Enter company phone number"
-              />
-            </FormControl>
-
-            <FormControl isRequired>
-              <FormLabel>HQ address</FormLabel>
-              <Input
-                {...register('HQaddress')}
-                type="text"
-                placeholder="Enter company address"
-              />
-            </FormControl>
-
-            <FormControl isRequired>
-              <FormLabel>TIN</FormLabel>
-              <Input
-                {...register('TIN')}
-                type="text"
-                placeholder="Enter company TIN"
-              />
-            </FormControl>
+        <Flex
+          direction={{ base: 'column', md: 'row' }}
+          wrap="wrap"
+          gap={6}
+          justify="space-between"
+        >
+          {/* Left Column */}
+          <VStack spacing={4} w={inputWidth}>
+            <CustomInput
+              {...register('name', {
+                required: 'Must enter company name',
+              })}
+              label="Company Name"
+              type="text"
+              placeholder="Enter company name"
+              error={errors.name?.message}
+            />
+            <CustomInput
+              {...register('email', {
+                required: 'Email is required',
+              })}
+              label="Company Email"
+              type="email"
+              placeholder="Enter company email"
+              error={errors.email?.message}
+            />
+            <CustomInput
+              {...register('phoneNo', {
+                required: 'Phone number is required',
+              })}
+              label="Phone Number"
+              type="tel"
+              placeholder="Enter company phone number"
+              error={errors.phoneNo?.message}
+            />
+            <CustomInput
+              {...register('HQaddress', {
+                required: 'Main company address is required',
+              })}
+              label="HQ Address"
+              type="text"
+              placeholder="Enter company address"
+              error={errors.HQaddress?.message}
+            />
+            <CustomInput
+              {...register('TIN', {
+                required: 'TIN is required',
+              })}
+              label="TIN"
+              type="text"
+              placeholder="Enter company TIN"
+              error={errors.TIN?.message}
+            />
           </VStack>
 
-          <VStack spacing="4" w="45%">
+          {/* Right Column */}
+          <VStack spacing={4} w={inputWidth}>
             <WorkingHoursForm />
-            <FormControl isRequired isInvalid={!!errors.password}>
-              <FormLabel>Password</FormLabel>
-              <Input
-                {...register('password', {
-                  required: 'Must enter password',
-                  validate: (value: string) => {
-                    if (value.length < 8)
-                      return 'Password must be at least 8 characters';
-                    return true;
-                  },
-                })}
-                type="password"
-                placeholder="Enter your password"
-              />
-              {errors.password && (
-                <FormErrorMessage color="red">
-                  {errors.password.message}
-                </FormErrorMessage>
-              )}
-            </FormControl>
-
-            <FormControl isRequired isInvalid={!!errors.confirmPassword}>
-              <FormLabel>Confirm password</FormLabel>
-              <Input
-                {...register('confirmPassword', {
-                  required: 'Password confirmation is required',
-                  validate: (value: string) => {
-                    if (value === getValues('password')) return true;
-                    return 'Passwords do not match';
-                  },
-                })}
-                type="password"
-                placeholder="Repeat your password"
-              />
-              {errors.confirmPassword && (
-                <FormErrorMessage color="red">
-                  {errors.confirmPassword.message}
-                </FormErrorMessage>
-              )}
-            </FormControl>
+            <CustomInput
+              {...register('password', {
+                required: 'Must enter password',
+                minLength: {
+                  value: 8,
+                  message: 'Password must be at least 8 characters',
+                },
+              })}
+              label="Password"
+              type="password"
+              placeholder="Enter password"
+              error={errors.password?.message}
+            />
+            <CustomInput
+              {...register('confirmPassword', {
+                required: 'Password confirmation is required',
+                validate: (value) =>
+                  value === getValues('password') || 'Passwords do not match',
+              })}
+              label="Confirm Password"
+              type="password"
+              placeholder="Repeat password"
+              error={errors.confirmPassword?.message}
+            />
           </VStack>
         </Flex>
 
+        {/* Buttons */}
         <Flex
-          direction={'row'}
-          justifyContent={'space-evenly'}
-          alignItems={'center'}
-          w={'full'}
-          mt={5}
+          direction={{ base: 'column', md: 'row' }}
+          gap={4}
+          mt={6}
+          justify="center"
+          align="center"
         >
-          <Button as="a" href="/" sx={suppButtons}>
-            Continue as guest
-          </Button>
-          <Button
-            as="a"
-            href="/login"
-            p={5}
-            borderRadius="md"
-            sx={suppButtons}
-            bg="brandblue"
-            m="5"
-          >
-            Login
-          </Button>
-          <Spacer />
-          <Button
-            type="submit"
-            p={5}
-            borderRadius="md"
-            bg="brandblue"
-            m="5"
-            color={'brandwhite'}
-            mr="30%"
-            border="2px solid"
-            borderColor={'brandwhite'}
-            _hover={{
-              bg: 'brandmiddlegray',
-              color: 'brandblack',
-              borderColor: 'brandblue',
-              transition: 'all 0.3s ease', // Animacija prijelaza
-            }}
-          >
-            Register
-          </Button>
+          <SupportButton href="/" w={{ base: '100%', md: '30%' }}>
+            Continue as Guest
+          </SupportButton>
+          <SupportButton href="/login" w={{ base: '100%', md: '30%' }}>
+            Log In
+          </SupportButton>
+          <SubmitButton
+            label="Register"
+            submittingLabel="Trying to register..."
+            isSubmitting={isSubmitting}
+            w={{ base: '100%', md: '30%' }}
+          />
         </Flex>
       </chakra.form>
     </Box>

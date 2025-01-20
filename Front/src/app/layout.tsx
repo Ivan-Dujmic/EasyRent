@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Providers } from './providers';
 import { Flex } from '@chakra-ui/react';
+import ChatbotWidget from '@/components/shared/ChatbotWidget/ChatbotWidget';
 
 const inter = Inter({ subsets: ['latin'] });
 

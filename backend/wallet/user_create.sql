@@ -1,0 +1,40 @@
+INSERT INTO auth_user
+    (password,
+    is_superuser,
+    username,
+    first_name,
+    last_name,
+    email,
+    is_active,
+	is_staff,
+    date_joined)
+VALUES
+    ('pbkdf2_sha256$870000$a2bF00zkBxoIiN6AKkPRSg$GWafZP1r6f5txhw9i3yjOA6hfU59faNSgLp16KT5SE8',
+    false,
+    'VelGoat',
+    'Igor',
+    'Velcic',
+    'velgoat@gmail.com',
+    true,
+	false,
+    NOW());
+INSERT INTO auth_user
+    (password,
+    is_superuser,
+    username,
+    first_name,
+    last_name,
+    email,
+    is_active,
+	is_staff,
+    date_joined)
+VALUES
+    ('pbkdf2_sha256$870000$a2bF00zkBxoIiN6AKkPRSg$GWafZP1r6f5txhw9i3yjOA6hfU59faNSgLp16KT5SE8',
+    false,
+    'SeanStrickland',
+    'Sean',
+    'Strickland',
+    'seanstrickland@gmail.com',
+    true,
+	false,
+    NOW());

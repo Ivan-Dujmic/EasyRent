@@ -5,12 +5,18 @@ import { motion } from 'framer-motion';
 import { Text } from '@chakra-ui/react';
 import NextLink from 'next/link';
 
-export const AnimatedMyProfile = () => {
+interface AnimatedMyProfileProps {
+  color?: string; // Optional color prop with default value
+}
+
+export const AnimatedMyProfile = ({
+  color = 'brandblue',
+}: AnimatedMyProfileProps) => {
   return (
-    <Text color="brandblue" fontWeight="semibold">
+    <Text fontWeight="semibold">
       <motion.span
-        initial={{ opacity: 1, x: 0 }} // Početni položaj
-        whileHover={{ opacity: 1, x: 4 }} // Pomakni tekst udesno pri hoveru
+        initial={{ opacity: 1, x: 0 }} // Initial position
+        whileHover={{ opacity: 1, x: 4 }} // Shift text to the right on hover
         transition={{ duration: 0.3 }}
         style={{
           display: 'inline-flex',
@@ -21,7 +27,7 @@ export const AnimatedMyProfile = () => {
         <Text
           as={NextLink}
           href="/myProfile"
-          color={'brandblue'}
+          color={color} // Use the optional color prop
           fontWeight={'semibold'}
         >
           My profile

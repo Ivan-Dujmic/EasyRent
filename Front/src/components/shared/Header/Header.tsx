@@ -1,54 +1,87 @@
-import { Box, Button, Flex, Text } from '@chakra-ui/react';
+'use client';
+
+import {
+  Text,
+  Button,
+  ButtonProps,
+  Box
+} from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { AnimatedSignUp } from '../auth/AnimatedSignUp/AnimatedSignUp';
-import EasyRentLogo from '@/components/core/EasyRentLogo/EasyRentLogo';
+import CustomHeader from './CustomHeader/CustomHeader';
+
+interface HeaderButtonProps extends ButtonProps {
+  href?: string
+}
+
+export function HeaderButton({
+  children,
+  href = "",
+  size = "sm",
+  fontSize = "sm"
+}:HeaderButtonProps) {
+  return <Button
+    as={NextLink}
+    bg={'brandblue'}
+    color={'brandwhite'}
+    fontWeight={'bold'}
+    fontSize={fontSize}
+    size = {size}
+    _hover={{
+      bg: 'brandblue',
+      boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
+      transform: 'translateY(-2px)',
+      transition: 'transform 0.2s ease, box-shadow 0.3s ease',
+    }}
+    href={href}
+  >
+    {children}
+  </Button>
+}
+
+interface LoginProps {
+  log?: "in" | "out"
+}
+
+export function LoginButton({
+  log = "in"
+}:LoginProps) {
+  return <Text
+    as={NextLink}
+    href= {log == "in" ? "/login" : "/logout"}
+    color={'brandblack'}
+    fontWeight={'semibold'}
+    _hover={{
+      textDecoration: "underline",
+      transform: 'translateY(-2px)',
+      transition: 'transform 0.2s ease, box-shadow 0.3s ease',
+    }}
+  >
+    {log == "in" ? "Login" : "Logout"}
+  </Text>
+}
 
 export default function Header() {
-  return (
-    <Box
-      bg="brandwhite"
-      boxShadow="md"
-      color={'brandblack'}
-      fontSize="sm"
-      zIndex={2}
-    >
-      <Flex align="center" maxW="1200px" mx="auto" px={6} py={4}>
-        {/* Logo */}
-        <EasyRentLogo />
+  return <CustomHeader 
+    HeaderItems={ // For larger screens
+      <>
+        <LoginButton/>
 
-        {/* Spacer and Action Buttons */}
-        <Flex ml="auto" gap={4} align="center">
-          <Text
-            as={NextLink}
-            href="/login"
-            color={'brandblack'}
-            fontWeight={'semibold'}
-          >
-            Login
-          </Text>
+        {/* Small vertical line */}
+        <Box height="4" borderLeft="1px" borderColor="brandgray" />
 
-          {/* Small vertical line */}
-          <Box height="4" borderLeft="1px" borderColor="brandgray" />
+        <AnimatedSignUp />
 
-          <AnimatedSignUp />
+        <HeaderButton href = "/TalkToUs"> Talk to us </HeaderButton>
+      </>}
+    MenuItems={ // For smaller screens
+      <>
+        <LoginButton/>
 
-          <Button
-            bg={'brandblue'}
-            color={'brandwhite'}
-            fontWeight={'normal'}
-            fontSize="sm"
-            size="sm"
-            _hover={{
-              bg: 'brandblue',
-              boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
-              transform: 'translateY(-2px)',
-              transition: 'transform 0.2s ease, box-shadow 0.3s ease',
-            }}
-          >
-            Talk to us
-          </Button>
-        </Flex>
-      </Flex>
-    </Box>
-  );
+        <AnimatedSignUp />
+
+        <HeaderButton href = "/TalkToUs"> Talk to us </HeaderButton>
+
+      </>}
+    />;
 }
