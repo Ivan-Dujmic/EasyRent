@@ -8,7 +8,8 @@ export const swrKeys = {
   registerUser: `${auth}register-user/`,
   registerCompany: `${auth}register-company/`,
   logIn: `${auth}login/`,
-  search: (queryString: string = ''): string => `${home}search?${queryString}`, // search sa tipovima
+  search: (queryString: string = ''): string =>
+    `${home}search?${queryString}&limit=198&page=1`, // search sa tipovima
   userinfo: `${auth}user-info/`,
   logout: `${auth}logout/`,
   profileuser: `${profile}/user/info`,

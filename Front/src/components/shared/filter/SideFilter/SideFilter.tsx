@@ -187,6 +187,7 @@ export default function SideFilter() {
         selectedTransmission[0] === 'Automatic' ? 'true' : 'false';
     }
 
+    console.log(filterData);
     // Combine the SideFilter data with FilterContext data
     const queryParamsObj: Record<string, string> = {
       seats: seatsData.join(','),
@@ -195,6 +196,7 @@ export default function SideFilter() {
       min_price: String(minPrice),
       max_price: String(maxPrice),
       makes_and_models: JSON.stringify(makeAndModelData),
+      // ovaj dolje dio bi trebao raditi kako treba
       pick_up_location: filterData.pick_up_location || '',
       drop_off_location: filterData.drop_off_location || '',
       pick_up_date: filterData.pick_up_date || '',
