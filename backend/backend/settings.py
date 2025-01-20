@@ -24,12 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-upfieqv^tvk=6qdn1b3aps5-&!kqknvu-pa573k_2401*1uqvf"
-
+SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don"t run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
-ALLOWED_HOSTS = ["http://localhost:3000", "127.0.0.1"]
+
+ALLOWED_HOSTS = os.getenv("ALL_HOST").split(" ")
 
 
 # Application definition
@@ -52,22 +52,24 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "src",
     "home",
-    "profile",
+    "profiles",
+    "wallet",
 ]
 AUTH_USER_MODEL = "auth.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    #'django.middleware.csrf.CsrfViewMiddleware',
+    # "django.middleware.csrf.CsrfViewMiddleware",
+    "backend.middleware.DisableCSRFMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
 ]
+
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
@@ -105,17 +107,16 @@ WSGI_APPLICATION = "backend.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "EasyRentTest3",
+        "NAME": "EasyRentTest",
         "USER": "postgres",
         "PASSWORD": "postgres",
         "HOST": "localhost",
-        "PORT": "5432", #5432 or 5433
+        "PORT": "5432",  # 5432 or 5433
     }
 }
-
-#DATABASES["default"] = dj_database_url.parse("postgresql://easyrenttest_user:DgzXkonl30N4oxzbB8gP9i5m3UpS9VK1@dpg-csrs4obv2p9s73bh4u80-a.frankfurt-postgres.render.com/easyrenttest")
-
-
+DATABASES["default"] = dj_database_url.parse(os.getenv("DATABASE"))
+STATIC_ROOT = ""
+STATIC_URL = "/static/"
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -167,28 +168,37 @@ EMAIL_HOST_USER = os.getenv("HOST_EMAIL")
 EMAIL_HOST_PASSWORD = os.getenv("HOST_PASSWORD")
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
-CSRF_COOKIE_SECURE = True
+CORS_ORIGIN_ALLOW_ALL = True
+# CSRF_COOKIE_SECURE = True  # Ensure this is True for HTTPS
+# CSRF_COOKIE_HTTPONLY = False
+# CSRF_COOKIE_SAMESITE = "None"
+
 SESSION_COOKIE_DOMAIN = None
 SESSION_COOKIE_NAME = "sessionid"
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = False
 SESSION_COOKIE_SAMESITE = "None"
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "https://easy-rent-ashy.vercel.app",
 ]
 CRSF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
+    "localhost",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:8000",
+    "https://easy-rent-ashy.vercel.app",
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_HEADERS = [
     "content-type",
     "authorization",
+    "X-CSRFToken",
 ]
 
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
@@ -212,6 +222,8 @@ REST_FRAMEWORK = {
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "EasyRent API",
+    'COMPONENT_SPLIT_REQUEST': True
+
 }
 
 # SOCIALACCOUNT_AUTO_SIGNUP = True
@@ -219,5 +231,5 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 # ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
 
 # Images (using Pillow)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")

@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Menu,
   MenuList,
@@ -9,25 +11,35 @@ import {
   useOutsideClick,
   useBreakpointValue,
 } from '@chakra-ui/react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { FaCarAlt } from 'react-icons/fa';
 import LocationDDMGroups from './LocationDDMGroups/LocationDDMGroups';
 import { LocationDDMProps } from '@/typings/DDM-DropDownMenu/DDM';
 
+interface EnhancedLocationDDMProps extends LocationDDMProps {
+  value?: string; // Added prop for initial value
+}
+
 export default function LocationDDM({
-  options,
+  options, // { [countryName: string]: string[] }
   description,
   placeHolder,
-}: LocationDDMProps) {
+  onLocationChange,
+  value, // Current selected value (e.g. "Zagreb, Croatia")
+}: EnhancedLocationDDMProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState<string | null>(value || null);
 
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement | null>(null);
 
   const inputTextSize = useBreakpointValue({
-    md: 'xs',
-    lg: 'sm',
-    xl: 'md',
+    base: 'sm',
+    md: 'md',
+  });
+
+  const inputWidth = useBreakpointValue({
+    base: '100%',
+    md: '100%',
   });
 
   useOutsideClick({
@@ -35,39 +47,57 @@ export default function LocationDDM({
     handler: () => setIsOpen(false),
   });
 
+  // Update local state if the parent passes in a new value
+  useEffect(() => {
+    setSearch(value || null);
+  }, [value]);
+
   const handleSelectLocation = (location: string) => {
-    setSearch(location); // Prikaz odabrane lokacije u Input
-    setIsOpen(false); // Zatvori menu
+    setSearch(location);
+    onLocationChange?.(location);
+    setIsOpen(false);
   };
 
   const handleInputClick = () => {
-    if (!isOpen) setIsOpen(true); // otvori menu samo ako do sada nije vec otvoren
+    if (!isOpen) setIsOpen(true);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
-    if (!isOpen) setIsOpen(true); // osigurava da meni ostaje otvoren dok tipkamo
+    const val = e.target.value;
+    setSearch(val);
+
+    // If user erases everything, also inform the parent
+    if (val.trim() === '') {
+      setSearch(null);
+      onLocationChange?.('');
+    }
+
+    // Open the menu while typing
+    if (!isOpen) setIsOpen(true);
   };
 
   return (
-    <Stack gap={0} position={'relative'} ref={ref}>
+    <Stack gap={0} position="relative" ref={ref} width="100%">
       <Menu isOpen={isOpen}>
-        <Text fontSize={'0.8rem'} color={'brandblue'}>
+        <Text fontSize="0.8rem" color="brandblue">
           {description}
         </Text>
         <InputGroup
-          height={'fit-content'}
-          borderWidth={'2px'}
+          height="fit-content"
+          borderWidth="2px"
           borderRadius="md"
-          borderColor={'brandblue'}
-          width={'fit-content'}
-          bg={'brandlightgray'}
+          borderColor="brandblue"
+          width={inputWidth}
+          bg="brandlightgray"
           _focusWithin={{
             bg: 'brandwhite',
             borderColor: 'brandblack',
             color: 'brandblack',
           }}
-          maxWidth={'14rem'}
+          _hover={{
+            borderColor: '#cbd5e0',
+            transition: 'border-color 0.2s ease-in-out',
+          }}
         >
           <InputLeftElement pointerEvents="none" color="brandblack">
             <FaCarAlt />
@@ -76,10 +106,10 @@ export default function LocationDDM({
             onClick={handleInputClick}
             cursor="pointer"
             placeholder={placeHolder}
-            value={search}
+            value={search || ''}
             onChange={handleInputChange}
-            color={'brandblack'}
-            border={'none'}
+            color="brandblack"
+            border="none"
             _focus={{ borderColor: 'none', boxShadow: 'none' }}
             fontSize={inputTextSize}
           />
@@ -91,15 +121,14 @@ export default function LocationDDM({
           maxH="300px"
           overflowY="auto"
           zIndex="1000"
-          color={'brandblack'}
+          color="brandblack"
         >
+          {/* Pass the filtered data to the groups component */}
           <LocationDDMGroups
             options={options}
             handleSelectLocation={handleSelectLocation}
-            search={search}
-            setSearch={() => {
-              return;
-            }}
+            search={search || ''}
+            setSearch={() => null}
           />
         </MenuList>
       </Menu>

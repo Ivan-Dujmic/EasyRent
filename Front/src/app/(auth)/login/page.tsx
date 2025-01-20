@@ -1,165 +1,149 @@
 'use client';
 
 import {
-  chakra,
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  Heading,
-  VStack,
-  Flex,
-  Spacer,
-  FormErrorMessage,
-  Text,
+    chakra,
+    Box,
+    Heading,
+    VStack,
+    Flex,
+    Text,
+    useBreakpointValue,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { ILogIn } from '@/typings/logIn/logIn.type';
-
+// import ReCAPTCHA from 'react-google-recaptcha'
 import useSWRMutation from 'swr/mutation';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { logIn } from '@/mutation/login';
 import { useRouter } from 'next/navigation';
 import SucessLoginWindow from '@/components/shared/SuccessWidnow/SucessLoginWindow';
 import { FcGoogle } from 'react-icons/fc';
-
+import CustomInput from '@/components/shared/auth/CustomInput';
+import SubmitButton from '@/components/shared/auth/SubmitButton';
+import SupportButton from '@/components/shared/auth/SupportButton';
+import { useRef } from 'react';
 export default function HomePage() {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const {
-    register,
-    handleSubmit,
-    formState: { isSubmitting, errors },
-    setError,
-    clearErrors,
-    getValues,
-  } = useForm<ILogIn>();
-  const router = useRouter();
+    const {
+        register,
+        handleSubmit,
+        formState: { isSubmitting, errors },
+        setError,
+        clearErrors,
+    } = useForm<ILogIn>();
+    const router = useRouter();
 
-  const { trigger } = useSWRMutation(swrKeys.logIn, logIn, {
-    onSuccess: (data) => {
-      setLoggedIn(true);
-      if (data?.role == 'user') router.push('/YourHomePage');
-      else if (data?.role == 'company') router.push('/CompanyHomePage');
-    },
-    onError: () => {
-      setError('email', {
-        type: 'manual',
-        message: 'This email is not registered',
-      });
-    },
-  });
+    const { trigger } = useSWRMutation(swrKeys.logIn, logIn, {
+        onSuccess: (data) => {
+            if (data?.success == 1)
+                /*Tu bi potneicjlano moglo doci do greske */
+                router.push('/SuccessfulLogin');
+        },
+        onError: () => {
+            setError('email', {
+                type: 'manual',
+                message: 'This email is not registered',
+            });
+        },
+    });
 
-  const onLogIn = async (data: ILogIn) => {
-    clearErrors();
-    console.log('On register:', data);
-    await trigger(data);
-    console.log(data);
-  };
+    const onLogIn = async (data: ILogIn) => {
+        clearErrors();
+        await trigger(data);
+    };
 
-  const suppButtons = {
-    bg: 'brandlightgray',
-    p: 5,
-    m: 5,
-    BorderRadius: 'md',
-  };
+    const boxWidth = useBreakpointValue({
+        base: '90vw', // Small screens
+        md: '70vw', // Medium screens
+        lg: '50vw', // Large screens
+    });
 
-  return loggedIn ? (
-    <SucessLoginWindow />
-  ) : (
-    <Box
-      minWidth="400px"
-      maxW="800px"
-      w="80vw"
-      margin="0 auto"
-      mt="10"
-      p="6"
-      boxShadow="0 0 15px rgba(0, 0, 0, 0.2)"
-      borderRadius="md"
-      bg="brandwhite"
-    >
-      <Heading as="h2" size="lg" mb="6">
-        Login
-      </Heading>
+    const buttonWidth = useBreakpointValue({
+        base: '100%', // Full width on small screens
+        md: '32%', // Fit three buttons side by side on medium screens
+        lg: '30%', // Slightly smaller on large screens for spacing
+    });
 
-      <chakra.form onSubmit={handleSubmit(onLogIn)}>
-        <VStack spacing="4">
-          <FormControl isRequired isInvalid={!!errors.email}>
-            <FormLabel>Email</FormLabel>
-            <Input
-              {...register('email', {
-                required: 'Email is required',
-              })}
-              type="email"
-              placeholder="Enter your email"
-            />
-            {errors.email && (
-              <FormErrorMessage color={'red'}>
-                {errors.email.message}
-              </FormErrorMessage>
-            )}
-          </FormControl>
-          <FormControl isRequired isInvalid={!!errors.password}>
-            <FormLabel>Password</FormLabel>
-            <Input
-              {...register('password', {
-                required: 'Must enter password',
-              })}
-              type="password"
-              placeholder="Enter your password"
-            />
-            {errors.password && (
-              <FormErrorMessage color={'red'}>
-                {errors.password.message}
-              </FormErrorMessage>
-            )}
-          </FormControl>
-          <Flex
-            direction={'row'}
-            justifyContent={'space-evenly'}
-            alignItems={'center'}
-            w={'full'}
-          >
-            <Button
-              type="submit"
-              p={5}
-              borderRadius="md"
-              bg="brandblue"
-              m="5"
-              color={'brandwhite'}
-              disabled={isSubmitting}
-              border="2px solid"
-              borderColor={'brandwhite'}
-              _hover={{
-                bg: 'brandmiddlegray',
-                color: 'brandblack',
-                borderColor: 'brandblue',
-                transition: 'all 0.3s ease', // Animacija prijelaza
-              }}
-            >
-              {isSubmitting ? 'Logging in...' : 'Login'}
-            </Button>
-            <Spacer />
-            <Button as="a" href="/register/user" sx={suppButtons}>
-              Register
-            </Button>
-            <Button as="a" href="/home" sx={suppButtons}>
-              Continue as guest
-            </Button>
-            <Button
-              as="a"
-              href="http://127.0.0.1:8000/accounts/google/login/?next=/"
-              sx={suppButtons}
-            >
-              <Flex justify={'space-between'} align={'center'} gap={2}>
-                <FcGoogle />
-                <Text>Sign in with Google</Text>
-              </Flex>
-            </Button>
-          </Flex>
-        </VStack>
-      </chakra.form>
-    </Box>
-  );
+    return (
+        <Box
+            width={boxWidth}
+            margin="0 auto"
+            mt="10"
+            p={{ base: 4, md: 6 }}
+            boxShadow="0 0 15px rgba(0, 0, 0, 0.2)"
+            borderRadius="md"
+            bg="brandwhite"
+        >
+            <Heading as="h2" size="xl" mb={6} textAlign="center">
+                Login
+            </Heading>
+            <chakra.form onSubmit={handleSubmit(onLogIn)}>
+                <VStack spacing={6}>
+                    {/* Input Fields */}
+                    <CustomInput
+                        {...register('email', {
+                            required: 'Email is required',
+                        })}
+                        label="Email"
+                        type="email"
+                        placeholder="Enter your email"
+                        error={errors.email?.message}
+                    />
+                    <CustomInput
+                        {...register('password', {
+                            required: 'Must enter password',
+                        })}
+                        label="Password"
+                        type="password"
+                        placeholder="Enter your password"
+                        error={errors.password?.message}
+                    />
+
+                    {/* Button Layout */}
+                    <Flex
+                        direction="column"
+                        gap={6}
+                        w="full"
+                        align="center"
+                        justify="center"
+                    >
+                        {/* Login Button */}
+                        <SubmitButton
+                            label="Login"
+                            submittingLabel="Logging in..."
+                            isSubmitting={isSubmitting}
+                            w={{ base: '100%', md: '50%' }}
+                        />
+
+                        {/* Secondary Buttons */}
+                        <Flex
+                            direction={{ base: 'column', md: 'row' }}
+                            gap={4}
+                            w="full"
+                            justify="center"
+                            align="center"
+                        >
+                            <SupportButton href="/register/user" w={buttonWidth}>
+                                Register
+                            </SupportButton>
+                            <SupportButton href="/home" w={buttonWidth}>
+                                Continue as Guest
+                            </SupportButton>
+                            <SupportButton
+                                href="https://easyrent-t7he.onrender.com/accounts/google/login/?next=/api/auth/SuccessfulLogin"
+                                // href="http://127.0.0.1:8000/accounts/google/login/?next=/api/auth/SuccessfulLogin"
+                                w={buttonWidth}
+                            >
+                                <Flex justify="center" align="center" gap={2}>
+                                    <FcGoogle />
+                                    <Text whiteSpace="nowrap">Sign in with Google</Text>
+                                </Flex>
+                            </SupportButton>
+                            {/* <ReCAPTCHA sitekey={process.env.REACT_APP_SITE_KEY} /> */}
+                        </Flex>
+                    </Flex>
+                </VStack>
+            </chakra.form>
+        </Box>
+    );
 }

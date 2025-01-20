@@ -1,5 +1,6 @@
-import { Box, Button, Flex, Heading, Text } from '@chakra-ui/react';
+import { Box, Button, Flex, Heading, Text, BoxProps, FlexProps } from '@chakra-ui/react';
 import EasyRentLogo from '@/components/core/EasyRentLogo/EasyRentLogo';
+import React from 'react';
 
 export default function Header() {
   return (
@@ -11,3 +12,11 @@ export default function Header() {
     </Box>
   );
 }
+
+// Alternatively:
+
+// import { CustomHeader } from './Header';
+
+// export default function Header() {
+//   return <CustomHeader bg = "white" boxShadow="sm" color = "black"></CustomHeader>;
+// }

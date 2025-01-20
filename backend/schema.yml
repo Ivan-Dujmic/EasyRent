@@ -3,9 +3,37 @@ info:
   title: EasyRent API
   version: 0.0.0
 paths:
-  /api/auth/loginUser/:
+  /api/auth/login/:
     post:
-      operationId: api_auth_loginUser_create
+      operationId: login_user
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginUserRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: Logged in
+        '400':
+          description: Bad Request
+        '403':
+          description: Forbidden
+  /api/auth/logout/:
+    post:
+      operationId: logout_user
       tags:
       - auth
       security:
@@ -14,51 +42,306 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
-  /api/auth/logoutUser/:
+          description: Logged out
+  /api/auth/register-company/:
     post:
-      operationId: api_auth_logoutUser_create
+      operationId: register_company
       tags:
       - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterCompanyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterCompanyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterCompanyRequest'
+        required: true
       security:
       - cookieAuth: []
       - basicAuth: []
       - {}
       responses:
         '200':
-          description: No response body
-  /api/auth/registerCompany/:
+          description: Email confirmation request sent
+        '400':
+          description: Bad Request
+        '500':
+          description: Email confirmation request failed
+  /api/auth/register-user/:
     post:
-      operationId: api_auth_registerCompany_create
+      operationId: register_user
       tags:
       - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequest'
+        required: true
       security:
       - cookieAuth: []
       - basicAuth: []
       - {}
       responses:
         '200':
-          description: No response body
-  /api/auth/registerUser/:
-    post:
-      operationId: api_auth_registerUser_create
-      tags:
-      - auth
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /api/home/offer/{offer_id}:
+          description: Email confirmation request sent
+        '400':
+          description: Bad Request
+        '500':
+          description: Email confirmation request failed
+  /api/auth/user-info/:
     get:
-      operationId: api_home_offer_retrieve
+      operationId: user_info
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfo'
+          description: ''
+        '500':
+          description: No rentoid or dealership to match user
+  /api/home/available-drop-off/{offer_id}/:
+    get:
+      operationId: home_available_drop_off_retrieve
+      parameters:
+      - in: query
+        name: dropOffLocationId
+        schema:
+          type: string
+          default: '2'
+        description: Id of the drop off location
+        required: true
+      - in: path
+        name: offer_id
+        schema:
+          type: integer
+        required: true
+      - in: query
+        name: pickUpDate
+        schema:
+          type: string
+          format: date
+          default: '2022-05-03'
+        description: Format year-month-day, zero padded
+        required: true
+      - in: query
+        name: pickUpLocationId
+        schema:
+          type: string
+          default: '2'
+        description: Id of the pick up location
+        required: true
+      - in: query
+        name: pickUpTime
+        schema:
+          type: integer
+          default: 14
+        description: Hour between 0-23
+        required: true
+      tags:
+      - home
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailableDropOff'
+          description: ''
+        '404':
+          description: Vehicle Not Found
+  /api/home/best-value/:
+    get:
+      operationId: home_best_value_retrieve
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 10
+        description: Max number of offers per page
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Page number, starts with 1
+      tags:
+      - home
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchedOffersList'
+          description: ''
+        '404':
+          description: Offers Not Found
+  /api/home/cities/:
+    get:
+      operationId: home_cities_retrieve
+      tags:
+      - home
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountryList'
+          description: ''
+        '404':
+          description: Cities Not Found
+  /api/home/company/{dealership_id}/:
+    get:
+      operationId: home_company_retrieve
+      parameters:
+      - in: path
+        name: dealership_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - home
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dealership'
+          description: ''
+        '404':
+          description: Company Not Found
+  /api/home/locations/:
+    get:
+      operationId: home_locations_retrieve
+      tags:
+      - home
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationList'
+          description: ''
+        '404':
+          description: Locations Not Found
+  /api/home/models/:
+    get:
+      operationId: home_models_retrieve
+      tags:
+      - home
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MakeModelList'
+          description: ''
+        '404':
+          description: Makes Not Found
+  /api/home/most-popular/:
+    get:
+      operationId: home_most_popular_retrieve
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 10
+        description: Max number of offers per page
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Page number, starts with 1
+      tags:
+      - home
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchedOffersList'
+          description: ''
+        '404':
+          description: Offers Not Found
+  /api/home/offer-locations/{offer_id}/:
+    get:
+      operationId: home_offer_locations_retrieve
       parameters:
       - in: path
         name: offer_id
         schema:
-          type: string
+          type: integer
+        required: true
+      tags:
+      - home
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewList'
+          description: ''
+        '404':
+          description: Locations Not Found
+  /api/home/offer/{offer_id}/:
+    get:
+      operationId: home_offer_retrieve
+      parameters:
+      - in: path
+        name: offer_id
+        schema:
+          type: integer
         required: true
       tags:
       - home
@@ -75,9 +358,27 @@ paths:
           description: ''
         '404':
           description: Offer Not Found
-  /api/home/showcased/:
+  /api/home/offers/{dealership_id}/:
     get:
-      operationId: api_home_showcased_retrieve
+      operationId: home_offers_retrieve
+      parameters:
+      - in: path
+        name: dealership_id
+        schema:
+          type: integer
+        required: true
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 10
+        description: Max number of offers per page
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Page number, starts with 1
       tags:
       - home
       security:
@@ -86,10 +387,892 @@ paths:
       - {}
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferList'
+          description: ''
+        '404':
+          description: Offers Not Found
+  /api/home/reviews/{offer_id}/:
+    get:
+      operationId: home_reviews_retrieve
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 8
+        description: Max number of reviews that will be returned
+      - in: path
+        name: offer_id
+        schema:
+          type: integer
+        required: true
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Page number, starts with 1
+      tags:
+      - home
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewList'
+          description: ''
+        '404':
+          description: Reviews Not Found
+  /api/home/search/:
+    get:
+      operationId: home_search_retrieve
+      parameters:
+      - in: query
+        name: automatic
+        schema:
+          type: boolean
+          default: false
+        description: True if automatic, false if manual
+      - in: query
+        name: car_type
+        schema:
+          type: string
+          default: Suv
+        description: Suv, Limo or Compact
+      - in: query
+        name: drop_off_date
+        schema:
+          type: string
+          format: date
+          default: '2220-06-15'
+        description: 'Format: year-month-day, zero padded'
+        required: true
+      - in: query
+        name: drop_off_location
+        schema:
+          type: string
+          default: Corbetta-Italy
+        description: 'Format: cityName-countryName'
+      - in: query
+        name: drop_off_time
+        schema:
+          type: integer
+          default: 16
+        description: Hour between 0-23, but will only give results if it is during
+          the working hours of the company
+        required: true
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 10
+        description: Max number of offers per page
+      - in: query
+        name: make
+        schema:
+          type: string
+          default: Volkswagen
+        description: Car make
+      - in: query
+        name: max_price
+        schema:
+          type: integer
+          default: 15
+        description: Max price per day
+      - in: query
+        name: min_price
+        schema:
+          type: integer
+          default: 14
+        description: Min price per day
+      - in: query
+        name: model
+        schema:
+          type: string
+          default: Tiguan
+        description: Car model
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Page number, starts with 1
+      - in: query
+        name: pick_up_date
+        schema:
+          type: string
+          format: date
+          default: '2012-05-03'
+        description: 'Format: year-month-day, zero padded'
+        required: true
+      - in: query
+        name: pick_up_location
+        schema:
+          type: string
+          default: Obrera-Mexico
+        description: 'Format: cityName-countryName'
+        required: true
+      - in: query
+        name: pick_up_time
+        schema:
+          type: integer
+          default: 14
+        description: Hour between 0-23, but will only give results if it is during
+          the working hours of the company
+        required: true
+      - in: query
+        name: seats
+        schema:
+          type: integer
+          default: 5
+        description: Number of seats
+      tags:
+      - home
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchedOffersList'
+          description: ''
+        '404':
+          description: Offers Not Found
+  /api/home/showcased-companies/:
+    get:
+      operationId: home_showcased_companies_retrieve
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 8
+        description: Max number of companies that will be returned
+      tags:
+      - home
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShowcasedCompanyList'
+          description: ''
+        '404':
+          description: Companies Not Found
+  /api/home/unavailable-pick-up/{offer_id}/:
+    get:
+      operationId: home_unavailable_pick_up_retrieve
+      parameters:
+      - in: path
+        name: offer_id
+        schema:
+          type: integer
+        required: true
+      - in: query
+        name: pickUpLocationId
+        schema:
+          type: string
+          default: '2'
+        description: Id of the pick up location
+        required: true
+      tags:
+      - home
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnavailablePickup'
+          description: ''
+        '404':
+          description: Vehicles Not Found
+  /api/profile/company/delete/:
+    post:
+      operationId: delete_company
+      tags:
+      - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteCompanyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeleteCompanyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeleteCompanyRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
           description: No response body
+  /api/profile/company/earnings/:
+    get:
+      operationId: get_company_earnings
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCompanyEarnings'
+          description: ''
+  /api/profile/company/info/:
+    get:
+      operationId: profile_company_info_retrieve
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: put_company_info
+      tags:
+      - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutCompanyInfoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PutCompanyInfoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PutCompanyInfoRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/location/:
+    get:
+      operationId: get_company_locations
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyLocations'
+          description: ''
+  /api/profile/company/locations/:
+    get:
+      operationId: get_company_locations_2
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyLocations'
+          description: ''
+  /api/profile/company/log-completed/:
+    get:
+      operationId: get_company_log_ongoing
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyLog'
+          description: ''
+  /api/profile/company/log-ongoing/:
+    get:
+      operationId: get_company_log_ongoing_2
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyLog'
+          description: ''
+  /api/profile/company/log-reviews/:
+    get:
+      operationId: get_company_log_reviews
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyLogReviews'
+          description: ''
+  /api/profile/company/log-upcoming/:
+    get:
+      operationId: get_company_log_upcoming
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyLog'
+          description: ''
+  /api/profile/company/log/completed/:
+    get:
+      operationId: get_company_rents
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyRents'
+          description: ''
+  /api/profile/company/log/ongoing/:
+    get:
+      operationId: get_company_rents_2
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyRents'
+          description: ''
+  /api/profile/company/log/upcoming/:
+    get:
+      operationId: get_company_rentss
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyRents'
+          description: ''
+  /api/profile/company/offer/:
+    post:
+      operationId: post_company_offer
+      tags:
+      - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyOfferPostRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompanyOfferPostRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompanyOfferPostRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/offer/{offerId}:
+    get:
+      operationId: get_company_offer
+      parameters:
+      - in: path
+        name: offerId
+        schema:
+          type: string
+        required: true
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCompanyOffer'
+          description: ''
+    put:
+      operationId: put_company_offer
+      parameters:
+      - in: path
+        name: offerId
+        schema:
+          type: string
+        required: true
+      tags:
+      - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyOfferPutRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompanyOfferPutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompanyOfferPutRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: delete_company_offer
+      parameters:
+      - in: path
+        name: offerId
+        schema:
+          type: string
+        required: true
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/profile/company/offers:
+    get:
+      operationId: get_company_offers
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyOffers'
+          description: ''
+  /api/profile/company/pass/:
+    put:
+      operationId: put_company_password
+      tags:
+      - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutCompanyPasswordRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PutCompanyPasswordRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PutCompanyPasswordRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/reviews/:
+    get:
+      operationId: get_company_reviews
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyReviews'
+          description: ''
+  /api/profile/company/setHQ/:
+    put:
+      operationId: profile_company_setHQ_update
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/toggle-vehicle-visibility/:
+    put:
+      operationId: profile_company_toggle_vehicle_visibility_update
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/vehicle/:
+    post:
+      operationId: post_company_vehicle
+      tags:
+      - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyVehicleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompanyVehicleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompanyVehicleRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: profile_company_vehicle_destroy
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/profile/company/vehicle-log/:
+    get:
+      operationId: get_company_vehicle_log
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCompanyVehicleLog'
+          description: ''
+  /api/profile/company/vehicles/:
+    get:
+      operationId: get_company_vehicles
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCompanyVehicles'
+          description: ''
+  /api/profile/company/vehicles/edit-vehicle/:
+    get:
+      operationId: get_company_vehicle_id
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCompanyVehicleEdit'
+          description: ''
+    put:
+      operationId: profile_company_vehicles_edit_vehicle_update
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/user/delete/:
+    post:
+      operationId: delete_user
+      tags:
+      - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeleteUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeleteUserRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: User deleted successfully
+        '400':
+          description: Password is required
+        '401':
+          description: User not authenticated
+        '403':
+          description: Incorrect password
+  /api/profile/user/info/:
+    get:
+      operationId: get_user_info
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUserInfo'
+          description: ''
+        '401':
+          description: User not authenticated
+    put:
+      operationId: update_user_info
+      tags:
+      - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutUserInfoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PutUserInfoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PutUserInfoRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: User info updated successfully
+        '400':
+          description: Invalid input
+        '401':
+          description: User not authenticated
+        '403':
+          description: Incorrect password
+  /api/profile/user/leave-review/{rent_id}:
+    post:
+      operationId: post_review
+      parameters:
+      - in: path
+        name: rent_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostReviewRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PostReviewRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PostReviewRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/user/pass/:
+    put:
+      operationId: update_user_password
+      tags:
+      - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutUserPasswordRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PutUserPasswordRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PutUserPasswordRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: Password updated successfully
+        '400':
+          description: Invalid input
+        '401':
+          description: User not authenticated
+        '403':
+          description: Incorrect password
+  /api/profile/user/rentals/:
+    get:
+      operationId: get_user_rentals
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetUserRentals'
+          description: ''
+        '401':
+          description: User not authenticated
   /api/schema/:
     get:
-      operationId: api_schema_retrieve
+      operationId: schema_retrieve
       description: |-
         OpenApi3 schema for this API. Format can be selected via content negotiation.
 
@@ -208,7 +1391,7 @@ paths:
           - zh-hans
           - zh-hant
       tags:
-      - api
+      - schema
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -233,8 +1416,829 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+  /api/wallet/addMoney/{rentoid_id}/:
+    post:
+      operationId: wallet_addMoney_create
+      parameters:
+      - in: path
+        name: rentoid_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - wallet
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddMoneyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AddMoneyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AddMoneyRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/wallet/buyGems:
+    post:
+      operationId: wallet_buyGems_create
+      tags:
+      - wallet
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuyGemsRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BuyGemsRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BuyGemsRequest'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/wallet/checkTransaction/{transaction_id}:
+    get:
+      operationId: wallet_checkTransaction_retrieve
+      parameters:
+      - in: path
+        name: transaction_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - wallet
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/wallet/getBalance/:
+    get:
+      operationId: wallet_getBalance_retrieve
+      tags:
+      - wallet
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/wallet/removeMoney/{rentoid_id}/:
+    post:
+      operationId: wallet_removeMoney_create
+      parameters:
+      - in: path
+        name: rentoid_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - wallet
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RemoveMoneyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RemoveMoneyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RemoveMoneyRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/wallet/rentOffer/{offer_id}/:
+    post:
+      operationId: wallet_rentOffer_create
+      parameters:
+      - in: path
+        name: offer_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - wallet
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfferRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OfferRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OfferRequest'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/wallet/webhook:
+    post:
+      operationId: wallet_webhook_create
+      tags:
+      - wallet
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
 components:
   schemas:
+    AddMoneyRequest:
+      type: object
+      properties:
+        amount:
+          type: number
+          format: double
+      required:
+      - amount
+    AvailableDropOff:
+      type: object
+      properties:
+        returnDate:
+          type: string
+          format: date
+        returnTime:
+          type: integer
+        vehicle_id:
+          type: integer
+        workingHours:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkingHours'
+      required:
+      - returnDate
+      - returnTime
+      - vehicle_id
+      - workingHours
+    BuyGemsRequest:
+      type: object
+      properties:
+        amount:
+          type: integer
+          default: 0
+    City:
+      type: object
+      properties:
+        cityName:
+          type: string
+      required:
+      - cityName
+    CompanyOfferPostRequest:
+      type: object
+      properties:
+        price:
+          type: number
+          format: double
+        image:
+          type: string
+          format: binary
+        description:
+          type: string
+          minLength: 1
+        model_id:
+          type: integer
+      required:
+      - description
+      - image
+      - model_id
+      - price
+    CompanyOfferPutRequest:
+      type: object
+      properties:
+        price:
+          type: number
+          format: double
+        image:
+          type: string
+          format: binary
+        description:
+          type: string
+          minLength: 1
+      required:
+      - description
+      - image
+      - price
+    CompanyVehicleRequest:
+      type: object
+      properties:
+        registration:
+          type: string
+          minLength: 1
+        model_id:
+          type: integer
+        location_id:
+          type: integer
+      required:
+      - location_id
+      - model_id
+      - registration
+    Country:
+      type: object
+      properties:
+        countryName:
+          type: string
+        cities:
+          type: array
+          items:
+            $ref: '#/components/schemas/City'
+      required:
+      - cities
+      - countryName
+    CountryList:
+      type: object
+      properties:
+        countries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Country'
+      required:
+      - countries
+    Dealership:
+      type: object
+      properties:
+        companyLogo:
+          type: string
+          default: base64
+        companyName:
+          type: string
+        dealership_id:
+          type: integer
+        description:
+          type: string
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/DealershipLocation'
+      required:
+      - companyName
+      - dealership_id
+      - description
+      - locations
+    DealershipLocation:
+      type: object
+      properties:
+        streetName:
+          type: string
+        streetNo:
+          type: string
+        cityName:
+          type: string
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        isHQ:
+          type: boolean
+      required:
+      - cityName
+      - isHQ
+      - latitude
+      - longitude
+      - streetName
+      - streetNo
+    DeleteCompanyRequest:
+      type: object
+      properties:
+        password:
+          type: string
+          minLength: 1
+      required:
+      - password
+    DeleteUserRequest:
+      type: object
+      properties:
+        password:
+          type: string
+          minLength: 1
+      required:
+      - password
+    GetCompanyEarnings:
+      type: object
+      properties:
+        totalEarnings:
+          type: number
+          format: double
+          default: 0.1
+        yearEarnings:
+          type: number
+          format: double
+          default: 0.1
+        totalRentals:
+          type: integer
+        yearRentals:
+          type: integer
+        monthlyEarnings:
+          type: array
+          items:
+            type: number
+            format: double
+            default: 0.1
+      required:
+      - monthlyEarnings
+      - totalRentals
+      - yearRentals
+    GetCompanyLocations:
+      type: object
+      properties:
+        cityName:
+          type: string
+        streetName:
+          type: string
+        streetNo:
+          type: string
+        locationId:
+          type: integer
+      required:
+      - cityName
+      - locationId
+      - streetName
+      - streetNo
+    GetCompanyLog:
+      type: object
+      properties:
+        dateTimePickup:
+          type: string
+          format: date-time
+        dateTimeReturned:
+          type: string
+          format: date-time
+        firstName:
+          type: string
+        lastName:
+          type: string
+        price:
+          type: number
+          format: double
+        pickUpLocation:
+          type: string
+        dropOffLocation:
+          type: string
+      required:
+      - dateTimePickup
+      - dateTimeReturned
+      - dropOffLocation
+      - firstName
+      - lastName
+      - pickUpLocation
+      - price
+    GetCompanyLogReviews:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        date:
+          type: string
+          format: date-time
+        description:
+          type: string
+        rating:
+          type: number
+          format: double
+      required:
+      - date
+      - description
+      - firstName
+      - lastName
+      - rating
+    GetCompanyOffer:
+      type: object
+      properties:
+        price:
+          type: number
+          format: double
+          default: 0.1
+        image:
+          type: string
+          format: uri
+        description:
+          type: string
+        model_id:
+          type: integer
+        makeName:
+          type: string
+        modelName:
+          type: string
+      required:
+      - description
+      - image
+      - makeName
+      - modelName
+      - model_id
+    GetCompanyOffers:
+      type: object
+      properties:
+        offerId:
+          type: integer
+        price:
+          type: number
+          format: double
+          default: 0.1
+        rating:
+          type: number
+          format: double
+          default: 0.1
+        noOfReviews:
+          type: integer
+        makeName:
+          type: string
+        modelName:
+          type: string
+        image:
+          type: string
+          format: uri
+        isVisible:
+          type: boolean
+      required:
+      - image
+      - isVisible
+      - makeName
+      - modelName
+      - noOfReviews
+      - offerId
+    GetCompanyRents:
+      type: object
+      properties:
+        makeName:
+          type: string
+        modelName:
+          type: string
+        registration:
+          type: string
+        vehicleId:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        noOfReviews:
+          type: integer
+        dateTimePickup:
+          type: string
+          format: date-time
+        dateTimeReturned:
+          type: string
+          format: date-time
+        image:
+          type: string
+          format: uri
+      required:
+      - dateTimePickup
+      - dateTimeReturned
+      - firstName
+      - image
+      - lastName
+      - makeName
+      - modelName
+      - noOfReviews
+      - registration
+      - vehicleId
+    GetCompanyReviews:
+      type: object
+      properties:
+        image:
+          type: string
+          format: uri
+        makeName:
+          type: string
+        modelName:
+          type: string
+        registration:
+          type: string
+        vehicleId:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        rating:
+          type: number
+          format: double
+          default: 0.1
+        descriptions:
+          type: string
+      required:
+      - descriptions
+      - firstName
+      - image
+      - lastName
+      - makeName
+      - modelName
+      - registration
+      - vehicleId
+    GetCompanyVehicleEdit:
+      type: object
+      properties:
+        registration:
+          type: string
+        streetName:
+          type: string
+        streetNo:
+          type: string
+        cityName:
+          type: string
+        locationId:
+          type: integer
+      required:
+      - cityName
+      - locationId
+      - registration
+      - streetName
+      - streetNo
+    GetCompanyVehicleLog:
+      type: object
+      properties:
+        makeName:
+          type: string
+        modelName:
+          type: string
+        registration:
+          type: string
+        streetName:
+          type: string
+        streetNo:
+          type: string
+        cityName:
+          type: string
+        timesRented:
+          type: integer
+        moneyMade:
+          type: number
+          format: double
+        rentedTime:
+          type: string
+          format: date-time
+        onGoing:
+          type: array
+          items:
+            $ref: '#/components/schemas/OnGoing'
+      required:
+      - cityName
+      - makeName
+      - modelName
+      - moneyMade
+      - onGoing
+      - registration
+      - rentedTime
+      - streetName
+      - streetNo
+      - timesRented
+    GetCompanyVehicles:
+      type: object
+      properties:
+        image:
+          type: string
+          format: uri
+        makeName:
+          type: string
+        registration:
+          type: string
+        modelName:
+          type: string
+        isVisible:
+          type: boolean
+        vehicleId:
+          type: integer
+        price:
+          type: number
+          format: double
+          default: 0.1
+        rating:
+          type: number
+          format: double
+          default: 0.1
+        noOfReviews:
+          type: integer
+        offerId:
+          type: integer
+      required:
+      - image
+      - isVisible
+      - makeName
+      - modelName
+      - noOfReviews
+      - offerId
+      - registration
+      - vehicleId
+    GetUserInfo:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phoneNo:
+          type: string
+        driversLicense:
+          type: string
+      required:
+      - driversLicense
+      - firstName
+      - lastName
+      - phoneNo
+    GetUserRentals:
+      type: object
+      properties:
+        makeName:
+          type: string
+        modelName:
+          type: string
+        companyName:
+          type: string
+        noOfSeats:
+          type: integer
+        automatic:
+          type: boolean
+        price:
+          type: number
+          format: double
+          default: 0.1
+        rating:
+          type: number
+          format: double
+          default: 0.1
+        noOfReviews:
+          type: integer
+        dateTimeRented:
+          type: string
+          format: date-time
+        dateTimeReturned:
+          type: string
+          format: date-time
+        expired:
+          type: boolean
+        canReview:
+          type: boolean
+        offer_id:
+          type: integer
+        image:
+          type: string
+          format: uri
+      required:
+      - automatic
+      - canReview
+      - companyName
+      - dateTimeRented
+      - dateTimeReturned
+      - expired
+      - image
+      - makeName
+      - modelName
+      - noOfReviews
+      - noOfSeats
+      - offer_id
+    Location:
+      type: object
+      properties:
+        companyName:
+          type: string
+        dealership_id:
+          type: integer
+        streetName:
+          type: string
+        streetNo:
+          type: string
+        cityName:
+          type: string
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        location_id:
+          type: integer
+      required:
+      - cityName
+      - companyName
+      - dealership_id
+      - latitude
+      - location_id
+      - longitude
+      - streetName
+      - streetNo
+    LocationList:
+      type: object
+      properties:
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Location'
+      required:
+      - locations
+    LoginUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+      - email
+      - password
+    MakeModel:
+      type: object
+      properties:
+        makeName:
+          type: string
+        models:
+          type: array
+          items:
+            $ref: '#/components/schemas/Model'
+      required:
+      - makeName
+      - models
+    MakeModelList:
+      type: object
+      properties:
+        makes:
+          type: array
+          items:
+            $ref: '#/components/schemas/MakeModel'
+      required:
+      - makes
+    Model:
+      type: object
+      properties:
+        modelName:
+          type: string
+        model_id:
+          type: integer
+      required:
+      - modelName
+      - model_id
+    Offer:
+      type: object
+      properties:
+        image:
+          type: string
+          default: base64
+        makeName:
+          type: string
+        modelName:
+          type: string
+        noOfSeats:
+          type: integer
+        automatic:
+          type: boolean
+        price:
+          type: number
+          format: double
+          default: 0.1
+        rating:
+          type: number
+          format: double
+          default: 0.1
+        noOfReviews:
+          type: integer
+        offer_id:
+          type: integer
+      required:
+      - automatic
+      - makeName
+      - modelName
+      - noOfReviews
+      - noOfSeats
+      - offer_id
     OfferDetails:
       type: object
       properties:
@@ -270,11 +2274,8 @@ components:
           default: base64
         description:
           type: string
-        canReview:
-          type: integer
       required:
       - automatic
-      - canReview
       - companyName
       - dealership_id
       - description
@@ -283,6 +2284,440 @@ components:
       - modelType
       - noOfReviews
       - noOfSeats
+    OfferList:
+      type: object
+      properties:
+        offers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Offer'
+        last:
+          type: boolean
+      required:
+      - last
+      - offers
+    OfferRequest:
+      type: object
+      properties:
+        paymentMethod:
+          type: string
+          minLength: 1
+          default: stripe/wallet
+        dateFrom:
+          type: string
+          format: date
+          default: 21-01-2025
+        dateTo:
+          type: string
+          format: date
+          default: 23-01-2025
+        pickLocId:
+          type: integer
+          default: 0
+        dropLocId:
+          type: integer
+          default: 0
+        pickupTime:
+          type: integer
+          default: 0
+        dropoffTime:
+          type: integer
+          default: 0
+    OnGoing:
+      type: object
+      properties:
+        pickUpDateTime:
+          type: string
+          format: date-time
+        dropOffDateTime:
+          type: string
+          format: date-time
+        firstName:
+          type: string
+        lastName:
+          type: string
+        price:
+          type: number
+          format: double
+        pickUpLocationId:
+          type: integer
+        dropOffLocationId:
+          type: integer
+        pickUpLocation:
+          type: string
+        dropOffLocation:
+          type: string
+      required:
+      - dropOffDateTime
+      - dropOffLocation
+      - dropOffLocationId
+      - firstName
+      - lastName
+      - pickUpDateTime
+      - pickUpLocation
+      - pickUpLocationId
+      - price
+    PostReviewRequest:
+      type: object
+      properties:
+        rating:
+          type: number
+          format: double
+        description:
+          type: string
+          minLength: 1
+      required:
+      - description
+      - rating
+    PutCompanyInfoRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        phoneNo:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+        logo:
+          type: string
+          format: binary
+      required:
+      - description
+      - logo
+      - name
+      - password
+      - phoneNo
+    PutCompanyPasswordRequest:
+      type: object
+      properties:
+        oldPassword:
+          type: string
+          minLength: 1
+        newPassword:
+          type: string
+          minLength: 1
+      required:
+      - newPassword
+      - oldPassword
+    PutUserInfoRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+        lastName:
+          type: string
+          minLength: 1
+        phoneNo:
+          type: string
+          minLength: 1
+        driversLicense:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+      - driversLicense
+      - firstName
+      - lastName
+      - password
+      - phoneNo
+    PutUserPasswordRequest:
+      type: object
+      properties:
+        oldPassword:
+          type: string
+          minLength: 1
+        newPassword:
+          type: string
+          minLength: 1
+      required:
+      - newPassword
+      - oldPassword
+    RegisterCompanyRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        companyName:
+          type: string
+          minLength: 1
+        tin:
+          type: string
+          minLength: 1
+        phoneNo:
+          type: string
+          minLength: 1
+        countryName:
+          type: string
+          minLength: 1
+        cityName:
+          type: string
+          minLength: 1
+        streetName:
+          type: string
+          minLength: 1
+        streetNo:
+          type: string
+          minLength: 1
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          default: '0.100000'
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          default: '0.100000'
+        workingHours:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkingHoursRequest'
+        description:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+        image:
+          type: string
+          format: binary
+          default: null
+      required:
+      - cityName
+      - companyName
+      - countryName
+      - description
+      - email
+      - password
+      - phoneNo
+      - streetName
+      - streetNo
+      - tin
+      - workingHours
+    RegisterUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        firstName:
+          type: string
+          minLength: 1
+        lastName:
+          type: string
+          minLength: 1
+        driversLicense:
+          type: string
+          minLength: 1
+        phoneNo:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+      - driversLicense
+      - email
+      - firstName
+      - lastName
+      - password
+      - phoneNo
+    RemoveMoneyRequest:
+      type: object
+      properties:
+        amount:
+          type: number
+          format: double
+      required:
+      - amount
+    Review:
+      type: object
+      properties:
+        rating:
+          type: number
+          format: double
+        firstName:
+          type: string
+        lastName:
+          type: string
+        reviewDate:
+          type: string
+          format: date
+        description:
+          type: string
+      required:
+      - description
+      - firstName
+      - lastName
+      - rating
+      - reviewDate
+    ReviewList:
+      type: object
+      properties:
+        reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+        last:
+          type: boolean
+      required:
+      - last
+      - reviews
+    SearchedOffers:
+      type: object
+      properties:
+        image:
+          type: string
+          default: base64
+        companyName:
+          type: string
+        makeName:
+          type: string
+        modelName:
+          type: string
+        noOfSeats:
+          type: integer
+        automatic:
+          type: boolean
+        price:
+          type: number
+          format: double
+          default: 0.1
+        rating:
+          type: number
+          format: double
+          default: 0.1
+        noOfReviews:
+          type: integer
+        offer_id:
+          type: integer
+        last:
+          type: boolean
+      required:
+      - automatic
+      - companyName
+      - last
+      - makeName
+      - modelName
+      - noOfReviews
+      - noOfSeats
+      - offer_id
+    SearchedOffersList:
+      type: object
+      properties:
+        offers:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchedOffers'
+        last:
+          type: boolean
+      required:
+      - last
+      - offers
+    ShowcasedCompany:
+      type: object
+      properties:
+        companyName:
+          type: string
+        companyLogo:
+          type: string
+          format: uri
+        dealership_id:
+          type: integer
+      required:
+      - companyLogo
+      - companyName
+      - dealership_id
+    ShowcasedCompanyList:
+      type: object
+      properties:
+        companies:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShowcasedCompany'
+      required:
+      - companies
+    TimeInterval:
+      type: object
+      properties:
+        dateTimeRented:
+          type: string
+          format: date-time
+        dateTimeReturned:
+          type: string
+          format: date-time
+      required:
+      - dateTimeRented
+      - dateTimeReturned
+    UnavailablePickup:
+      type: object
+      properties:
+        intervals:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeInterval'
+        workingHours:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkingHours'
+      required:
+      - intervals
+      - workingHours
+    UserInfo:
+      type: object
+      properties:
+        role:
+          type: string
+          default: guest/user/company
+        name:
+          type: string
+          default: name if not guest, balance only for user
+        balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          default: '1.00'
+    WorkingHours:
+      type: object
+      properties:
+        dayOfTheWeek:
+          type: integer
+        openTime:
+          type: integer
+        closeTime:
+          type: integer
+      required:
+      - closeTime
+      - dayOfTheWeek
+      - openTime
+    WorkingHoursRequest:
+      type: object
+      properties:
+        day:
+          type: string
+          minLength: 1
+          default: mon=monday, leave out the day if the dealership is closed
+        startTime:
+          type: string
+          minLength: 1
+        endTime:
+          type: string
+          minLength: 1
+      required:
+      - endTime
+      - startTime
   securitySchemes:
     basicAuth:
       type: http
