@@ -23,4 +23,5 @@ export const swrKeys = {
     `${home}offer-locations/${queryString}/`,
   reviews: (queryString: string = ''): string =>
     `${home}reviews/${queryString}/?limit=16&page=1`,
+  carModels: `${home}models/`,
 };

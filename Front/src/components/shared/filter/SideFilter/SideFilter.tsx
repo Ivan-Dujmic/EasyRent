@@ -21,6 +21,8 @@ import { useFilterContext } from '@/context/FilterContext/FilterContext';
 import { useCarContext } from '@/context/CarContext';
 import { useRouter } from 'next/navigation';
 import { swrKeys } from '@/fetchers/swrKeys';
+import useSWR from 'swr';
+import { CarMakesResponse } from '@/typings/models/models.type';
 
 // Define the makes and models data
 const makesAndModels: Record<string, string[]> = {
@@ -60,19 +62,32 @@ export default function SideFilter() {
   const { setCars } = useCarContext();
   const router = useRouter();
 
-  const makeOptions: Option[] = Object.keys(makesAndModels).map((make) => ({
-    label: make,
-    value: make,
-  }));
+  // Fetching car makes and models using useSWR
+  const { data: offerModels, error } = useSWR<CarMakesResponse>(
+    swrKeys.carModels,
+    CustomGet
+  );
 
-  // Grouped model options based on selected makes
-  const modelOptions: GroupedOption[] = selectedMakes.map((make) => ({
-    label: make.label, // Use the selected make as the group label
-    options: makesAndModels[make.value]?.map((model) => ({
-      label: model,
-      value: `${make.value}|${model}`, // Use `|` as the delimiter
-    })),
-  }));
+  const makeOptions: Option[] =
+    offerModels?.makes.map((make) => ({
+      label: make.makeName,
+      value: make.makeName,
+    })) || [];
+
+  // Generate options for models based on selected makes
+  const modelOptions = selectedMakes.map((make) => {
+    const selectedMakeData = offerModels?.makes.find(
+      (m) => m.makeName === make.value
+    );
+    return {
+      label: make.label,
+      options:
+        selectedMakeData?.models.map((model) => ({
+          label: model.modelName,
+          value: `${make.value}|${model.modelName}`,
+        })) || [],
+    };
+  });
 
   const handleMakeChange = (selected: MultiValue<Option>) => {
     setSelectedMakes(selected);
