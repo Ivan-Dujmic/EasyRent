@@ -25,6 +25,7 @@ import { IUser } from '@/typings/users/user.type';
 
 export default function AuthUserHeader({ UserData }: { UserData?: IUser }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  console.log(UserData);
 
   return (
     <Box
