@@ -12,24 +12,18 @@ import {
   CheckboxGroup,
   Button,
   Heading,
+  Spinner,
 } from '@chakra-ui/react';
 import React, { useState, useEffect } from 'react';
 import Select, { MultiValue, GroupBase } from 'react-select';
 import useSWRMutation from 'swr/mutation';
-import { CustomGet, ICar } from '@/fetchers/homeData';
+import { CustomGet, ICar, OffersResponse } from '@/fetchers/homeData';
 import { useFilterContext } from '@/context/FilterContext/FilterContext';
 import { useCarContext } from '@/context/CarContext';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { swrKeys } from '@/fetchers/swrKeys';
 import useSWR from 'swr';
 import { CarMakesResponse } from '@/typings/models/models.type';
-
-// Define the makes and models data
-const makesAndModels: Record<string, string[]> = {
-  'Mercedes-Benz': ['A-Class', 'C-Class', 'E-Class'],
-  Opel: ['Astra', 'Corsa', 'Insignia'],
-  Volkswagen: ['Golf', 'Passat', 'Tiguan'],
-};
 
 // Define types for react-select options
 type Option = {
@@ -47,6 +41,8 @@ export default function SideFilter() {
   const [selectedModels, setSelectedModels] = useState<MultiValue<Option>>([]);
   const [minPrice, setMinPrice] = useState<number>(15);
   const [maxPrice, setMaxPrice] = useState<number>(72);
+  const pathname = usePathname(); // Get current pathname
+  const [didntChange, setDidntChange] = useState(false);
 
   // State for checkboxes
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
@@ -54,6 +50,19 @@ export default function SideFilter() {
   const [selectedTransmission, setSelectedTransmission] = useState<string[]>(
     []
   );
+
+  // Check if any changes have been made
+  useEffect(() => {
+    setDidntChange(false);
+  }, [
+    selectedMakes,
+    selectedModels,
+    minPrice,
+    maxPrice,
+    selectedSeats,
+    selectedCarType,
+    selectedTransmission,
+  ]);
 
   //za submit
   const [url, setUrl] = useState(''); // State za URL
@@ -139,16 +148,61 @@ export default function SideFilter() {
     </Box>
   );
 
-  const { trigger } = useSWRMutation(url, CustomGet, {
-    onSuccess: (data: ICar[]) => {
-      setCars(data); // Spremanje automobila u globalni kontekst
-      router.push('/listing'); // Preusmjeravanje na novu stranicu
-      console.log(data);
-    },
-    onError: (error) => {
-      console.error('Error fetching data:', error);
-    },
-  });
+  const { trigger, isMutating } = useSWRMutation<OffersResponse>(
+    url,
+    CustomGet,
+    {
+      onSuccess: (data) => {
+        if (data?.offers?.length > 0) {
+          setCars(data.offers);
+          localStorage.removeItem('errorMessage'); // Clear any previous error message
+          window.dispatchEvent(new Event('storage')); // Trigger an event to notify components
+        } else {
+          console.warn('No offers found for the selected criteria.');
+          setCars([]);
+          const errorMsg = 'No offers found for the selected criteria.';
+          localStorage.setItem('errorMessage', errorMsg);
+          window.dispatchEvent(new Event('storage')); // Notify the page about localStorage update
+        }
+
+        // Navigate to the listing page if not already there
+        if (pathname !== '/listing') {
+          router.push('/listing');
+        }
+      },
+      onError: (error) => {
+        let errorMessage = 'An unexpected error occurred.';
+
+        try {
+          // Extract status code from error message
+          const statusMatch = error.message.match(/Response status:\s(\d{3})/);
+          const statusCode = statusMatch ? parseInt(statusMatch[1], 10) : null;
+
+          // Extract error details from JSON inside the message
+          const jsonMatch = error.message.match(/\{.*\}/);
+          const parsedError = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+          const errorText = parsedError?.error || 'No results found.';
+
+          if (statusCode === 404) {
+            console.warn('No results found for the selected search criteria.');
+            errorMessage = errorText;
+            setCars([]); // Set empty results
+          }
+        } catch (parseError) {
+          console.error('Failed to parse error response:', parseError);
+        }
+
+        // Store error message in local storage and trigger state update
+        localStorage.setItem('errorMessage', errorMessage);
+        window.dispatchEvent(new Event('storage')); // Notify other components
+
+        // Navigate to the listing page if not already there
+        if (pathname !== '/listing') {
+          router.push('/listing');
+        }
+      },
+    }
+  );
 
   useEffect(() => {
     if (url) {
@@ -195,7 +249,8 @@ export default function SideFilter() {
       transmission: transmissionValue || '',
       min_price: String(minPrice),
       max_price: String(maxPrice),
-      makes_and_models: JSON.stringify(makeAndModelData),
+      makes_and_models:
+        makeAndModelData.length === 0 ? '' : JSON.stringify(makeAndModelData),
       // ovaj dolje dio bi trebao raditi kako treba
       pick_up_location: filterData.pick_up_location || '',
       drop_off_location: filterData.drop_off_location || '',
@@ -216,7 +271,14 @@ export default function SideFilter() {
 
     const fullUrl = swrKeys.search(queryParams.toString());
 
-    console.log(fullUrl);
+    console.log(String(fullUrl));
+    fullUrl.split('&').forEach((param) => console.log(param));
+
+    if (fullUrl == url) {
+      setDidntChange(true);
+      return;
+    }
+    setDidntChange(false); // inace resetiraj
     setUrl(fullUrl); // Postavljamo URL u state
   };
 
@@ -391,8 +453,25 @@ export default function SideFilter() {
         width="100%"
         onClick={handleApply}
       >
-        Apply
+        {isMutating ? <Spinner size="sm" color="white" /> : 'Apply'}
       </Button>
+      {didntChange && (
+        <Flex
+          align="center"
+          justify="center"
+          mt={3}
+          bg="brandyellow"
+          borderRadius="md"
+          p={2}
+          boxShadow="md"
+          maxW="80%"
+          mx="auto"
+        >
+          <Text color="brandblack" fontSize="sm" fontWeight="medium">
+            Please modify the search criteria before searching.
+          </Text>
+        </Flex>
+      )}
     </Box>
   );
 }
