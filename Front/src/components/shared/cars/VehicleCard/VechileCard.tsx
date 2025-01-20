@@ -37,6 +37,7 @@ export default function VehicleCard({
   let isReviewable = vehicle.rated !== undefined;
   let isReviewed = !isReviewable || vehicle.rated;
 
+  console.log(vehicle.image);
   return (
     <Card
       margin={0}
