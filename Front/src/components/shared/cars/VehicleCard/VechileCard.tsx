@@ -11,33 +11,37 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import { IoPersonSharp } from 'react-icons/io5';
-import { TbManualGearboxFilled } from 'react-icons/tb';
-import { TbAutomaticGearbox } from 'react-icons/tb';
+import { TbManualGearboxFilled, TbAutomaticGearbox } from 'react-icons/tb';
 import NextLink from 'next/link';
-import { IOffer, IReviewable } from '@/typings/vehicles/vehicles.type';
+import { IReviewable } from '@/typings/vehicles/vehicles.type';
 import ReviewForm from '../../review/ReviewForm';
 import { useRouter } from 'next/navigation';
 import GrayFilter from '../../filter/overlay/GrayFilter';
+import { ICar } from '@/fetchers/homeData';
 
 interface VehicleCardProps {
-  vehicle: IOffer;
+  vehicle: ICar;
   key: number;
 }
 
 export default function VehicleCard({
-  vehicle: maybeVehicle
+  vehicle: maybeVehicle,
 }: VehicleCardProps) {
-  const {onOpen: onOpenReview, isOpen : isOpenREview, onClose: onCloseReview} =  useDisclosure();
+  const {
+    onOpen: onOpenReview,
+    isOpen: isOpenREview,
+    onClose: onCloseReview,
+  } = useDisclosure();
 
-  let vehicle = maybeVehicle as IReviewable
-  let isReviewable = vehicle.rated !== undefined
-  let isReviewed = !isReviewable || vehicle.rated
+  let vehicle = maybeVehicle as IReviewable;
+  let isReviewable = vehicle.rated !== undefined;
+  let isReviewed = !isReviewable || vehicle.rated;
 
   return (
     <Card
       margin={0}
       as={NextLink}
-      href={!isReviewable ? `/offer/:${vehicle.offer_id}` : {}}
+      href={!isReviewable ? `/offer/${vehicle.offer_id}` : {}}
       maxW="260px"
       minW="260px"
       height="250px" // Fixed height for consistency
@@ -67,18 +71,19 @@ export default function VehicleCard({
         flexDirection="column"
         justifyContent="space-between"
       >
-        <GrayFilter 
-          onClick={onOpenReview} 
+        <GrayFilter
+          onClick={onOpenReview}
           show={!isReviewed}
-            _hover={{
-              opacity: 0,
-          }}>
+          _hover={{
+            opacity: 0,
+          }}
+        >
           Leave Review
         </GrayFilter>
-        <ReviewForm 
-          isOpen={isOpenREview} 
-          onClose={onCloseReview} 
-          vehicle={vehicle as IOffer}
+        <ReviewForm
+          isOpen={isOpenREview}
+          onClose={onCloseReview}
+          vehicle={vehicle as ICar}
         />
         <Stack spacing={2} height={'100%'} justify={'space-between'}>
           <Flex direction={'column'}>
@@ -89,7 +94,7 @@ export default function VehicleCard({
               <Text fontSize="xs">€{vehicle.price}/day</Text>
             </Flex>
 
-            {/* Kompanija koja nudi vozilo */}
+            {/* Company offering the vehicle */}
             <Text color="brandgray" fontSize="xs" noOfLines={1}>
               {vehicle.companyName}
             </Text>
@@ -101,7 +106,7 @@ export default function VehicleCard({
             </Flex>
 
             <Flex align="flex-start">
-              {vehicle.automatic === 'true' ? (
+              {vehicle.automatic === true ? (
                 <>
                   <TbAutomaticGearbox />
                   <Box fontSize="xs" ml="1">

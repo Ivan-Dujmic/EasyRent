@@ -6,7 +6,7 @@ import SupportButton from '@/components/shared/auth/SupportButton';
 import SuccessWindowCompany from '@/components/shared/SuccessWidnow/SuccessWinodwCompany';
 import WorkingHoursForm from '@/components/shared/auth/WorkingHoursForm';
 import { swrKeys } from '@/fetchers/swrKeys';
-import { IRegisterCompany } from '@/typings/company/company.type';
+import { IRegisterCompany } from '@/typings/company/company';
 import {
   Box,
   VStack,
@@ -30,17 +30,21 @@ export default function RegisterCompanyPage() {
     getValues,
   } = useForm<IRegisterCompany>();
 
-  const { trigger } = useSWRMutation(swrKeys.registerCompany, CustomPost<IRegisterCompany>, {
-    onSuccess: () => {
-      setRegistered(true);
-    },
-    onError: () => {
-      setError('email', {
-        type: 'manual',
-        message: 'This Company is already registered',
-      });
-    },
-  });
+  const { trigger } = useSWRMutation(
+    swrKeys.registerCompany,
+    CustomPost<IRegisterCompany>,
+    {
+      onSuccess: () => {
+        setRegistered(true);
+      },
+      onError: () => {
+        setError('email', {
+          type: 'manual',
+          message: 'This Company is already registered',
+        });
+      },
+    }
+  );
 
   const onRegister = async (data: IRegisterCompany) => {
     clearErrors();

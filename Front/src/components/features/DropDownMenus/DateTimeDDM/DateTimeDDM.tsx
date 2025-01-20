@@ -68,6 +68,8 @@ export default function DateTimeDDM({
   const handleDateChange: CalendarProps['onChange'] = (value) => {
     if (value instanceof Date) {
       setSelectedDate(value);
+      // kada se promejni datum odmah updejatj to, maka ri sa defolut vrmeenom
+      onDateTimeChange?.(new Date(value));
 
       if (selectedTime) {
         const [hours, minutes] = selectedTime.split(':').map(Number);

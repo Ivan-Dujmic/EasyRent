@@ -5,7 +5,12 @@ import SubmitButton from '@/components/shared/auth/SubmitButton';
 import SupportButton from '@/components/shared/auth/SupportButton';
 import SuccessWindow from '@/components/shared/SuccessWidnow/SuccessWidnow';
 import { swrKeys } from '@/fetchers/swrKeys';
-import { IEditPassword, IEditUser, IGetUser, IRegisterUser } from '@/typings/users/user.type';
+import {
+  IEditPassword,
+  IEditUser,
+  IGetUser,
+  IRegisterUser,
+} from '@/typings/users/user.type';
 import {
   Box,
   VStack,
@@ -17,7 +22,7 @@ import {
   Heading,
   Tab,
   TabPanels,
-  Tabs
+  Tabs,
 } from '@chakra-ui/react';
 import { ReactElement, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -26,47 +31,58 @@ import DeleteButton from '@/components/shared/auth/DeleteButton/DeleteButton';
 import { CustomGet } from '@/fetchers/get';
 import useSWR from 'swr';
 import { CustomPost } from '@/fetchers/post';
-import { Blockquote } from "flowbite-react";
 
 export default function EditPage() {
   const {
     handleSubmit: handleUser,
     formState: { isSubmitting: isSubUser, errors: errUser },
-    clearErrors : clearErrUser,
-    register : registerUser,
+    clearErrors: clearErrUser,
+    register: registerUser,
   } = useForm<IEditUser>();
 
   const {
     handleSubmit: handlePass,
     formState: { isSubmitting: isSubPass, errors: errPass },
     setError: setErrPass,
-    clearErrors : clearErrPass,
-    getValues : getValPass,
-    register : registerPass,
+    clearErrors: clearErrPass,
+    getValues: getValPass,
+    register: registerPass,
   } = useForm<IEditPassword>();
 
-  let [success, setSuccess] = useState(false)
-  const {data: dataGet, error, isLoading} = useSWR(swrKeys.profileUser, CustomGet<IGetUser>)
+  let [success, setSuccess] = useState(false);
+  const {
+    data: dataGet,
+    error,
+    isLoading,
+  } = useSWR(swrKeys.profileUser, CustomGet<IGetUser>);
 
-  const { trigger: updateTrigger } = useSWRMutation(swrKeys.profileUser, CustomPost<IEditUser>, {
-    onSuccess: () => {
-      setSuccess(true)
-      console.log("Saved changes")
-    },
-    onError: () => {
-      console.log("Something went wrong!")
-    },
-  });
+  const { trigger: updateTrigger } = useSWRMutation(
+    swrKeys.profileUser,
+    CustomPost<IEditUser>,
+    {
+      onSuccess: () => {
+        setSuccess(true);
+        console.log('Saved changes');
+      },
+      onError: () => {
+        console.log('Something went wrong!');
+      },
+    }
+  );
 
-  const { trigger: passTrigger } = useSWRMutation(swrKeys.profileUser, CustomPost<IEditPassword>, {
-    onSuccess: () => {
-      setSuccess(true)
-      console.log("Saved changes")
-    },
-    onError: () => {
-      console.log("Something went wrong!")
-    },
-  });
+  const { trigger: passTrigger } = useSWRMutation(
+    swrKeys.profileUser,
+    CustomPost<IEditPassword>,
+    {
+      onSuccess: () => {
+        setSuccess(true);
+        console.log('Saved changes');
+      },
+      onError: () => {
+        console.log('Something went wrong!');
+      },
+    }
+  );
 
   const onUpdateProfile = async (data: IEditUser) => {
     clearErrUser();
@@ -98,7 +114,7 @@ export default function EditPage() {
     clearErrPass();
     await passTrigger(data);
   };
-  
+
   const boxWidth = useBreakpointValue({
     base: '90vw', // Small screens
     md: '70vw', // Medium screens
@@ -111,8 +127,8 @@ export default function EditPage() {
   });
 
   return success ? (
-      <SuccessWindow />
-    ) : (
+    <SuccessWindow />
+  ) : (
     <Box
       width={boxWidth}
       margin="0 auto"
@@ -121,10 +137,10 @@ export default function EditPage() {
       boxShadow="0 0 15px rgba(0, 0, 0, 0.2)"
       borderRadius="md"
       bg="brandwhite"
-      >
+    >
       <Flex direction="column" align="center" width="100%" p={8}>
-        <Heading mb={8} color="brandblue"> 
-          Edit Profile 
+        <Heading mb={8} color="brandblue">
+          Edit Profile
         </Heading>
         <Tabs variant="enclosed" width="100%">
           <TabList>
@@ -194,7 +210,10 @@ export default function EditPage() {
                   justify="center"
                   align="center"
                 >
-                  <SupportButton href="/myProfile" w={{ base: '100%', md: '30%' }}>
+                  <SupportButton
+                    href="/myProfile"
+                    w={{ base: '100%', md: '30%' }}
+                  >
                     Cancel
                   </SupportButton>
                   <SubmitButton
@@ -211,7 +230,7 @@ export default function EditPage() {
                 <VStack spacing={4}>
                   <CustomInput
                     {...registerPass('oldPassword', {
-                      required: 'Must enter old password'
+                      required: 'Must enter old password',
                     })}
                     label="Current Password"
                     type="password"
@@ -235,7 +254,8 @@ export default function EditPage() {
                     {...registerPass('confirmPassword', {
                       required: 'Password confirmation is required',
                       validate: (value) =>
-                        value === getValPass('password') || 'Passwords do not match',
+                        value === getValPass('password') ||
+                        'Passwords do not match',
                     })}
                     label="Confirm New password"
                     type="password"
@@ -243,8 +263,8 @@ export default function EditPage() {
                     error={errPass.confirmPassword?.message}
                   />
                   <SubmitButton
-                    mt = {4}
-                    alignSelf={'flex-start'} 
+                    mt={4}
+                    alignSelf={'flex-start'}
                     label="Reset Password"
                     submittingLabel="Trying to reset..."
                     isSubmitting={isSubPass}
@@ -254,27 +274,29 @@ export default function EditPage() {
               </chakra.form>
             </TabPanel>
             <TabPanel>
-            <Flex direction={"column"} align={"center"} width={"100%"}>   
-              <Box
-                width={"100%"}
-                my={2}
-                color="brandblack"
-                fontWeight={500}
-                borderLeftWidth={4}
-                borderColor="gray.400"
-                bg="gray.100"
-                p={4}
-              >
-                <cite>{`"Understand this: things are now in motion that cannot be undone."`}</cite>
-              </Box>
-              <Box textAlign={'right'} width={"80%"}>- <cite>Gandalf the Gray</cite></Box>
-            </Flex>
-            <DeleteButton 
-              label = "Delete Account" 
-              mt = "10"
-              password = {dataGet?.password}
-              float={"right"}
-            />
+              <Flex direction={'column'} align={'center'} width={'100%'}>
+                <Box
+                  width={'100%'}
+                  my={2}
+                  color="brandblack"
+                  fontWeight={500}
+                  borderLeftWidth={4}
+                  borderColor="gray.400"
+                  bg="gray.100"
+                  p={4}
+                >
+                  <cite>{`"Understand this: things are now in motion that cannot be undone."`}</cite>
+                </Box>
+                <Box textAlign={'right'} width={'80%'}>
+                  - <cite>Gandalf the Gray</cite>
+                </Box>
+              </Flex>
+              <DeleteButton
+                label="Delete Account"
+                mt="10"
+                password={dataGet?.password}
+                float={'right'}
+              />
             </TabPanel>
           </TabPanels>
         </Tabs>
@@ -282,4 +304,3 @@ export default function EditPage() {
     </Box>
   );
 }
-

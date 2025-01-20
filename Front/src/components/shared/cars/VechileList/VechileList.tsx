@@ -1,21 +1,15 @@
 'use client';
 
-import {
-  Flex,
-  Heading,
-  IconButton,
-  Box,
-  useBreakpointValue,
-} from '@chakra-ui/react';
+import { Flex, Heading, IconButton } from '@chakra-ui/react';
 import { FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import React, { useState, useRef, useEffect } from 'react';
 import VehicleCard from '../VehicleCard/VechileCard';
 import { mockVehicles } from '@/mockData/mockVehicles';
-import { IOffer } from '@/typings/vehicles/vehicles.type';
 import { NextRouter } from 'next/router';
+import { ICar } from '@/fetchers/homeData';
 
 interface VehicleListProps {
-  vehicles?: Array<IOffer>;
+  vehicles?: Array<ICar>;
   description?: string;
   numCards?: number;
   cardGap?: number;
@@ -33,7 +27,7 @@ export default function VehicleList({
   let [numCards_d, setNumCard] = useState(numCards);
 
   useEffect(() => {
-    const current = containerRef.current
+    const current = containerRef.current;
     const updateContainerWidth = () => {
       if (current) {
         const { width } = current.getBoundingClientRect();
@@ -122,7 +116,7 @@ export default function VehicleList({
           py={'2px'}
         >
           {visibleVehicles.map((vehicle, index) => (
-            <VehicleCard vehicle={vehicle} key={index}/>
+            <VehicleCard vehicle={vehicle} key={index} />
           ))}
         </Flex>
 

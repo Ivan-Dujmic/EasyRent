@@ -1,4 +1,4 @@
-import { IDealership } from '@/typings/company/company.type';
+import { CompaniesResponse } from '@/typings/company/company';
 import {
   Card,
   CardBody,
@@ -7,17 +7,17 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react';
 
-interface CompanyListProps {
-  companies: Array<IDealership> | undefined;
-}
-
-export default function CompanyList({ companies }:  CompanyListProps ) {
+export default function CompanyList({ companies }: CompaniesResponse) {
   const imageSize = useBreakpointValue({
     base: '25px', // Small gap for small screens (mobile)
     md: '28px', // Slightly larger gap for medium screens (laptop/tablet)
     lg: '30px', // Largest gap for large screens (desktop)
     xl: '35px',
   });
+
+  if (!companies) {
+    return null;
+  }
 
   return (
     <Flex wrap="wrap" gap={3} justify="start">
@@ -41,7 +41,7 @@ export default function CompanyList({ companies }:  CompanyListProps ) {
               objectFit="contain"
               width="auto"
               height={imageSize}
-              src={`data:image/png;base64,${company.image}`}
+              src={`${company.companyLogo}`}
               alt={`${company.companyName} logo`}
             />
           </CardBody>

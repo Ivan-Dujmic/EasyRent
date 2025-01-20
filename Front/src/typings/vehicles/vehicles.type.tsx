@@ -1,49 +1,34 @@
-import { IDealership } from "../company/company.type";
+import { ICar } from '@/fetchers/homeData';
+import { IDealership } from '../company/company';
 
-export interface IVehicle {
-  makeName: string;
-  modelName: string;
-  image?: string;
-  noOfSeats?: string;
-  automatic?: string;
+export interface IReviewable extends ICar {
+  rated: boolean;
 }
 
-export interface IOffer extends IVehicle {
-  companyName: string;
-  price?: number;
-  rating?: number;
-  noOfReviews?: number;
-  offer_id?: string;
-}
-
-export interface IReviewable extends IOffer {
-  rated: boolean
-}
-
-export function toOffer (car: IRentalEntry): IOffer {
+export function toOffer(car: IRentalEntry): ICar {
   return {
     image: car.image,
     companyName: car.companyName,
     makeName: car.makeName.toString(),
     modelName: car.modelName.toString(),
-    noOfSeats: car.noOfSeats.toString(),
-    automatic: car.automatic.toString(),
-    price: car.price,
+    noOfSeats: car.noOfSeats,
+    automatic: car.automatic,
+    price: car.price.toString(),
     rating: car.rating,
     noOfReviews: car.noOfReviews,
-    offer_id: car.offer_id.toString()
-  }
+    offer_id: car.offer_id.toString(),
+  };
 }
 
 export interface IShowcased {
   showcased_dealerships: Array<IDealership>;
-  most_popular: Array<IOffer>;
-  best_value: Array<IOffer>;
+  most_popular: Array<ICar>;
+  best_value: Array<ICar>;
 }
 
 export interface IRentals {
-  ongoing_rentals: Array<IOffer>;
-  previously_rented: Array<{car: IOffer, rated: boolean}>;
+  ongoing_rentals: Array<ICar>;
+  previously_rented: Array<{ car: ICar; rated: boolean }>;
 }
 
 export interface IRentalEntry {

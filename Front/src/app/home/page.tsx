@@ -6,11 +6,10 @@ import ChatbotWidget from '@/components/shared/ChatbotWidget/ChatbotWidget';
 import Header from '@/components/shared/Header/Header';
 import CompanyList from '@/components/shared/company/CompanyList/CompanyList';
 import { Flex, Heading, useBreakpointValue } from '@chakra-ui/react';
-import { mockVehicles } from '@/mockData/mockVehicles';
 import VehicleList from '@/components/shared/cars/VechileList/VechileList';
-import { AuthRedirect } from '@/components/shared/auth/AuthRedirect/AuthRedirect';
 import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
+import { CustomGet, OffersResponse } from '@/fetchers/homeData';
 import FQA from '@/components/shared/info/FQA/FQA';
 import BenefitsSection from '@/components/shared/BenefitsSection/BenefitsSection';
 import Footer from '@/components/shared/Footer/Footer';
@@ -24,11 +23,10 @@ import {
   FaCcStripe,
 } from 'react-icons/fa';
 import CustomMap from '@/components/shared/Map/CustomMap/CustomMap';
-import { dealershipLocations } from '@/mockData/mockLocations';
 import { useUserContext } from '@/context/UserContext/UserContext';
 import AuthUserHeader from '@/components/shared/Header/AuthUserHeader/AuthUserHeader';
-import { IShowcased } from '@/typings/vehicles/vehicles.type';
-import { CustomGet } from '@/fetchers/get';
+import { LocationsResponse } from '@/typings/locations/locations';
+import { CompaniesResponse } from '@/typings/company/company';
 
 const homeGuestFooterLinks = {
   quickLinks: [
@@ -52,7 +50,22 @@ const homeGuestFooterLinks = {
 };
 
 export default function HomePage() {
-  const { data, error, isLoading } = useSWR(swrKeys.showcased, CustomGet<IShowcased>);
+  const { data: CompaniesResponse } = useSWR<CompaniesResponse>(
+    swrKeys.companies,
+    CustomGet
+  );
+  const { data: best_value } = useSWR<OffersResponse>(
+    swrKeys.bestValue,
+    CustomGet
+  );
+  const { data: most_popular } = useSWR<OffersResponse>(
+    swrKeys.mostPopular,
+    CustomGet
+  );
+
+  const { data: allDealershipLocations = { locations: [] } } =
+    useSWR<LocationsResponse>(swrKeys.allLocations, CustomGet);
+
   const { user } = useUserContext();
 
   const gapSize = useBreakpointValue({
@@ -95,7 +108,9 @@ export default function HomePage() {
           <Heading fontSize={headingSize} color={'brandblue'}>
             Trusted by the Best:
           </Heading>
-          <CompanyList companies={data?.showcased_dealerships} />
+          {CompaniesResponse ? (
+            <CompanyList companies={CompaniesResponse.companies} />
+          ) : null}
         </Flex>
       </Flex>
 
@@ -108,11 +123,18 @@ export default function HomePage() {
         gap={2}
         width={{ base: '80vw', lg: '65vw' }}
       >
-        <VehicleList
-          vehicles={data?.most_popular}
-          description={'Most popular:'}
-        />
-        <VehicleList vehicles={data?.best_value} description={'Best value:'} />
+        {most_popular ? (
+          <VehicleList
+            vehicles={most_popular?.offers}
+            description="Most popular:"
+          />
+        ) : null}
+        {best_value ? (
+          <VehicleList
+            vehicles={best_value?.offers}
+            description="Best value:"
+          />
+        ) : null}
       </Flex>
 
       {/* Dio stranice sa benefitima */}
@@ -132,7 +154,10 @@ export default function HomePage() {
         <Heading size="lg" color="brandblack" alignSelf="flex-start">
           Explore Dealerships:
         </Heading>
-        <CustomMap locations={dealershipLocations} showInfoWindow={true} />
+        <CustomMap
+          locations={allDealershipLocations.locations}
+          showInfoWindow={true}
+        />
       </Flex>
 
       {/* Dio stranice sa dodatnim informacijama */}
