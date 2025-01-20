@@ -176,7 +176,7 @@ export default function RegisterCompanyPage() {
             Log In
           </SupportButton>
           <SubmitButton
-            label="Register"
+            label="Apply for registration"
             submittingLabel="Trying to register..."
             isSubmitting={isSubmitting}
             w={{ base: '100%', md: '30%' }}
