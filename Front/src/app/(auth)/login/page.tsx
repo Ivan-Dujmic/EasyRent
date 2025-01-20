@@ -129,7 +129,7 @@ export default function HomePage() {
                 Continue as Guest
               </SupportButton>
               <SupportButton
-                href="https://easyrent-t7he.onrender.com/accounts/google/login/?next=/SuccessfulLogin"
+                href="https://easyrent-t7he.onrender.com/accounts/google/login/?next=https://easy-rent-ashy.vercel.app/SuccessfulLogin"
                 // href="http://127.0.0.1:8000/accounts/google/login/?next=/api/auth/SuccessfulLogin"
                 w={buttonWidth}
               >
