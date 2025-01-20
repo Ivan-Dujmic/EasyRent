@@ -5,6 +5,7 @@ import { IoPersonSharp } from 'react-icons/io5';
 import { TbManualGearboxFilled, TbAutomaticGearbox } from 'react-icons/tb';
 
 export default function VehicleOfferCard({ vehicle }: { vehicle: IOffer }) {
+  console.log(vehicle);
   return (
     <Box
       maxW="800px"
