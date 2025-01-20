@@ -4,8 +4,8 @@ import CustomInput from '@/components/shared/auth/CustomInput';
 import SubmitButton from '@/components/shared/auth/SubmitButton';
 import SupportButton from '@/components/shared/auth/SupportButton';
 import SuccessWindow from '@/components/shared/SuccessWidnow/SuccessWidnow';
+import { CustomPost } from '@/fetchers/post';
 import { swrKeys } from '@/fetchers/swrKeys';
-import { registerUser } from '@/mutation/auth';
 import { IRegisterUser } from '@/typings/users/user.type';
 import {
   Box,
@@ -29,7 +29,7 @@ export default function RegisterPage() {
     getValues,
   } = useForm<IRegisterUser>();
 
-  const { trigger } = useSWRMutation(swrKeys.registerUser, registerUser, {
+  const { trigger } = useSWRMutation(swrKeys.registerUser, CustomPost<IRegisterUser>, {
     onSuccess: () => {
       setRegistered(true);
     },
