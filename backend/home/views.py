@@ -701,7 +701,6 @@ def getFilteredOffers(request):
             pick_up_time = time(pt)
             drop_off_time = time(dt)
         except Exception as e:
-            print(e)
             return Response({"error": "Invalid time format"}, status=404)
         # if (pick_up_time < 0 or pick_up_time > 24 or drop_off_time < 0 or drop_off_time > 24):
         #     return Response({"error": "Invalid time format"}, status=404)
@@ -789,18 +788,23 @@ def getFilteredOffers(request):
         offers = Offer.objects.filter(dealer__in=pick_up_dealers)
         # filter by seats
         if seats != None:
+            six = False
             try:
                 seats_list = seats.split(",")
                 seats_temp = []
-                print(seats_list)
                 for elem in seats_list:
                     range = elem.split("-")
                     for num in range:
-                        seats_temp.append(int(num))
-                print(seats_temp)
+                        if (num == "6+"):
+                            six = True
+                        else:
+                            seats_temp.append(int(num))
             except:
                 return Response({"error": "Wrong seats format"}, status=404)
-            offers = offers.filter(model__noOfSeats__in=seats_temp)
+            if six:
+                offers = offers.filter(Q(model__noOfSeats__in=seats_temp) | Q(model__noOfSeats__gte=6))
+            else:
+                offers = offers.filter(model__noOfSeats__in=seats_temp)
         # filter by car type
         if car_type != None:
             type_list = car_type.split(",")
@@ -1061,7 +1065,6 @@ def getLocationsForOffer(request, offer_id):
         locations_array = []
         if pickUpDateTime != None:
             for location in locations:
-                print(location)
                 working_hours = WorkingHours.objects.filter(location=location).filter(
                     dayOfTheWeek=pickUpDate.weekday()
                 )
