@@ -24,12 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "as"
+SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don"t run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
 
-#ALLOWED_HOSTS = os.getenv("ALL_HOST").split(" ")
+ALLOWED_HOSTS = os.getenv("ALL_HOST").split(" ")
 
 
 # Application definition
@@ -107,14 +107,14 @@ WSGI_APPLICATION = "backend.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "EasyRentTest2",
+        "NAME": "EasyRentTest",
         "USER": "postgres",
         "PASSWORD": "postgres",
         "HOST": "localhost",
         "PORT": "5432",  # 5432 or 5433
     }
 }
-#DATABASES["default"] = dj_database_url.parse(os.getenv("DATABASE"))
+DATABASES["default"] = dj_database_url.parse(os.getenv("DATABASE"))
 STATIC_ROOT = ""
 STATIC_URL = "/static/"
 # Password validation
