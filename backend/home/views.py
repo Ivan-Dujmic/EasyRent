@@ -1350,3 +1350,4 @@ def calculateReviewsForAllVehicles():
     vehicles = Vehicle.objects.all()
     for vehicle in vehicles:
         calculateReviewsForVehicle(vehicle)
+
