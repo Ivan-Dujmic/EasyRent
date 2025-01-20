@@ -49,8 +49,8 @@ export default function VehicleCard({
       borderWidth="2px"
       borderRadius="lg"
       overflow="hidden"
-      borderColor={'brandwhite'}
-      bg={'brandwhite'}
+      borderColor={'#ffffff'}
+      bg={'#ffffff'}
       px={2}
       _hover={{
         borderColor: 'brandblack',
