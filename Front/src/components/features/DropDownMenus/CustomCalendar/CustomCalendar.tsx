@@ -6,24 +6,24 @@ import { Box, Select, Text, Stack } from '@chakra-ui/react';
 import 'react-calendar/dist/Calendar.css';
 import './custom-calendar-booking.css';
 
-/** Interfejsi koje očekujemo */
-interface Interval {
+/** Ako koristite iste tipove kao i prije, samo ih redefinirajte ili importajte. */
+export interface Interval {
   dateTimeRented: string; // npr. "2025-01-21T16:52:11.243Z"
   dateTimeReturned: string; // npr. "2025-01-22T10:15:00.000Z"
 }
 
-interface WorkingHour {
-  /** 0 = Ponedjeljak, 1 = Utorak, …, 6 = Nedjelja */
+export interface WorkingHour {
+  /** 0=Ponedjeljak, 1=Utorak, …, 6=Nedjelja */
   dayOfTheWeek: number;
-  startTime: string; // npr. "09:00:00"
-  endTime: string; // npr. "17:00:00"
+  startTime: string; // "09:00:00"
+  endTime: string; // "17:00:00"
 }
 
 interface CustomCalendarProps {
-  /** Intervali u kojima je vozilo rezervirano (nedostupno) */
-  intervals: Interval[];
-  /** Radni sati po danima u tjednu */
-  workingHours: WorkingHour[];
+  /** Intervali u kojima je vozilo rezervirano (nedostupno). Ako je undefined, nema rezervacija. */
+  intervals?: Interval[];
+  /** Radni sati po danima u tjednu. Ako je undefined, znači da nikad ne radi (sve onemogućeno). */
+  workingHours?: WorkingHour[];
   /** Callback: vraća finalno odabran datum i vrijeme ili null */
   onDateTimeSelect?: (selectedDateTime: Date | null) => void;
 }
@@ -41,14 +41,19 @@ function startOfDay(date: Date) {
   return d;
 }
 
-/** JavaScript default: getDay() → 0=Sunday, 1=Monday, ...  
+/** JavaScript default: getDay() → 0=Sunday, 1=Monday, ...
     Ovom transformacijom dobijemo: 0=Ponedjeljak, 1=Utorak, ..., 6=Nedjelja. */
 function getCalendarDayOfWeek(date: Date) {
   return (date.getDay() + 6) % 7;
 }
 
 /** Vraća true ako se dan preklapa s bilo kojim rezerviranim intervalom. */
-function isDayReserved(date: Date, intervals: Interval[]) {
+function isDayReserved(date: Date, intervals?: Interval[]) {
+  if (!intervals || intervals.length === 0) {
+    // Nema rezervacija => nijedan dan nije zauzet
+    return false;
+  }
+
   const dayStart = startOfDay(date).getTime();
   const dayEnd = dayStart + 24 * 60 * 60 * 1000 - 1;
 
@@ -62,7 +67,13 @@ function isDayReserved(date: Date, intervals: Interval[]) {
 }
 
 /** Vraća radne sate za određeni dan (ili null ako ih nema) */
-function getWorkingHoursForDay(dayOfWeek: number, workingHours: WorkingHour[]) {
+function getWorkingHoursForDay(
+  dayOfWeek: number,
+  workingHours?: WorkingHour[]
+) {
+  if (!workingHours || workingHours.length === 0) {
+    return null; // Nema radnih sati => ne radi
+  }
   return workingHours.find((wh) => wh.dayOfTheWeek === dayOfWeek) || null;
 }
 
@@ -124,9 +135,15 @@ export default function CustomCalendar({
   /** Generiramo listu vremena (slotova) za trenutno odabrani dan */
   const validTimeSlots = useMemo(() => {
     if (!selectedDate) return [];
+    // Ako nema radnih sati definiranih, ili je prazan array => nema radnih dana
+    if (!workingHours || workingHours.length === 0) {
+      return [];
+    }
+
     const dayIndex = getCalendarDayOfWeek(selectedDate);
     const wh = getWorkingHoursForDay(dayIndex, workingHours);
     if (!wh) return []; // zatvoreni smo taj dan
+
     const { hours: startH, minutes: startM } = parseTimeString(wh.startTime);
     const { hours: endH, minutes: endM } = parseTimeString(wh.endTime);
 
@@ -142,12 +159,17 @@ export default function CustomCalendar({
       return true;
     }
 
-    // 2) Datum se preklapa s rezerviranim intervalom
+    // 2) Datum se preklapa s rezerviranim intervalom (ako su intervals)
     if (isDayReserved(date, intervals)) {
       return true;
     }
 
-    // 3) Provjera radnih sati (ako ne postoji zapis, zatvoreni smo taj dan)
+    // 3) Ako su workingHours undefined ili prazan array => ništa ne radi => onemogući
+    if (!workingHours || workingHours.length === 0) {
+      return true;
+    }
+
+    // 4) Provjera radnih sati (ako ne postoji zapis, zatvoreni smo taj dan)
     const dayIndex = getCalendarDayOfWeek(date);
     const wh = getWorkingHoursForDay(dayIndex, workingHours);
     if (!wh) {
@@ -173,6 +195,9 @@ export default function CustomCalendar({
           onChange={handleDateChange}
           value={selectedDate}
           tileDisabled={tileDisabled}
+          // Po želji: započni tjedan s ponedjeljkom i sl.
+          calendarType="iso8601"
+          locale="hr-HR"
         />
       </Box>
 

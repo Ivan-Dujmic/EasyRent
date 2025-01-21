@@ -43,16 +43,21 @@ interface BookingFormProps {
   offer_id: string;
 }
 
-interface UnavailablePickupResponse {
-  intervals: {
-    dateTimeRented: string;
-    dateTimeReturned: string;
-  }[];
-  workingHours: {
-    dayOfTheWeek: number;
-    startTime: string;
-    endTime: string;
-  }[];
+export interface Interval {
+  dateTimeRented: string; // npr. "2025-01-21T16:52:11.243Z"
+  dateTimeReturned: string; // npr. "2025-01-22T10:15:00.000Z"
+}
+
+export interface WorkingHour {
+  /** 0 = Ponedjeljak, 1 = Utorak, …, 6 = Nedjelja */
+  dayOfTheWeek: number;
+  startTime: string; // npr. "09:00:00"
+  endTime: string; // npr. "17:00:00"
+}
+
+export interface UnavailablePickupResponse {
+  intervals: Interval[];
+  workingHours: WorkingHour[];
 }
 
 const BookingForm: React.FC<BookingFormProps> = ({
@@ -203,8 +208,8 @@ const BookingForm: React.FC<BookingFormProps> = ({
               isDisabled={!isPickupDateEnabled}
             />
             <CustomCalendar
-              intervals={intervals}
-              workingHours={workingHours}
+              intervals={pickUpDateTimeAvaiable?.intervals}
+              workingHours={pickUpDateTimeAvaiable?.workingHours}
               onDateTimeSelect={handleDateTimeSelect}
             />
           </Box>
