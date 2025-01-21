@@ -804,7 +804,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/GetCompanyLocations'
           description: ''
-  /api/profile/company/log-completed/{vehicle_id}:
+  /api/profile/company/log-completed/{vehicle_id}/:
     get:
       operationId: get_company_log_completed
       parameters:
@@ -840,7 +840,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/GetCompanyLog'
           description: ''
-  /api/profile/company/log-ongoing/{vehicle_id}:
+  /api/profile/company/log-ongoing/{vehicle_id}/:
     get:
       operationId: get_company_log_ongoing
       parameters:
@@ -876,7 +876,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/GetCompanyLog'
           description: ''
-  /api/profile/company/log-reviews/{vehicle_id}:
+  /api/profile/company/log-reviews/{vehicle_id}/:
     get:
       operationId: get_company_log_reviews
       parameters:
@@ -900,7 +900,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/GetCompanyLogReviews'
           description: ''
-  /api/profile/company/log-upcoming/{vehicle_id}:
+  /api/profile/company/log-upcoming/{vehicle_id}/:
     get:
       operationId: get_company_log_upcoming
       parameters:
@@ -1053,7 +1053,7 @@ paths:
       responses:
         '200':
           description: No response body
-  /api/profile/company/offer/{offerId}:
+  /api/profile/company/offer/{offerId}/:
     get:
       operationId: get_company_offer
       parameters:
@@ -1121,7 +1121,7 @@ paths:
       responses:
         '204':
           description: No response body
-  /api/profile/company/offers:
+  /api/profile/company/offers/:
     get:
       operationId: get_company_offers
       tags:
@@ -1391,7 +1391,7 @@ paths:
           description: User not authenticated
         '403':
           description: Incorrect password
-  /api/profile/user/leave-review/{rent_id}:
+  /api/profile/user/leave-review/{rent_id}/:
     post:
       operationId: post_review
       parameters:
@@ -1454,6 +1454,19 @@ paths:
   /api/profile/user/rentals/:
     get:
       operationId: get_user_rentals
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 10
+        description: Max number of offers per page
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Page number, starts with 1
       tags:
       - profile
       security:
@@ -1647,7 +1660,7 @@ paths:
       responses:
         '200':
           description: No response body
-  /api/wallet/buyGems:
+  /api/wallet/buyGems/:
     post:
       operationId: api_wallet_buyGems_create
       tags:
@@ -1670,7 +1683,7 @@ paths:
       responses:
         '200':
           description: No response body
-  /api/wallet/checkTransaction/{transaction_id}:
+  /api/wallet/checkTransaction/{transaction_id}/:
     get:
       operationId: api_wallet_checkTransaction_retrieve
       parameters:

@@ -8,6 +8,8 @@ from django import forms
 from datetime import datetime
 from django.utils.timezone import make_aware, make_naive
 import random
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import Avg, Count, Sum, F, Q
 from .models import *
 from .serializers import *
 from src.models import *
@@ -39,43 +41,106 @@ from drf_spectacular.utils import (
             ],
         ),
     },
+    parameters=[
+        OpenApiParameter(
+            name="page",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Page number, starts with 1",
+            required=False,
+            default=1,
+        ),
+        OpenApiParameter(
+            name="limit",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Max number of offers per page",
+            required=False,
+            default=10,
+        ),
+    ],
 )
 @api_view(["GET"])
 def userRentals(request):
     if request.method == "GET":
         user = request.user
         if user.is_authenticated:
-            rentoid = Rentoid.objects.get(user=user)
-            rentals = Rent.objects.filter(rentoid=rentoid.rentoid_id)
+            # Get pagination parameters
+            page = int(request.GET.get("page", 1))  # Default to page 1
+            limit = int(request.GET.get("limit", 10))  # Default to 10 items per page
+
+            # Get the rentoid for the user
+            rentoid = Rentoid.objects.select_related('user').get(user=user)
+
+            # Fetch rentals with related data in one query
+            rentals = (
+                Rent.objects.filter(rentoid=rentoid.rentoid_id)
+                .select_related(
+                    'vehicle__model',  # Vehicle model data
+                    'vehicle__location__dealership__user',  # Dealer user data
+                )
+                .prefetch_related(
+                    'vehicle__location__dealership__offer_set',  # Offers for the dealer
+                )
+                .order_by('dateTimeRented')  # Sort rentals by dateTimeRented
+            )
+
+            # Paginate the rentals
+            paginator = Paginator(rentals, limit)
+            try:
+                paginated_rentals = paginator.page(page)
+            except PageNotAnInteger:
+                paginated_rentals = paginator.page(1)
+            except EmptyPage:
+                return Response({"success": 0, "message": "No more data"}, status=404)
+
             rentalData = []
-            for rental in rentals:
+            for rental in paginated_rentals:
                 vehicle = rental.vehicle
                 dealer = vehicle.location.dealership
-                offer = Offer.objects.filter(dealer=dealer, model=vehicle.model).first()
-                model = offer.model
 
-                item = {
-                    "makeName": model.makeName,
-                    "modelName": model.modelName,
-                    "companyName": dealer.user.first_name,
-                    "noOfSeats": model.noOfSeats,
-                    "automatic": model.automatic,
-                    "price": offer.price,
-                    "rating": offer.rating,
-                    "noOfReviews": offer.noOfReviews,
-                    "dateTimeRented": rental.dateTimeRented,
-                    "dateTimeReturned": rental.dateTimeReturned,
-                    "expired": isUserRentalExpired(rental),
-                    "canReview": canUserReview(rental),
-                    "offer_id": offer.offer_id,
-                    "rent_id": rental.rent_id,
-                    "image": offer.image.url if offer.image else None,
-                }
+                # Get the first matching offer
+                offer = next(
+                    (
+                        o for o in dealer.offer_set.all()
+                        if o.model_id == vehicle.model_id
+                    ),
+                    None,
+                )
 
-                rentalData.append(item)
-                rentalData.sort(key=lambda x: x["dateTimeRented"])
+                if offer:
+                    model = offer.model
+                    item = {
+                        "makeName": model.makeName,
+                        "modelName": model.modelName,
+                        "companyName": dealer.user.first_name,
+                        "noOfSeats": model.noOfSeats,
+                        "automatic": model.automatic,
+                        "price": offer.price,
+                        "rating": offer.rating,
+                        "noOfReviews": offer.noOfReviews,
+                        "dateTimeRented": rental.dateTimeRented,
+                        "dateTimeReturned": rental.dateTimeReturned,
+                        "expired": isUserRentalExpired(rental),
+                        "canReview": canUserReview(rental),
+                        "offer_id": offer.offer_id,
+                        "rent_id": rental.rent_id,
+                        "image": offer.image.url if offer.image else None,
+                    }
 
-            return Response(rentalData, status=200)
+                    rentalData.append(item)
+
+            return Response(
+                {
+                    "success": 1,
+                    "page": page,
+                    "limit": limit,
+                    "total": paginator.count,
+                    "total_pages": paginator.num_pages,
+                    "data": rentalData,
+                },
+                status=200,
+            )
         else:
             return Response(
                 {"success": 0, "message": "User not authenticated"}, status=401
@@ -97,17 +162,15 @@ def canUserReview(rental):
 
 
 def calculateReviewsForOffer(offer):
-    rentals = (
-        Rent.objects.filter(vehicle__dealer=offer.dealer)
-        .filter(vehicle__model=offer.model)
-        .values("rent_id")
-    )
-    reviews = Review.objects.filter(rent__in=rentals).all()
-    rating = 0
-    for review in reviews:
-        rating += review.rating
-    offer.rating = round(rating / reviews.count(), 2)
-    offer.noOfReviews = reviews.count()
+    vehicles = Vehicle.objects.filter(dealer=offer.dealer, model=offer.model)
+    total_rating = 0
+    total_reviews = 0
+    for vehicle in vehicles:
+        if (vehicle.rating != None):
+            total_rating += vehicle.rating * vehicle.noOfReviews
+            total_reviews += vehicle.noOfReviews
+    offer.rating = round(total_rating / total_reviews, 2) if total_reviews > 0 else 0
+    offer.noOfReviews = total_reviews
     offer.save()
 
 
@@ -117,21 +180,58 @@ def calculateReviewsForVehicle(vehicle):
     rating = 0
     for review in reviews:
         rating += review.rating
-    vehicle.rating = round(rating / reviews.count(), 2)
-    vehicle.noOfReviews = reviews.count()
+    review_count = reviews.count()
+    vehicle.rating = round(rating / review_count, 2) if review_count > 0 else 0
+    vehicle.noOfReviews = review_count
     vehicle.save()
 
 
 def calculateReviewsForAllOffers():
+  # Retrieve all offers
     offers = Offer.objects.all()
+
     for offer in offers:
-        calculateReviewsForOffer(offer)
+        # Filter vehicles matching the offer's dealer and model
+        matching_vehicles = Vehicle.objects.filter(
+            Q(dealer=offer.dealer) & Q(model=offer.model) & Q(isVisible=True)
+        ).annotate(
+            weighted_sum=F('rating') * F('noOfReviews'),  # Weighted sum of ratings
+        )
+
+        # Aggregate weighted ratings and total reviews
+        stats = matching_vehicles.aggregate(
+            total_weighted_sum=Sum('weighted_sum'),
+            total_reviews=Sum('noOfReviews'),
+        )
+
+        total_reviews = stats['total_reviews'] or 0  # Handle None as 0
+
+        # Calculate weighted average rating
+        if total_reviews > 0:
+            weighted_avg_rating = round((stats['total_weighted_sum'] or 0) / total_reviews, 2)
+        else:
+            weighted_avg_rating = 0  # No reviews, so the rating is 0
+
+        # Update the offer with the calculated values
+        offer.rating = weighted_avg_rating
+        offer.noOfReviews = total_reviews
+        offer.save()
 
 
 def calculateReviewsForAllVehicles():
-    vehicles = Vehicle.objects.all()
-    for vehicle in vehicles:
-        calculateReviewsForVehicle(vehicle)
+    vehicles_qs = (
+        Vehicle.objects
+        .annotate(
+            avg_rating=Avg('rent__review__rating'),
+            rev_count=Count('rent__review')
+        )
+    )
+    # Update in bulk
+    for v in vehicles_qs:
+        v.rating = round(v.avg_rating or 0, 2)
+        v.noOfReviews = v.rev_count
+    Vehicle.objects.bulk_update(vehicles_qs, ['rating', 'noOfReviews'])
+
 
 @extend_schema(
     methods=["GET"],
@@ -144,8 +244,12 @@ def calculateAllReviews(request):
         user = request.user
         if user.is_authenticated:
             if user.is_superuser:
-                calculateReviewsForAllVehicles()
-                calculateReviewsForAllOffers()
+                try:
+                    calculateReviewsForAllVehicles()
+                    calculateReviewsForAllOffers()
+                except Exception as e:
+                    return Response({"error": str(e)}, status=500)
+                    
                 return Response({"message": "Reviews calculated"}, status=200)
             else:
                 return Response({"error": "User is not a superuser"}, status=403)
@@ -176,14 +280,17 @@ def postReview(request, rent_id):
             return Response({"error": "Invalid rating format"}, status=404)
         if rating < 1 or rating > 5:
             return Response({"error": "Invalid rating format"}, status=404)
-        review = Review(
-            rent=rent, rating=rating, description=description, reviewDate=datetime.now()
-        )
-        review.save()
-        offer = Offer.objects.get(model=rent.vehicle.model, dealer=rent.vehicle.dealer)
-        calculateReviewsForOffer(offer)
+        try:
+            Review.objects.create(
+                rent=rent, rating=rating, description=description, reviewDate=datetime.now()
+            )
+        except Exception as e:
+            print(e)
+            return Response({"error": "Review already exists"}, status=400)
         vehicle = Vehicle.objects.get(pk=rent.vehicle.vehicle_id)
         calculateReviewsForVehicle(vehicle)
+        offer = Offer.objects.get(model=rent.vehicle.model, dealer=rent.vehicle.dealer)
+        calculateReviewsForOffer(offer)
         return Response({"message": "Review added"}, status=200)
     except Rent.DoesNotExist:
         return Response({"error": "Rent not found"}, status=404)

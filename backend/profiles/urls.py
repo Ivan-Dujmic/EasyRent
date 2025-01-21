@@ -6,7 +6,7 @@ from . import views
 app_name = "profiles"
 urlpatterns = [
     path("user/rentals/", views.userRentals, name="userRentals"),
-    path("user/leave-review/<rent_id>", views.postReview, name="postReview"),
+    path("user/leave-review/<rent_id>/", views.postReview, name="postReview"),
     path("user/info/", views.userInfo, name="userInfo"),
     path("user/pass/", views.userPass, name="userPass"),
     path("user/delete/", views.userDelete, name="userDelete"),
@@ -25,8 +25,8 @@ urlpatterns = [
         views.completedCompanyRents,
         name="completedCompanyRents",
     ),
-    path("company/offers", views.companyOffers, name="companyOffers"),
-    path("company/offer/<offerId>", views.getCompanyOffer, name="getCompanyOffer"),
+    path("company/offers/", views.companyOffers, name="companyOffers"),
+    path("company/offer/<offerId>/", views.getCompanyOffer, name="getCompanyOffer"),
     path("company/reviews/", views.companyReviews, name="companyReviews"),
     path("company/earnings/", views.companyEarnings, name="companyEarnings"),
     path("company/info/", views.companyInfo, name="companyInfo"),
@@ -51,22 +51,22 @@ urlpatterns = [
     path("company/offer/", views.companyOffer, name="companyOffer"),
     path("company/vehicle-log/", views.companyVehicleLog, name="companyVehicleLog"),
     path(
-        "company/log-upcoming/<int:vehicle_id>",
+        "company/log-upcoming/<int:vehicle_id>/",
         views.companyLogUpcoming,
         name="companyLogUpcoming",
     ),
     path(
-        "company/log-ongoing/<int:vehicle_id>",
+        "company/log-ongoing/<int:vehicle_id>/",
         views.companyLogOngoing,
         name="companyLogOngoing",
     ),
     path(
-        "company/log-completed/<int:vehicle_id>",
+        "company/log-completed/<int:vehicle_id>/",
         views.companyLogCompleted,
         name="companyLogCompleted",
     ),
     path(
-        "company/log-reviews/<int:vehicle_id>",
+        "company/log-reviews/<int:vehicle_id>/",
         views.companyLogReviews,
         name="companyLogReviews",
     ),
