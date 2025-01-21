@@ -133,6 +133,17 @@ def calculateReviewsForAllVehicles():
     for vehicle in vehicles:
         calculateReviewsForVehicle(vehicle)
 
+@api_view(["GET"])
+def calculateAllReviews(request):
+    if request.method == "GET":
+        user = request.user
+        if user.is_authenticated:
+            if user.is_superuser:
+                calculateReviewsForAllOffers()
+                calculateReviewsForAllVehicles()
+                return Response({"message": "Reviews calculated"}, status=200)
+            else:
+                return Response({"error": "User is not a superuser"}, status=403)
 
 @extend_schema(
     methods=["POST"],

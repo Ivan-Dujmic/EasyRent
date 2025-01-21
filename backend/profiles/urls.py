@@ -70,4 +70,9 @@ urlpatterns = [
         views.companyLogReviews,
         name="companyLogReviews",
     ),
+    path(
+        "company/calculate-all-reviews/",
+        views.calculateAllReviews,
+        name="calculateAllReviews",
+    ),
 ]
