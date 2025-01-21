@@ -10,7 +10,7 @@ from .models import *
 from .serializers import *
 from src.models import *
 from src.serializers import *
-from django.db.models import F, ExpressionWrapper, DecimalField, Q, Max
+from django.db.models import F, ExpressionWrapper, DecimalField, Q, Max, Min
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
 from django.utils.timezone import now
@@ -1159,11 +1159,11 @@ def getUnavailablePickupTimes(request, offer_id):
     finalDateTime = all_rentals.aggregate(Max("dateTimeReturned"))[
         "dateTimeReturned__max"
     ]
-    finalDateTime = finalDateTime.replace(tzinfo = None)
     unavailable_pickup_times = []
     interval_start = None
     interval_end = None
     try:
+        finalDateTime = finalDateTime.replace(tzinfo = None)
         if all_rentals.count() > 0:
             while currentDateTime < finalDateTime:
                 closedDay = False
@@ -1210,6 +1210,10 @@ def getUnavailablePickupTimes(request, offer_id):
                 if unavailable_vehicles == vehicles.count():
                     if interval_start == None:
                         interval_start = currentDateTime
+                        #the first possible available time will be when the first vehicle is returned
+                        currentDateTime = all_rentals.filter(dateTimeReturned__gt=currentDateTime).aggregate(Min("dateTimeReturned"))["dateTimeReturned__min"]
+                        currentDateTime = currentDateTime.replace(tzinfo = None) + timedelta(hours=1)
+                        continue
                 else:
                     if interval_start != None:
                         interval_end = currentDateTime - timedelta(hours=1)
@@ -1217,6 +1221,14 @@ def getUnavailablePickupTimes(request, offer_id):
                             {"start": interval_start, "end": interval_end}
                         )
                         interval_start = None
+                #if no vehicles are rented we will check out the first next rental
+                if unavailable_vehicles == 0:
+                    currentDateTime = all_rentals.filter(dateTimeRented__gt=currentDateTime).aggregate(Min("dateTimeRented"))["dateTimeRented__min"]
+                    #if there are no future rents we are done
+                    if not currentDateTime:
+                        break
+                    currentDateTime = currentDateTime.replace(tzinfo = None)
+                    continue
                 currentDateTime = currentDateTime + timedelta(hours=1)
             if interval_start != None:
                 unavailable_pickup_times.append({"start": interval_start, "end": finalDateTime})
