@@ -33,7 +33,7 @@ class RegisterCompanySerializer(serializers.Serializer):
     )
     description = serializers.CharField()
     password = serializers.CharField()
-    image = serializers.ImageField(default="IMAGE")
+    image = serializers.FileField()
 
 class LoginUserSerializer(serializers.Serializer):
     email = serializers.EmailField()

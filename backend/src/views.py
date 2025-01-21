@@ -321,7 +321,6 @@ def registerUser(request):
 def registerCompany(request):
     if request.method == "POST":
         data = request.data
-        print(data)
         email = data.get("email")
         companyName = data.get("companyName")
         tin = data.get("tin")
@@ -335,7 +334,15 @@ def registerCompany(request):
         workingHours = data.get("workingHours")
         description = data.get("description")
         password = data.get("password")
-        companyLogo = request.FILES.get("companyLogo")
+        image = request.FILES.get("image")
+
+        # TODO
+        try:
+            workingHours = json.loads(f"[{workingHours}]")
+        except json.JSONDecodeError:
+            return JsonResponse(
+            {"success": 0, "message": "Invalid JSON for working hours."}, status=400
+            )
 
         if (
             not email
@@ -348,10 +355,10 @@ def registerCompany(request):
             or not streetNo
             or not latitude
             or not longitude
-            # or not workingHours
+            or not workingHours
             or not description
             or not password
-            # or not companyLogo
+            or not image
         ):
             return JsonResponse(
                 {"success": 0, "message": "All fields are required."}, status=400
@@ -367,66 +374,68 @@ def registerCompany(request):
         if len(tin) > 16:
             return JsonResponse({"success": 0, "message": "TIN too long."}, status=400)
 
-        # if companyLogo:
-        #     if companyLogo.size > 10 * 1024 * 1024:  # 10MB limit
-        #         return JsonResponse(
-        #             {"success": 0, "message": "Company logo file size too large."},
-        #             status=400,
-        #         )
-        #     if not companyLogo.content_type.startswith("image/"):
-        #         return JsonResponse(
-        #             {"success": 0, "message": "Invalid file type for company logo."},
-        #             status=400,
-        #         )
-        # try:
-        #     image = Image.open(companyLogo)
-        #     image.verify()
-        # except (ImportError, Exception) as e:
-        #     return JsonResponse(
-        #         {"success": 0, "message": "Invalid image file."}, status=400
-        #     )
+        if image:
+            if image.size > 10 * 1024 * 1024:  # 10MB limit
+                return JsonResponse(
+                    {"success": 0, "message": "Company logo file size too large."},
+                    status=400,
+                )
+            if not image.content_type.startswith("image/"):
+                return JsonResponse(
+                    {"success": 0, "message": "Invalid file type for company logo."},
+                    status=400,
+                )
+        try:
+            image = Image.open(image)
+            image.verify()
+        except (ImportError, Exception) as e:
+            return JsonResponse(
+                {"success": 0, "message": "Invalid image file."}, status=400
+            )
 
-        # try:
-        #     workingHours = json.loads(workingHours)
-        #     if not isinstance(workingHours, list):
-        #         return JsonResponse(
-        #             {"success": 0, "message": "Working hours must be a list."},
-        #             status=400,
-        #         )
-        #     valid_days = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
-        #     for day_info in workingHours:
-        #         if not isinstance(day_info, dict):
-        #             return JsonResponse(
-        #                 {
-        #                     "success": 0,
-        #                     "message": "Each working hour entry must be a dictionary.",
-        #                 },
-        #                 status=400,
-        #             )
-        #         day = day_info.get("day")
-        #         startTime = day_info.get("startTime")
-        #         endTime = day_info.get("endTime")
-        #         if day not in valid_days:
-        #             return JsonResponse(
-        #                 {"success": 0, "message": f"Invalid day: {day}"}, status=400
-        #             )
-        #         if not startTime or not endTime:
-        #             return JsonResponse(
-        #                 {
-        #                     "success": 0,
-        #                     "message": "Start time and end time are required.",
-        #                 },
-        #                 status=400,
-        #             )
-        #         if startTime >= endTime:
-        #             return JsonResponse(
-        #                 {"success": 0, "message": "End time must be after start time."},
-        #                 status=400,
-        #             )
-        # except json.JSONDecodeError:
-        #     return JsonResponse(
-        #         {"success": 0, "message": "Invalid JSON for working hours."}, status=400
-        #     )
+        try:
+            print(workingHours)
+            if not isinstance(workingHours, list):
+                return JsonResponse(
+                    {"success": 0, "message": "Working hours must be a list."},
+                    status=400,
+                )
+            valid_days = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
+            for day_info in workingHours:
+                if not isinstance(day_info, dict):
+                    return JsonResponse(
+                        {
+                            "success": 0,
+                            "message": "Each working hour entry must be a dictionary.",
+                        },
+                        status=400,
+                    )
+                day = day_info.get("day")
+                startTime = day_info.get("startTime")
+                endTime = day_info.get("endTime")
+                if day not in valid_days:
+                    return JsonResponse(
+                        {"success": 0, "message": f"Invalid day: {day}"}, status=400
+                    )
+                if not startTime or not endTime:
+                    return JsonResponse(
+                        {
+                            "success": 0,
+                            "message": "Start time and end time are required.",
+                        },
+                        status=400,
+                    )
+                startTime = datetime.datetime.strptime(startTime, "%H:%M:%S")
+                endTime = datetime.datetime.strptime(endTime, "%H:%M:%S")
+                if startTime >= endTime:
+                    return JsonResponse(
+                        {"success": 0, "message": "End time must be after start time."},
+                        status=400,
+                    )
+        except json.JSONDecodeError:
+            return JsonResponse(
+                {"success": 0, "message": "Invalid JSON for working hours."}, status=400
+            )
 
         user = User.objects.create_user(
             username="company_" + email,
@@ -437,13 +446,20 @@ def registerCompany(request):
         )
         user.is_active = False  # User must confirm email
         user.save()
-        dealership = Dealership.objects.create(
-            user=user,
-            phoneNo=phoneNo,
-            TIN=tin,
-            description=description,
-            # companyLogo=companyLogo,
-        )
+        try:
+            dealership = Dealership.objects.create(
+                user=user,
+                phoneNo=phoneNo,
+                TIN=tin,
+                description=description,
+                image=request.FILES["image"],
+            )
+        except Exception as e:
+            print(e)
+            user.delete()
+            return JsonResponse(
+                {"success": 0, "message": "Dealership with these details already exists."},
+                status=400,)
 
         try:
             location = Location.objects.create(
@@ -458,7 +474,6 @@ def registerCompany(request):
             )
         except IntegrityError:
             user.delete()
-            dealership.delete()
             return JsonResponse(
                 {
                     "success": 0,
@@ -467,18 +482,25 @@ def registerCompany(request):
                 status=400,
             )
 
-        # for day_info in workingHours:
-        #     day = day_info.get("day")
-        #     startTime = day_info.get("startTime")
-        #     endTime = day_info.get("endTime")
-        #     workingHoursObject = WorkingHours.objects.create(
-        #         location=location,
-        #         dayOfTheWeek=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].index(
-        #             day
-        #         ),
-        #         startTime=startTime,
-        #         endTime=endTime,
-        #     )
+        try:
+            for day_info in workingHours:
+                day = day_info.get("day")
+                startTime = day_info.get("startTime")
+                endTime = day_info.get("endTime")
+                start_time_obj = datetime.datetime.strptime(startTime, "%H:%M:%S").time()
+                end_time_obj = datetime.datetime.strptime(endTime, "%H:%M:%S").time()
+                workingHoursObject = WorkingHours.objects.create(
+                    location=location,
+                    dayOfTheWeek=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].index(day),
+                    startTime=start_time_obj,
+                    endTime=end_time_obj,
+                )
+        except:
+            user.delete()
+            return JsonResponse(
+                {"success": 0, "message": "Working hours could not be created"},
+                status=500,
+            )
 
         if activateEmail(request, user, email):
             return JsonResponse(
@@ -487,7 +509,7 @@ def registerCompany(request):
         else:
             user.delete()
             dealership.delete()
-            # workingHoursObject.delete()
+            workingHoursObject.delete()
             return JsonResponse(
                 {"success": 0, "message": "Email confirmation request failed"},
                 status=500,
