@@ -10,7 +10,7 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ILogIn } from '@/typings/logIn/logIn.type';
 import useSWRMutation from 'swr/mutation';
 import { swrKeys } from '@/fetchers/swrKeys';
@@ -23,6 +23,7 @@ import SupportButton from '@/components/shared/auth/SupportButton';
 import { useRef } from 'react';
 import { CustomPost } from '@/fetchers/post';
 export default function HomePage() {
+  const [isStylesLoaded, setIsStylesLoaded] = useState(false);
   const {
     register,
     handleSubmit,
@@ -62,6 +63,19 @@ export default function HomePage() {
     md: '32%', // Fit three buttons side by side on medium screens
     lg: '30%', // Slightly smaller on large screens for spacing
   });
+
+  useEffect(() => {
+    // Simulating style loading completion with a short delay
+    const timeout = setTimeout(() => {
+      setIsStylesLoaded(true);
+    }, 100); // Adjust timing as needed
+
+    return () => clearTimeout(timeout);
+  }, []);
+
+  if (!isStylesLoaded) {
+    return null; // Do not render anything until styles are loaded
+  }
 
   return (
     <Box

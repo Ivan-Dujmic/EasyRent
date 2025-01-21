@@ -14,11 +14,12 @@ import {
   chakra,
   useBreakpointValue,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import useSWRMutation from 'swr/mutation';
 
 export default function RegisterPage() {
+  const [isStylesLoaded, setIsStylesLoaded] = useState(false);
   const [registered, setRegistered] = useState(false);
   const {
     register,
@@ -29,17 +30,21 @@ export default function RegisterPage() {
     getValues,
   } = useForm<IRegisterUser>();
 
-  const { trigger } = useSWRMutation(swrKeys.registerUser, CustomPost<IRegisterUser>, {
-    onSuccess: () => {
-      setRegistered(true);
-    },
-    onError: () => {
-      setError('email', {
-        type: 'manual',
-        message: 'This account already exists',
-      });
-    },
-  });
+  const { trigger } = useSWRMutation(
+    swrKeys.registerUser,
+    CustomPost<IRegisterUser>,
+    {
+      onSuccess: () => {
+        setRegistered(true);
+      },
+      onError: () => {
+        setError('email', {
+          type: 'manual',
+          message: 'This account already exists',
+        });
+      },
+    }
+  );
 
   const onRegister = async (data: IRegisterUser) => {
     if (data.password.length < 8) {
@@ -70,6 +75,19 @@ export default function RegisterPage() {
     base: '100%', // Full width on small screens
     md: '48%', // Two columns on medium and large screens
   });
+
+  useEffect(() => {
+    // Simulating style loading completion with a short delay
+    const timeout = setTimeout(() => {
+      setIsStylesLoaded(true);
+    }, 100); // Adjust timing as needed
+
+    return () => clearTimeout(timeout);
+  }, []);
+
+  if (!isStylesLoaded) {
+    return null; // Do not render anything until styles are loaded
+  }
 
   return registered ? (
     <SuccessWindow />

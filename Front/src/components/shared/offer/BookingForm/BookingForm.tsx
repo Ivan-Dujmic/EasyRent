@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import {
   Box,
   Button,
@@ -17,6 +17,26 @@ import { ExtraLocationInfo } from '@/typings/locations/locations';
 import useSWRMutation from 'swr/mutation';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { CustomGet } from '@/fetchers/get';
+import BookingCalendar from '@/components/features/DropDownMenus/BookingCalendar/BookingCalendar';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+
+const disabledDates = [new Date('2025-01-10'), new Date('2025-01-15')];
+
+const rentalIntervals = [
+  {
+    dateTimeRented: '2025-01-21T15:27:13.009Z',
+    dateTimeReturned: '2025-01-23T15:27:13.009Z',
+  },
+];
+
+const workingHours = [
+  { dayOfTheWeek: 0, startTime: '09:00', endTime: '17:00' },
+  { dayOfTheWeek: 1, startTime: '09:00', endTime: '17:00' },
+];
+
+const minDate = new Date();
+const maxDate = new Date('2025-12-31');
 
 interface BookingFormProps {
   balance: number;
@@ -49,34 +69,50 @@ const BookingForm: React.FC<BookingFormProps> = ({
   const [dropoffTime, setDropoffTime] = useState('');
   const [isPickupDateEnabled, setIsPickupDateEnabled] = useState(false);
 
+  //nove stavri za pick up date chnage:
+  const handleDateChange = (date: string | null) => {
+    if (date) {
+      setPickupDate(date);
+    } else {
+      setPickupDate('');
+    }
+  };
+
   const { trigger } = useSWRMutation<UnavailablePickupResponse>(
-    () =>
-      pickupLocationId
-        ? swrKeys.unavailable_pick_up(offer_id, pickupLocationId)
-        : null,
-    CustomGet
-  );
-
-  const handlePickupLocationChange = async (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const locationId = e.target.value;
-    setPickupLocationId(locationId);
-    setPickupDate('');
-    setPickupTime('');
-    setIsPickupDateEnabled(false);
-
-    if (locationId) {
-      try {
-        const data: UnavailablePickupResponse = await trigger();
+    swrKeys.unavailable_pick_up(offer_id, pickupLocationId),
+    CustomGet,
+    {
+      onSuccess: (data) => {
         console.log('Unavailable pickup times:', data.intervals);
         console.log('Working hours:', data.workingHours);
         setIsPickupDateEnabled(true);
-      } catch (error) {
+      },
+      onError: (error) => {
         console.error('Error fetching pickup data:', error);
-      }
+      },
     }
+  );
+
+  const handlePickupLocationChange = (locationId: string) => {
+    console.log('e je: ', locationId);
+
+    setPickupLocationId(locationId); // Set state first
+
+    // Reset fields to ensure a clean state
+    setPickupDate('');
+    setPickupTime('');
+    setDropoffLocationId('');
+    setDropoffDate('');
+    setDropoffTime('');
+    setIsPickupDateEnabled(false);
   };
+
+  // React to state update
+  React.useEffect(() => {
+    if (pickupLocationId) {
+      trigger();
+    }
+  }, [pickupLocationId, trigger]);
 
   const isDropoffEnabled = pickupLocationId && pickupDate && pickupTime;
 
@@ -119,13 +155,12 @@ const BookingForm: React.FC<BookingFormProps> = ({
           <Select
             placeholder="Select location"
             value={pickupLocationId}
-            onChange={handlePickupLocationChange}
+            onChange={(e) => handlePickupLocationChange(e.target.value)}
             borderColor="brandblue"
           >
-            <option value="">Select location</option>
             {locations.map((location) => (
               <option key={location.location_id} value={location.location_id}>
-                {`${location.streetName} ${location.streetNo}, ${location.cityName}`}
+                {`${location.streetName} ${location.streetNo}, ${location.cityName} ${location.location_id}`}
               </option>
             ))}
           </Select>
@@ -142,6 +177,17 @@ const BookingForm: React.FC<BookingFormProps> = ({
               borderColor="brandblue"
               isDisabled={!isPickupDateEnabled}
             />
+            {/*             <BookingCalendar
+              description="Pick-up Date and Time"
+              placeHolder="Select date"
+              intervals={rentalIntervals}
+              workingHours={workingHours}
+              minDate={minDate}
+              maxDate={maxDate}
+              onDateTimeChange={(dateTime) =>
+                console.log('Selected:', dateTime)
+              }
+            /> */}
           </Box>
           <Box flex="1">
             <Text fontSize="sm" fontWeight="bold" mb={1}>
