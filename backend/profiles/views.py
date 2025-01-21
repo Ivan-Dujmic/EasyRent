@@ -41,38 +41,16 @@ from drf_spectacular.utils import (
             ],
         ),
     },
-    parameters=[
-        OpenApiParameter(
-            name="page",
-            type=int,
-            location=OpenApiParameter.QUERY,
-            description="Page number, starts with 1",
-            required=False,
-            default=1,
-        ),
-        OpenApiParameter(
-            name="limit",
-            type=int,
-            location=OpenApiParameter.QUERY,
-            description="Max number of offers per page",
-            required=False,
-            default=10,
-        ),
-    ],
 )
 @api_view(["GET"])
 def userRentals(request):
     if request.method == "GET":
         user = request.user
         if user.is_authenticated:
-            # Get pagination parameters
-            page = int(request.GET.get("page", 1))  # Default to page 1
-            limit = int(request.GET.get("limit", 10))  # Default to 10 items per page
-
             # Get the rentoid for the user
             rentoid = Rentoid.objects.select_related('user').get(user=user)
 
-            # Fetch rentals with related data in one query
+            # Fetch the latest 10 rentals sorted by dateTimeReturned
             rentals = (
                 Rent.objects.filter(rentoid=rentoid.rentoid_id)
                 .select_related(
@@ -82,20 +60,11 @@ def userRentals(request):
                 .prefetch_related(
                     'vehicle__location__dealership__offer_set',  # Offers for the dealer
                 )
-                .order_by('dateTimeRented')  # Sort rentals by dateTimeRented
+                .order_by('-dateTimeReturned')[:10]  # Limit to latest 10 by dateTimeReturned
             )
 
-            # Paginate the rentals
-            paginator = Paginator(rentals, limit)
-            try:
-                paginated_rentals = paginator.page(page)
-            except PageNotAnInteger:
-                paginated_rentals = paginator.page(1)
-            except EmptyPage:
-                return Response({"success": 0, "message": "No more data"}, status=404)
-
             rentalData = []
-            for rental in paginated_rentals:
+            for rental in rentals:
                 vehicle = rental.vehicle
                 dealer = vehicle.location.dealership
 
@@ -130,17 +99,7 @@ def userRentals(request):
 
                     rentalData.append(item)
 
-            return Response(
-                {
-                    "success": 1,
-                    "page": page,
-                    "limit": limit,
-                    "total": paginator.count,
-                    "total_pages": paginator.num_pages,
-                    "data": rentalData,
-                },
-                status=200,
-            )
+            return Response(rentalData, status=200)
         else:
             return Response(
                 {"success": 0, "message": "User not authenticated"}, status=401
