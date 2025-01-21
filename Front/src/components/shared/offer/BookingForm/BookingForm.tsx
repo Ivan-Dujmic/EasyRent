@@ -14,6 +14,9 @@ import {
 } from '@chakra-ui/react';
 import { FaCreditCard, FaWallet } from 'react-icons/fa';
 import { ExtraLocationInfo } from '@/typings/locations/locations';
+import useSWRMutation from 'swr/mutation';
+import { swrKeys } from '@/fetchers/swrKeys';
+import { CustomGet } from '@/fetchers/get';
 
 interface BookingFormProps {
   balance: number;
@@ -21,27 +24,68 @@ interface BookingFormProps {
   offer_id: string;
 }
 
+interface UnavailablePickupResponse {
+  intervals: {
+    dateTimeRented: string;
+    dateTimeReturned: string;
+  }[];
+  workingHours: {
+    dayOfTheWeek: number;
+    startTime: string;
+    endTime: string;
+  }[];
+}
+
 const BookingForm: React.FC<BookingFormProps> = ({
   balance,
   locations,
   offer_id,
 }) => {
-  const [pickupLocation, setPickupLocation] = useState('');
+  const [pickupLocationId, setPickupLocationId] = useState('');
   const [pickupDate, setPickupDate] = useState('');
   const [pickupTime, setPickupTime] = useState('');
-  const [dropoffLocation, setDropoffLocation] = useState('');
+  const [dropoffLocationId, setDropoffLocationId] = useState('');
   const [dropoffDate, setDropoffDate] = useState('');
   const [dropoffTime, setDropoffTime] = useState('');
+  const [isPickupDateEnabled, setIsPickupDateEnabled] = useState(false);
 
-  const isPickupDateEnabled = !!pickupLocation;
-  const isDropoffEnabled = pickupLocation && pickupDate && pickupTime;
+  const { trigger } = useSWRMutation<UnavailablePickupResponse>(
+    () =>
+      pickupLocationId
+        ? swrKeys.unavailable_pick_up(offer_id, pickupLocationId)
+        : null,
+    CustomGet
+  );
+
+  const handlePickupLocationChange = async (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const locationId = e.target.value;
+    setPickupLocationId(locationId);
+    setPickupDate('');
+    setPickupTime('');
+    setIsPickupDateEnabled(false);
+
+    if (locationId) {
+      try {
+        const data: UnavailablePickupResponse = await trigger();
+        console.log('Unavailable pickup times:', data.intervals);
+        console.log('Working hours:', data.workingHours);
+        setIsPickupDateEnabled(true);
+      } catch (error) {
+        console.error('Error fetching pickup data:', error);
+      }
+    }
+  };
+
+  const isDropoffEnabled = pickupLocationId && pickupDate && pickupTime;
 
   const handleRent = (paymentMethod: string) => {
     console.log({
-      pickupLocation,
+      pickupLocationId,
       pickupDate,
       pickupTime,
-      dropoffLocation,
+      dropoffLocationId,
       dropoffDate,
       dropoffTime,
       paymentMethod,
@@ -74,10 +118,11 @@ const BookingForm: React.FC<BookingFormProps> = ({
           </Text>
           <Select
             placeholder="Select location"
-            value={pickupLocation}
-            onChange={(e) => setPickupLocation(e.target.value)}
+            value={pickupLocationId}
+            onChange={handlePickupLocationChange}
             borderColor="brandblue"
           >
+            <option value="">Select location</option>
             {locations.map((location) => (
               <option key={location.location_id} value={location.location_id}>
                 {`${location.streetName} ${location.streetNo}, ${location.cityName}`}
@@ -117,8 +162,8 @@ const BookingForm: React.FC<BookingFormProps> = ({
           </Text>
           <Select
             placeholder="Select location"
-            value={dropoffLocation}
-            onChange={(e) => setDropoffLocation(e.target.value)}
+            value={dropoffLocationId}
+            onChange={(e) => setDropoffLocationId(e.target.value)}
             borderColor="brandblue"
             isDisabled={!isDropoffEnabled}
           >
