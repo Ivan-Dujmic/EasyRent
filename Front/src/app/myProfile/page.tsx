@@ -5,7 +5,7 @@ import VehicleList from '@/components/shared/cars/VechileList/VechileList';
 import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { CustomGet } from '@/fetchers/get';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Flex,
   useDisclosure,
@@ -100,8 +100,8 @@ export default function UserProfilePage() {
     }
   );
 
-  const previouslyRented = entries
-    ?.filter((vehicle) => vehicle.dateTimeReturned !== undefined)
+  const previouslyRented = (Array.isArray(entries) ? entries : [])
+    .filter((vehicle) => vehicle.dateTimeReturned !== undefined)
     .map((vehicle) => {
       console.log(`rented: ${!vehicle.canReview}`, vehicle);
       let item = toOffer(vehicle) as IReviewable;
@@ -109,8 +109,8 @@ export default function UserProfilePage() {
       return item;
     });
 
-  const currentRentals = entries
-    ?.filter((vehicle) => vehicle.dateTimeReturned === undefined)
+  const currentRentals = (Array.isArray(entries) ? entries : [])
+    .filter((vehicle) => vehicle.dateTimeReturned === undefined)
     .map((vehicle) => {
       console.log('current', vehicle);
       return toOffer(vehicle);
@@ -134,8 +134,8 @@ export default function UserProfilePage() {
   });
 
   const headingSize = useBreakpointValue({
-    base: 'xl',
-    lg: 'xl',
+    base: '2xl',
+    lg: '2xl',
   });
 
   const rentalswidth = useBreakpointValue({
@@ -148,7 +148,6 @@ export default function UserProfilePage() {
     lg: 'space-between',
   });
 
-  console.log(user);
   return (
     <Flex direction="column" grow={1} bg="brandlightgray" minH="100vh">
       {/* Add Funds Modal */}
@@ -242,7 +241,7 @@ export default function UserProfilePage() {
             gap={gapSize}
           >
             <Heading size={headingSize} color="brandblue">
-              {user.firstName ? `Wellcome ${user.firstName}` : 'Your Profile'}
+              {`${user.firstName ? `${user.firstName}'s` : 'Your'} Profile`}
             </Heading>
             <Divider />
             <VehicleList

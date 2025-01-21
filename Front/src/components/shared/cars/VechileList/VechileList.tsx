@@ -16,7 +16,7 @@ interface VehicleListProps {
 }
 
 export default function VehicleList({
-  vehicles = mockVehicles,
+  vehicles = [],
   description = '',
   numCards = 4,
   cardGap = 24,
