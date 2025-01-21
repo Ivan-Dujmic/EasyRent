@@ -303,7 +303,7 @@ def getOffersForCompany(request, dealership_id):
             location=OpenApiParameter.QUERY,
             description="Max number of companies that will be returned",
             required=False,
-            default=8,
+            default=6,
         )
     ],
 )
@@ -313,8 +313,8 @@ def getShowcasedCompanies(request):
         response_data = {}
         limit = request.GET.get("limit")
         if limit == None or int(limit) <= 0:
-            limit = 8
-        companies = Dealership.objects.all()[: int(limit)]
+            limit = 6
+        companies = Dealership.objects.order_by('?')[: int(limit)]
         company_array = []
         for company in companies:
             company_array.append(
@@ -734,7 +734,7 @@ def getFilteredOffers(request):
             startTime__lte=pick_up_time, endTime__gte=pick_up_time
         )
         pick_up_locations = pick_up_locations.filter(
-            location_id__in=working_hours.values_list("location_id", flat=True)
+            location_id__in=working_hours.distinct("location_id").values_list("location_id", flat=True)
         )
         if pick_up_locations.count() == 0:
             return Response(
@@ -764,7 +764,7 @@ def getFilteredOffers(request):
                 startTime__lte=drop_off_time, endTime__gte=drop_off_time
             )
             drop_off_locations = drop_off_locations.filter(
-                location_id__in=working_hours.values_list("location_id", flat=True)
+                location_id__in=working_hours.distinct("location_id").values_list("location_id", flat=True)
             )
             if drop_off_locations.count() == 0:
                 return Response(
