@@ -20,6 +20,7 @@ import { CustomGet } from '@/fetchers/get';
 import BookingCalendar from '@/components/features/DropDownMenus/BookingCalendar/BookingCalendar';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import CustomCalendar from '@/components/features/DropDownMenus/CustomCalendar/CustomCalendar';
 
 const disabledDates = [new Date('2025-01-10'), new Date('2025-01-15')];
 
@@ -68,14 +69,37 @@ const BookingForm: React.FC<BookingFormProps> = ({
   const [dropoffDate, setDropoffDate] = useState('');
   const [dropoffTime, setDropoffTime] = useState('');
   const [isPickupDateEnabled, setIsPickupDateEnabled] = useState(false);
+  const [pickUpDateTimeAvaiable, setPickUpDateTimeAvaiable] = useState<
+    UnavailablePickupResponse | undefined
+  >(undefined);
 
-  //nove stavri za pick up date chnage:
-  const handleDateChange = (date: string | null) => {
-    if (date) {
-      setPickupDate(date);
-    } else {
-      setPickupDate('');
-    }
+  // testrianje za dateTime
+  const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);
+  const intervals = [
+    {
+      dateTimeRented: '2025-01-21T16:52:11.243Z',
+      dateTimeReturned: '2025-01-22T10:15:00.000Z',
+    },
+    {
+      dateTimeRented: '2025-01-23T12:00:00.000Z',
+      dateTimeReturned: '2025-01-23T13:00:00.000Z',
+    },
+  ];
+
+  const workingHours = [
+    { dayOfTheWeek: 0, startTime: '09:00:00', endTime: '17:00:00' },
+    { dayOfTheWeek: 1, startTime: '09:00:00', endTime: '17:00:00' },
+    { dayOfTheWeek: 2, startTime: '09:00:00', endTime: '17:00:00' },
+    { dayOfTheWeek: 3, startTime: '09:00:00', endTime: '17:00:00' },
+    { dayOfTheWeek: 4, startTime: '09:00:00', endTime: '17:00:00' },
+    { dayOfTheWeek: 5, startTime: '10:00:00', endTime: '14:00:00' },
+    { dayOfTheWeek: 6, startTime: '12:00:00', endTime: '14:00:00' },
+    // Primjer da je 6 (ned) zatvoren i nije naveden
+  ];
+
+  const handleDateTimeSelect = (dateTime: Date | null) => {
+    setSelectedDateTime(dateTime);
+    console.log('Odabrano vrijeme:', dateTime);
   };
 
   const { trigger } = useSWRMutation<UnavailablePickupResponse>(
@@ -85,6 +109,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
       onSuccess: (data) => {
         console.log('Unavailable pickup times:', data.intervals);
         console.log('Working hours:', data.workingHours);
+        setPickUpDateTimeAvaiable(data);
         setIsPickupDateEnabled(true);
       },
       onError: (error) => {
@@ -177,17 +202,11 @@ const BookingForm: React.FC<BookingFormProps> = ({
               borderColor="brandblue"
               isDisabled={!isPickupDateEnabled}
             />
-            {/*             <BookingCalendar
-              description="Pick-up Date and Time"
-              placeHolder="Select date"
-              intervals={rentalIntervals}
+            <CustomCalendar
+              intervals={intervals}
               workingHours={workingHours}
-              minDate={minDate}
-              maxDate={maxDate}
-              onDateTimeChange={(dateTime) =>
-                console.log('Selected:', dateTime)
-              }
-            /> */}
+              onDateTimeSelect={handleDateTimeSelect}
+            />
           </Box>
           <Box flex="1">
             <Text fontSize="sm" fontWeight="bold" mb={1}>
