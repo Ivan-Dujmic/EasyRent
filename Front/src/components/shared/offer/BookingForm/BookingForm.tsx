@@ -187,6 +187,8 @@ const BookingForm: React.FC<BookingFormProps> = ({
             value={pickupLocationId}
             onChange={(e) => handlePickupLocationChange(e.target.value)}
             borderColor="brandblue"
+            borderWidth="2px"
+            borderRadius="md"
           >
             {locations.map((location) => (
               <option key={location.location_id} value={location.location_id}>
@@ -195,37 +197,17 @@ const BookingForm: React.FC<BookingFormProps> = ({
             ))}
           </Select>
         </Box>
-        <Flex gap={4} direction={{ base: 'column', md: 'row' }}>
-          <Box flex="1">
-            <Text fontSize="sm" fontWeight="bold" mb={1}>
-              Pick-up date
-            </Text>
-            <Input
-              type="date"
-              value={pickupDate}
-              onChange={(e) => setPickupDate(e.target.value)}
-              borderColor="brandblue"
-              isDisabled={!isPickupDateEnabled}
-            />
-            <CustomCalendar
-              intervals={pickUpDateTimeAvaiable?.intervals}
-              workingHours={pickUpDateTimeAvaiable?.workingHours}
-              onDateTimeSelect={handleDateTimeSelect}
-            />
-          </Box>
-          <Box flex="1">
-            <Text fontSize="sm" fontWeight="bold" mb={1}>
-              Pick-up time
-            </Text>
-            <Input
-              type="time"
-              value={pickupTime}
-              onChange={(e) => setPickupTime(e.target.value)}
-              borderColor="brandblue"
-              isDisabled={!isPickupDateEnabled}
-            />
-          </Box>
-        </Flex>
+        <CustomCalendar
+          pickupLabel="Pick-up date"
+          pickupTimeLabel="Pick-up time"
+          placeholderDate="dd.mm.gggg."
+          placeholderTime="--:--"
+          intervals={pickUpDateTimeAvaiable?.intervals}
+          workingHours={pickUpDateTimeAvaiable?.workingHours}
+          onDateTimeChange={handleDateTimeSelect}
+          initialDateTime={null}
+          minDate={new Date()} // Ne dopusti prošlost
+        />
         <Box>
           <Text fontSize="sm" fontWeight="bold" mb={1}>
             Drop-off location
