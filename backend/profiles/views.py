@@ -106,7 +106,7 @@ def calculateReviewsForOffer(offer):
     rating = 0
     for review in reviews:
         rating += review.rating
-    offer.rating = rating / reviews.count()
+    offer.rating = round(rating / reviews.count(), 2)
     offer.noOfReviews = reviews.count()
     offer.save()
 
@@ -117,7 +117,7 @@ def calculateReviewsForVehicle(vehicle):
     rating = 0
     for review in reviews:
         rating += review.rating
-    vehicle.rating = rating / reviews.count()
+    vehicle.rating = round(rating / reviews.count(), 2)
     vehicle.noOfReviews = reviews.count()
     vehicle.save()
 
@@ -144,8 +144,8 @@ def calculateAllReviews(request):
         user = request.user
         if user.is_authenticated:
             if user.is_superuser:
-                calculateReviewsForAllOffers()
                 calculateReviewsForAllVehicles()
+                calculateReviewsForAllOffers()
                 return Response({"message": "Reviews calculated"}, status=200)
             else:
                 return Response({"error": "User is not a superuser"}, status=403)
