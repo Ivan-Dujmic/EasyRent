@@ -62,7 +62,7 @@ def getOfferDetails(request, offer_id):
             "price": offer.price,
             "rating": offer.rating,
             "noOfReviews": offer.noOfReviews,
-            "image": (
+            "companyLogo": (
                 request.build_absolute_uri(dealership.image.url)
                 if dealership.image
                 else None
