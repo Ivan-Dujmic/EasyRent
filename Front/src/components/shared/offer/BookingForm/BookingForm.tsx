@@ -13,14 +13,19 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react';
 import { FaCreditCard, FaWallet } from 'react-icons/fa';
+import { ExtraLocationInfo } from '@/typings/locations/locations';
 
 interface BookingFormProps {
-  balance: number; // The balance to be displayed on the button
+  balance: number;
+  locations: ExtraLocationInfo[];
+  offer_id: string;
 }
 
-const options = ['Zagreb, Croatia', 'Split, Croatia', 'Rijeka, Croatia'];
-
-const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
+const BookingForm: React.FC<BookingFormProps> = ({
+  balance,
+  locations,
+  offer_id,
+}) => {
   const [pickupLocation, setPickupLocation] = useState('');
   const [pickupDate, setPickupDate] = useState('');
   const [pickupTime, setPickupTime] = useState('');
@@ -28,6 +33,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
   const [dropoffDate, setDropoffDate] = useState('');
   const [dropoffTime, setDropoffTime] = useState('');
 
+  const isPickupDateEnabled = !!pickupLocation;
   const isDropoffEnabled = pickupLocation && pickupDate && pickupTime;
 
   const handleRent = (paymentMethod: string) => {
@@ -43,9 +49,9 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
   };
 
   const formWidth = useBreakpointValue({
-    base: '100%', // Full width on small screens
-    md: '80%', // Slightly narrower on medium screens
-    lg: '60%', // Smaller width on large screens
+    base: '100%',
+    md: '80%',
+    lg: '60%',
   });
 
   return (
@@ -61,9 +67,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
       <Heading size="md" mb={6} color="brandblue" textAlign="center">
         Book this car
       </Heading>
-
       <Stack spacing={4}>
-        {/* Pick-up location */}
         <Box>
           <Text fontSize="sm" fontWeight="bold" mb={1}>
             Pick-up location
@@ -74,15 +78,13 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
             onChange={(e) => setPickupLocation(e.target.value)}
             borderColor="brandblue"
           >
-            {options.map((option) => (
-              <option key={option} value={option}>
-                {option}
+            {locations.map((location) => (
+              <option key={location.location_id} value={location.location_id}>
+                {`${location.streetName} ${location.streetNo}, ${location.cityName}`}
               </option>
             ))}
           </Select>
         </Box>
-
-        {/* Pick-up date and time */}
         <Flex gap={4} direction={{ base: 'column', md: 'row' }}>
           <Box flex="1">
             <Text fontSize="sm" fontWeight="bold" mb={1}>
@@ -93,6 +95,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
               value={pickupDate}
               onChange={(e) => setPickupDate(e.target.value)}
               borderColor="brandblue"
+              isDisabled={!isPickupDateEnabled}
             />
           </Box>
           <Box flex="1">
@@ -104,11 +107,10 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
               value={pickupTime}
               onChange={(e) => setPickupTime(e.target.value)}
               borderColor="brandblue"
+              isDisabled={!isPickupDateEnabled}
             />
           </Box>
         </Flex>
-
-        {/* Drop-off location */}
         <Box>
           <Text fontSize="sm" fontWeight="bold" mb={1}>
             Drop-off location
@@ -120,15 +122,13 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
             borderColor="brandblue"
             isDisabled={!isDropoffEnabled}
           >
-            {options.map((option) => (
-              <option key={option} value={option}>
-                {option}
+            {locations.map((location) => (
+              <option key={location.location_id} value={location.location_id}>
+                {`${location.streetName} ${location.streetNo}, ${location.cityName}`}
               </option>
             ))}
           </Select>
         </Box>
-
-        {/* Drop-off date and time */}
         <Flex gap={4} direction={{ base: 'column', md: 'row' }}>
           <Box flex="1">
             <Text fontSize="sm" fontWeight="bold" mb={1}>
@@ -156,8 +156,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
           </Box>
         </Flex>
       </Stack>
-
-      {/* Payment buttons */}
       <Flex
         justifyContent="center"
         alignItems="center"

@@ -13,7 +13,7 @@ export default function VehicleOfferCard({ vehicle }: { vehicle: IOffer }) {
       borderRadius="lg"
       overflow="hidden"
       boxShadow="md"
-      bg="brandwhite"
+      bg="#ffffff"
       p={4}
     >
       <Flex direction={{ base: 'column', md: 'row' }} gap={4}>
