@@ -205,7 +205,11 @@ export default function OfferPage({
         >
           {offer && <VehicleOfferCard vehicle={offer} />}
           {user.role === 'user' && (
-            <BookingForm balance={Number(offer ? offer.price : 0)} />
+            <BookingForm
+              balance={Number(offer ? offer.price : 0)}
+              locations={offerLocations.locations}
+              offer_id={offer_id}
+            />
           )}
           {user.role !== 'user' && <BookingLoginPrompt />}
         </Flex>
