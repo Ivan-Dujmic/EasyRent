@@ -22,9 +22,10 @@ const getClosestLocation = (
   lat: number,
   lng: number,
   locations: ExtraLocationInfo[]
-) => {
+): ExtraLocationInfo | null => {
   if (!locations || locations.length === 0) {
-    throw new Error('No locations provided');
+    console.warn('No locations provided');
+    return null;
   }
 
   let closestLocation = locations[0];
@@ -141,10 +142,12 @@ const CustomMap: React.FC<CustomMapProps> = ({
               longitude,
               enrichedLocations
             );
-            setCenter({
-              lat: parseFloat(closest.latitude),
-              lng: parseFloat(closest.longitude),
-            });
+            if (closest !== null) {
+              setCenter({
+                lat: parseFloat(closest.latitude),
+                lng: parseFloat(closest.longitude),
+              });
+            }
           } else {
             setCenter({ lat: latitude, lng: longitude });
           }

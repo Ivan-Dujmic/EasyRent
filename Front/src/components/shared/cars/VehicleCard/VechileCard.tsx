@@ -130,7 +130,7 @@ export default function VehicleCard({
               ml={Number(vehicle.noOfReviews) > 99 ? 0 : 'auto'}
             >
               <StarIcon boxSize="3" />
-              <Box>{vehicle.rating}</Box>
+              <Box>{vehicle.rating?.toFixed(2)}</Box>
               <Text as="span">({vehicle.noOfReviews} reviews)</Text>
             </Flex>
           </Flex>

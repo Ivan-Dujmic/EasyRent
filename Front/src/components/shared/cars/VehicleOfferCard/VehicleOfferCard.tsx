@@ -81,7 +81,7 @@ export default function VehicleOfferCard({ vehicle }: { vehicle: IOffer }) {
             <Flex align="center" gap={1}>
               <StarIcon boxSize="4" />
               <Text fontSize="sm">
-                {vehicle.rating} ({vehicle.noOfReviews} reviews)
+                {vehicle.rating?.toFixed(2)} ({vehicle.noOfReviews} reviews)
               </Text>
             </Flex>
           </Flex>
