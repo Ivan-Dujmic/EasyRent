@@ -12,13 +12,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginUser'
+              $ref: '#/components/schemas/LoginUserRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/LoginUser'
+              $ref: '#/components/schemas/LoginUserRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/LoginUser'
+              $ref: '#/components/schemas/LoginUserRequest'
         required: true
       security:
       - cookieAuth: []
@@ -52,13 +52,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterCompany'
+              $ref: '#/components/schemas/RegisterCompanyRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/RegisterCompany'
+              $ref: '#/components/schemas/RegisterCompanyRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/RegisterCompany'
+              $ref: '#/components/schemas/RegisterCompanyRequest'
         required: true
       security:
       - cookieAuth: []
@@ -80,13 +80,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterUser'
+              $ref: '#/components/schemas/RegisterUserRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/RegisterUser'
+              $ref: '#/components/schemas/RegisterUserRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/RegisterUser'
+              $ref: '#/components/schemas/RegisterUserRequest'
         required: true
       security:
       - cookieAuth: []
@@ -119,7 +119,7 @@ paths:
           description: No rentoid or dealership to match user
   /api/home/available-drop-off/{offer_id}/:
     get:
-      operationId: home_available_drop_off_retrieve
+      operationId: api_home_available_drop_off_retrieve
       parameters:
       - in: query
         name: dropOffLocationId
@@ -172,7 +172,7 @@ paths:
           description: Vehicle Not Found
   /api/home/best-value/:
     get:
-      operationId: home_best_value_retrieve
+      operationId: api_home_best_value_retrieve
       parameters:
       - in: query
         name: limit
@@ -203,7 +203,7 @@ paths:
           description: Offers Not Found
   /api/home/cities/:
     get:
-      operationId: home_cities_retrieve
+      operationId: api_home_cities_retrieve
       tags:
       - home
       security:
@@ -221,7 +221,7 @@ paths:
           description: Cities Not Found
   /api/home/company/{dealership_id}/:
     get:
-      operationId: home_company_retrieve
+      operationId: api_home_company_retrieve
       parameters:
       - in: path
         name: dealership_id
@@ -245,7 +245,7 @@ paths:
           description: Company Not Found
   /api/home/locations/:
     get:
-      operationId: home_locations_retrieve
+      operationId: api_home_locations_retrieve
       tags:
       - home
       security:
@@ -263,7 +263,7 @@ paths:
           description: Locations Not Found
   /api/home/models/:
     get:
-      operationId: home_models_retrieve
+      operationId: api_home_models_retrieve
       tags:
       - home
       security:
@@ -281,7 +281,7 @@ paths:
           description: Makes Not Found
   /api/home/most-popular/:
     get:
-      operationId: home_most_popular_retrieve
+      operationId: api_home_most_popular_retrieve
       parameters:
       - in: query
         name: limit
@@ -312,7 +312,7 @@ paths:
           description: Offers Not Found
   /api/home/offer-locations/{offer_id}/:
     get:
-      operationId: home_offer_locations_retrieve
+      operationId: api_home_offer_locations_retrieve
       parameters:
       - in: path
         name: offer_id
@@ -336,7 +336,7 @@ paths:
           description: Locations Not Found
   /api/home/offer/{offer_id}/:
     get:
-      operationId: home_offer_retrieve
+      operationId: api_home_offer_retrieve
       parameters:
       - in: path
         name: offer_id
@@ -360,7 +360,7 @@ paths:
           description: Offer Not Found
   /api/home/offers/{dealership_id}/:
     get:
-      operationId: home_offers_retrieve
+      operationId: api_home_offers_retrieve
       parameters:
       - in: path
         name: dealership_id
@@ -396,7 +396,7 @@ paths:
           description: Offers Not Found
   /api/home/reviews/{offer_id}/:
     get:
-      operationId: home_reviews_retrieve
+      operationId: api_home_reviews_retrieve
       parameters:
       - in: query
         name: limit
@@ -432,7 +432,7 @@ paths:
           description: Reviews Not Found
   /api/home/search/:
     get:
-      operationId: home_search_retrieve
+      operationId: api_home_search_retrieve
       parameters:
       - in: query
         name: automatic
@@ -451,14 +451,13 @@ paths:
         schema:
           type: string
           format: date
-          default: '2220-06-15'
-        description: 'Format: year-month-day, zero padded'
+          default: 02-02-2025
+        description: 'Format: day-month-year, zero padded'
         required: true
       - in: query
         name: drop_off_location
         schema:
           type: string
-          default: Corbetta-Italy
         description: 'Format: cityName-countryName'
       - in: query
         name: drop_off_time
@@ -475,29 +474,21 @@ paths:
           default: 10
         description: Max number of offers per page
       - in: query
-        name: make
+        name: makes_and_models
         schema:
           type: string
-          default: Volkswagen
-        description: Car make
+          default: '[{''make'': ''Kia'', ''model'': ''Ceed''}]'
+        description: Car make and model
       - in: query
         name: max_price
         schema:
           type: integer
-          default: 15
         description: Max price per day
       - in: query
         name: min_price
         schema:
           type: integer
-          default: 14
         description: Min price per day
-      - in: query
-        name: model
-        schema:
-          type: string
-          default: Tiguan
-        description: Car model
       - in: query
         name: page
         schema:
@@ -509,14 +500,14 @@ paths:
         schema:
           type: string
           format: date
-          default: '2012-05-03'
-        description: 'Format: year-month-day, zero padded'
+          default: 01-02-2025
+        description: 'Format: day-month-year, zero padded'
         required: true
       - in: query
         name: pick_up_location
         schema:
           type: string
-          default: Obrera-Mexico
+          default: Zagreb-Croatia
         description: 'Format: cityName-countryName'
         required: true
       - in: query
@@ -530,8 +521,7 @@ paths:
       - in: query
         name: seats
         schema:
-          type: integer
-          default: 5
+          type: string
         description: Number of seats
       tags:
       - home
@@ -548,27 +538,15 @@ paths:
           description: ''
         '404':
           description: Offers Not Found
-  /api/home/showcased/:
-    get:
-      operationId: home_showcased_retrieve
-      tags:
-      - home
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
   /api/home/showcased-companies/:
     get:
-      operationId: home_showcased_companies_retrieve
+      operationId: api_home_showcased_companies_retrieve
       parameters:
       - in: query
         name: limit
         schema:
           type: integer
-          default: 8
+          default: 6
         description: Max number of companies that will be returned
       tags:
       - home
@@ -587,7 +565,7 @@ paths:
           description: Companies Not Found
   /api/home/unavailable-pick-up/{offer_id}/:
     get:
-      operationId: home_unavailable_pick_up_retrieve
+      operationId: api_home_unavailable_pick_up_retrieve
       parameters:
       - in: path
         name: offer_id
@@ -616,21 +594,58 @@ paths:
           description: ''
         '404':
           description: Vehicles Not Found
-  /api/profile/company/delete/:
-    delete:
-      operationId: profile_company_delete_destroy
+  /api/profile/company/calculate-all-reviews/:
+    get:
+      operationId: calculate_all_reviews
       tags:
-      - profile
+      - admin
       security:
       - cookieAuth: []
       - basicAuth: []
       - {}
       responses:
-        '204':
+        '200':
           description: No response body
+  /api/profile/company/delete/:
+    post:
+      operationId: delete_company
+      tags:
+      - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteCompanyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeleteCompanyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeleteCompanyRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: User deleted successfully
+        '400':
+          description: Password is required
+        '401':
+          description: User not authenticated
+        '403':
+          description: Incorrect password
   /api/profile/company/earnings/:
     get:
-      operationId: get_company_earnings
+      operationId: api_profile_company_earnings_retrieve
+      parameters:
+      - in: query
+        name: year
+        schema:
+          type: integer
+          default: 1
+        description: Year as integer
       tags:
       - profile
       security:
@@ -646,7 +661,72 @@ paths:
           description: ''
   /api/profile/company/info/:
     get:
-      operationId: get_company_info
+      operationId: api_profile_company_info_retrieve
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: put_company_info
+      tags:
+      - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutCompanyInfoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PutCompanyInfoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PutCompanyInfoRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/location/:
+    post:
+      operationId: post_company_location
+      tags:
+      - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostCompanyLocationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PostCompanyLocationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PostCompanyLocationRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/location/{location_id}/:
+    get:
+      operationId: get_company_location
+      parameters:
+      - in: path
+        name: location_id
+        schema:
+          type: integer
+        required: true
       tags:
       - profile
       security:
@@ -658,14 +738,30 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/GetCompanyInfo'
+                $ref: '#/components/schemas/GetCompanyLocation'
           description: ''
     put:
-      operationId: profile_company_info_update
+      operationId: put_company_location
+      parameters:
+      - in: path
+        name: location_id
+        schema:
+          type: integer
+        required: true
       tags:
       - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutCompanyLocationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PutCompanyLocationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PutCompanyLocationRequest'
+        required: true
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -673,7 +769,24 @@ paths:
       responses:
         '200':
           description: No response body
-  /api/profile/company/location/:
+    delete:
+      operationId: api_profile_company_location_destroy
+      parameters:
+      - in: path
+        name: location_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/profile/company/locations/:
     get:
       operationId: get_company_locations
       tags:
@@ -691,9 +804,27 @@ paths:
                 items:
                   $ref: '#/components/schemas/GetCompanyLocations'
           description: ''
-  /api/profile/company/locations/:
+  /api/profile/company/log-completed/{vehicle_id}:
     get:
-      operationId: get_company_locations_2
+      operationId: get_company_log_completed
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 1
+        description: Limit as integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Page as integer
+      - in: path
+        name: vehicle_id
+        schema:
+          type: integer
+        required: true
       tags:
       - profile
       security:
@@ -707,11 +838,29 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/GetCompanyLocations'
+                  $ref: '#/components/schemas/GetCompanyLog'
           description: ''
-  /api/profile/company/log-completed/:
+  /api/profile/company/log-ongoing/{vehicle_id}:
     get:
       operationId: get_company_log_ongoing
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 1
+        description: Limit as integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Page as integer
+      - in: path
+        name: vehicle_id
+        schema:
+          type: integer
+        required: true
       tags:
       - profile
       security:
@@ -727,27 +876,15 @@ paths:
                 items:
                   $ref: '#/components/schemas/GetCompanyLog'
           description: ''
-  /api/profile/company/log-ongoing/:
-    get:
-      operationId: get_company_log_ongoing_2
-      tags:
-      - profile
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/GetCompanyLog'
-          description: ''
-  /api/profile/company/log-reviews/:
+  /api/profile/company/log-reviews/{vehicle_id}:
     get:
       operationId: get_company_log_reviews
+      parameters:
+      - in: path
+        name: vehicle_id
+        schema:
+          type: integer
+        required: true
       tags:
       - profile
       security:
@@ -763,9 +900,27 @@ paths:
                 items:
                   $ref: '#/components/schemas/GetCompanyLogReviews'
           description: ''
-  /api/profile/company/log-upcoming/:
+  /api/profile/company/log-upcoming/{vehicle_id}:
     get:
       operationId: get_company_log_upcoming
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 1
+        description: Limit as integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Page as integer
+      - in: path
+        name: vehicle_id
+        schema:
+          type: integer
+        required: true
       tags:
       - profile
       security:
@@ -784,6 +939,19 @@ paths:
   /api/profile/company/log/completed/:
     get:
       operationId: get_company_rents
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 1
+        description: Limit as integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Page as integer
       tags:
       - profile
       security:
@@ -802,6 +970,19 @@ paths:
   /api/profile/company/log/ongoing/:
     get:
       operationId: get_company_rents_2
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 1
+        description: Limit as integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Page as integer
       tags:
       - profile
       security:
@@ -820,6 +1001,19 @@ paths:
   /api/profile/company/log/upcoming/:
     get:
       operationId: get_company_rentss
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 1
+        description: Limit as integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Page as integer
       tags:
       - profile
       security:
@@ -836,8 +1030,38 @@ paths:
                   $ref: '#/components/schemas/GetCompanyRents'
           description: ''
   /api/profile/company/offer/:
+    post:
+      operationId: post_company_offer
+      tags:
+      - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyOfferPostRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompanyOfferPostRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompanyOfferPostRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/offer/{offerId}:
     get:
       operationId: get_company_offer
+      parameters:
+      - in: path
+        name: offerId
+        schema:
+          type: string
+        required: true
       tags:
       - profile
       security:
@@ -851,21 +1075,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/GetCompanyOffer'
           description: ''
-    post:
-      operationId: profile_company_offer_create
-      tags:
-      - profile
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
     put:
-      operationId: profile_company_offer_update
+      operationId: put_company_offer
+      parameters:
+      - in: path
+        name: offerId
+        schema:
+          type: string
+        required: true
       tags:
       - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyOfferPutRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompanyOfferPutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompanyOfferPutRequest'
+        required: true
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -874,7 +1105,13 @@ paths:
         '200':
           description: No response body
     delete:
-      operationId: profile_company_offer_destroy
+      operationId: delete_company_offer
+      parameters:
+      - in: path
+        name: offerId
+        schema:
+          type: string
+        required: true
       tags:
       - profile
       security:
@@ -904,9 +1141,21 @@ paths:
           description: ''
   /api/profile/company/pass/:
     put:
-      operationId: profile_company_pass_update
+      operationId: put_company_password
       tags:
       - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutCompanyPasswordRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PutCompanyPasswordRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PutCompanyPasswordRequest'
+        required: true
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -917,6 +1166,19 @@ paths:
   /api/profile/company/reviews/:
     get:
       operationId: get_company_reviews
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 1
+        description: Limit as integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Page as integer
       tags:
       - profile
       security:
@@ -934,9 +1196,9 @@ paths:
           description: ''
   /api/profile/company/setHQ/:
     put:
-      operationId: profile_company_setHQ_update
+      operationId: api_profile_company_setHQ_update
       tags:
-      - profile
+      - api
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -946,9 +1208,9 @@ paths:
           description: No response body
   /api/profile/company/toggle-vehicle-visibility/:
     put:
-      operationId: profile_company_toggle_vehicle_visibility_update
+      operationId: api_profile_company_toggle_vehicle_visibility_update
       tags:
-      - profile
+      - api
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -958,9 +1220,21 @@ paths:
           description: No response body
   /api/profile/company/vehicle/:
     post:
-      operationId: profile_company_vehicle_create
+      operationId: post_company_vehicle
       tags:
       - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyVehicleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompanyVehicleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompanyVehicleRequest'
+        required: true
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -969,9 +1243,9 @@ paths:
         '200':
           description: No response body
     delete:
-      operationId: profile_company_vehicle_destroy
+      operationId: api_profile_company_vehicle_destroy
       tags:
-      - profile
+      - api
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -1030,9 +1304,9 @@ paths:
                 $ref: '#/components/schemas/GetCompanyVehicleEdit'
           description: ''
     put:
-      operationId: profile_company_vehicles_edit_vehicle_update
+      operationId: api_profile_company_vehicles_edit_vehicle_update
       tags:
-      - profile
+      - api
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -1041,10 +1315,22 @@ paths:
         '200':
           description: No response body
   /api/profile/user/delete/:
-    delete:
+    post:
       operationId: delete_user
       tags:
       - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeleteUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeleteUserRequest'
+        required: true
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -1084,13 +1370,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PutUserInfo'
+              $ref: '#/components/schemas/PutUserInfoRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PutUserInfo'
+              $ref: '#/components/schemas/PutUserInfoRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PutUserInfo'
+              $ref: '#/components/schemas/PutUserInfoRequest'
         required: true
       security:
       - cookieAuth: []
@@ -1105,6 +1391,36 @@ paths:
           description: User not authenticated
         '403':
           description: Incorrect password
+  /api/profile/user/leave-review/{rent_id}:
+    post:
+      operationId: post_review
+      parameters:
+      - in: path
+        name: rent_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostReviewRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PostReviewRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PostReviewRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
   /api/profile/user/pass/:
     put:
       operationId: update_user_password
@@ -1114,13 +1430,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PutUserPassword'
+              $ref: '#/components/schemas/PutUserPasswordRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PutUserPassword'
+              $ref: '#/components/schemas/PutUserPasswordRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PutUserPassword'
+              $ref: '#/components/schemas/PutUserPasswordRequest'
         required: true
       security:
       - cookieAuth: []
@@ -1157,7 +1473,7 @@ paths:
           description: User not authenticated
   /api/schema/:
     get:
-      operationId: schema_retrieve
+      operationId: api_schema_retrieve
       description: |-
         OpenApi3 schema for this API. Format can be selected via content negotiation.
 
@@ -1276,7 +1592,7 @@ paths:
           - zh-hans
           - zh-hant
       tags:
-      - schema
+      - api
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -1303,7 +1619,7 @@ paths:
           description: ''
   /api/wallet/addMoney/{rentoid_id}/:
     post:
-      operationId: wallet_addMoney_create
+      operationId: api_wallet_addMoney_create
       parameters:
       - in: path
         name: rentoid_id
@@ -1311,18 +1627,18 @@ paths:
           type: string
         required: true
       tags:
-      - wallet
+      - admin
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AddMoney'
+              $ref: '#/components/schemas/AddMoneyRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/AddMoney'
+              $ref: '#/components/schemas/AddMoneyRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AddMoney'
+              $ref: '#/components/schemas/AddMoneyRequest'
         required: true
       security:
       - cookieAuth: []
@@ -1333,20 +1649,20 @@ paths:
           description: No response body
   /api/wallet/buyGems:
     post:
-      operationId: wallet_buyGems_create
+      operationId: api_wallet_buyGems_create
       tags:
       - wallet
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BuyGems'
+              $ref: '#/components/schemas/BuyGemsRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/BuyGems'
+              $ref: '#/components/schemas/BuyGemsRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/BuyGems'
+              $ref: '#/components/schemas/BuyGemsRequest'
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -1356,7 +1672,7 @@ paths:
           description: No response body
   /api/wallet/checkTransaction/{transaction_id}:
     get:
-      operationId: wallet_checkTransaction_retrieve
+      operationId: api_wallet_checkTransaction_retrieve
       parameters:
       - in: path
         name: transaction_id
@@ -1374,7 +1690,7 @@ paths:
           description: No response body
   /api/wallet/getBalance/:
     get:
-      operationId: wallet_getBalance_retrieve
+      operationId: api_wallet_getBalance_retrieve
       tags:
       - wallet
       security:
@@ -1386,7 +1702,7 @@ paths:
           description: No response body
   /api/wallet/removeMoney/{rentoid_id}/:
     post:
-      operationId: wallet_removeMoney_create
+      operationId: api_wallet_removeMoney_create
       parameters:
       - in: path
         name: rentoid_id
@@ -1394,18 +1710,18 @@ paths:
           type: string
         required: true
       tags:
-      - wallet
+      - admin
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RemoveMoney'
+              $ref: '#/components/schemas/RemoveMoneyRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/RemoveMoney'
+              $ref: '#/components/schemas/RemoveMoneyRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/RemoveMoney'
+              $ref: '#/components/schemas/RemoveMoneyRequest'
         required: true
       security:
       - cookieAuth: []
@@ -1416,7 +1732,7 @@ paths:
           description: No response body
   /api/wallet/rentOffer/{offer_id}/:
     post:
-      operationId: wallet_rentOffer_create
+      operationId: api_wallet_rentOffer_create
       parameters:
       - in: path
         name: offer_id
@@ -1429,14 +1745,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Offer'
+              $ref: '#/components/schemas/OfferRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Offer'
+              $ref: '#/components/schemas/OfferRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Offer'
-        required: true
+              $ref: '#/components/schemas/OfferRequest'
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -1446,9 +1761,9 @@ paths:
           description: No response body
   /api/wallet/webhook:
     post:
-      operationId: wallet_webhook_create
+      operationId: api_wallet_webhook_create
       tags:
-      - wallet
+      - api
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -1458,7 +1773,7 @@ paths:
           description: No response body
 components:
   schemas:
-    AddMoney:
+    AddMoneyRequest:
       type: object
       properties:
         amount:
@@ -1485,7 +1800,7 @@ components:
       - returnTime
       - vehicle_id
       - workingHours
-    BuyGems:
+    BuyGemsRequest:
       type: object
       properties:
         amount:
@@ -1498,6 +1813,55 @@ components:
           type: string
       required:
       - cityName
+    CompanyOfferPostRequest:
+      type: object
+      properties:
+        price:
+          type: number
+          format: double
+        image:
+          type: string
+          format: binary
+        description:
+          type: string
+          minLength: 1
+        model_id:
+          type: integer
+      required:
+      - description
+      - image
+      - model_id
+      - price
+    CompanyOfferPutRequest:
+      type: object
+      properties:
+        price:
+          type: number
+          format: double
+        image:
+          type: string
+          format: binary
+        description:
+          type: string
+          minLength: 1
+      required:
+      - description
+      - image
+      - price
+    CompanyVehicleRequest:
+      type: object
+      properties:
+        registration:
+          type: string
+          minLength: 1
+        model_id:
+          type: integer
+        location_id:
+          type: integer
+      required:
+      - location_id
+      - model_id
+      - registration
     Country:
       type: object
       properties:
@@ -1566,6 +1930,22 @@ components:
       - longitude
       - streetName
       - streetNo
+    DeleteCompanyRequest:
+      type: object
+      properties:
+        password:
+          type: string
+          minLength: 1
+      required:
+      - password
+    DeleteUserRequest:
+      type: object
+      properties:
+        password:
+          type: string
+          minLength: 1
+      required:
+      - password
     GetCompanyEarnings:
       type: object
       properties:
@@ -1591,21 +1971,32 @@ components:
       - monthlyEarnings
       - totalRentals
       - yearRentals
-    GetCompanyInfo:
+    GetCompanyLocation:
       type: object
       properties:
-        day:
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        streetName:
           type: string
-        startTime:
+        streetNo:
           type: string
-          format: time
-        endTime:
+        cityName:
           type: string
-          format: time
+        workingHours:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkingHoursSer'
       required:
-      - day
-      - endTime
-      - startTime
+      - cityName
+      - latitude
+      - longitude
+      - streetName
+      - streetNo
+      - workingHours
     GetCompanyLocations:
       type: object
       properties:
@@ -1615,10 +2006,13 @@ components:
           type: string
         streetNo:
           type: string
+        countryName:
+          type: string
         locationId:
           type: integer
       required:
       - cityName
+      - countryName
       - locationId
       - streetName
       - streetNo
@@ -1681,7 +2075,6 @@ components:
         image:
           type: string
           format: uri
-          default: null
         description:
           type: string
         model_id:
@@ -1692,6 +2085,7 @@ components:
           type: string
       required:
       - description
+      - image
       - makeName
       - modelName
       - model_id
@@ -1717,10 +2111,10 @@ components:
         image:
           type: string
           format: uri
-          default: null
         isVisible:
           type: boolean
       required:
+      - image
       - isVisible
       - makeName
       - modelName
@@ -1752,11 +2146,11 @@ components:
         image:
           type: string
           format: uri
-          default: null
       required:
       - dateTimePickup
       - dateTimeReturned
       - firstName
+      - image
       - lastName
       - makeName
       - modelName
@@ -1769,7 +2163,6 @@ components:
         image:
           type: string
           format: uri
-          default: null
         makeName:
           type: string
         modelName:
@@ -1791,6 +2184,7 @@ components:
       required:
       - descriptions
       - firstName
+      - image
       - lastName
       - makeName
       - modelName
@@ -1859,7 +2253,6 @@ components:
         image:
           type: string
           format: uri
-          default: null
         makeName:
           type: string
         registration:
@@ -1883,6 +2276,7 @@ components:
         offerId:
           type: integer
       required:
+      - image
       - isVisible
       - makeName
       - modelName
@@ -1944,7 +2338,6 @@ components:
         image:
           type: string
           format: uri
-          default: null
       required:
       - automatic
       - canReview
@@ -1952,6 +2345,7 @@ components:
       - dateTimeRented
       - dateTimeReturned
       - expired
+      - image
       - makeName
       - modelName
       - noOfReviews
@@ -1998,14 +2392,16 @@ components:
             $ref: '#/components/schemas/Location'
       required:
       - locations
-    LoginUser:
+    LoginUserRequest:
       type: object
       properties:
         email:
           type: string
           format: email
+          minLength: 1
         password:
           type: string
+          minLength: 1
       required:
       - email
       - password
@@ -2130,6 +2526,33 @@ components:
       required:
       - last
       - offers
+    OfferRequest:
+      type: object
+      properties:
+        paymentMethod:
+          type: string
+          minLength: 1
+          default: stripe/wallet
+        dateFrom:
+          type: string
+          format: date
+          default: 21-01-2025
+        dateTo:
+          type: string
+          format: date
+          default: 23-01-2025
+        pickLocId:
+          type: integer
+          default: 0
+        dropLocId:
+          type: integer
+          default: 0
+        pickupTime:
+          type: integer
+          default: 0
+        dropoffTime:
+          type: integer
+          default: 0
     OnGoing:
       type: object
       properties:
@@ -2164,55 +2587,160 @@ components:
       - pickUpLocation
       - pickUpLocationId
       - price
-    PutUserInfo:
+    PostCompanyLocationRequest:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        streetName:
+          type: string
+          minLength: 1
+        streetNo:
+          type: string
+          minLength: 1
+        cityName:
+          type: string
+          minLength: 1
+        countryName:
+          type: string
+          minLength: 1
+        workingHours:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkingHoursSerRequest'
+      required:
+      - cityName
+      - countryName
+      - latitude
+      - longitude
+      - streetName
+      - streetNo
+      - workingHours
+    PostReviewRequest:
+      type: object
+      properties:
+        rating:
+          type: number
+          format: double
+        description:
+          type: string
+          minLength: 1
+      required:
+      - description
+      - rating
+    PutCompanyInfoRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        phoneNo:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+        logo:
+          type: string
+          format: binary
+      required:
+      - description
+      - logo
+      - name
+      - password
+      - phoneNo
+    PutCompanyLocationRequest:
+      type: object
+      properties:
+        workingHours:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkingHoursSerRequest'
+      required:
+      - workingHours
+    PutCompanyPasswordRequest:
+      type: object
+      properties:
+        oldPassword:
+          type: string
+          minLength: 1
+        newPassword:
+          type: string
+          minLength: 1
+      required:
+      - newPassword
+      - oldPassword
+    PutUserInfoRequest:
       type: object
       properties:
         firstName:
           type: string
+          minLength: 1
         lastName:
           type: string
+          minLength: 1
         phoneNo:
           type: string
+          minLength: 1
         driversLicense:
           type: string
+          minLength: 1
         password:
           type: string
+          minLength: 1
       required:
       - driversLicense
       - firstName
       - lastName
       - password
       - phoneNo
-    PutUserPassword:
+    PutUserPasswordRequest:
       type: object
       properties:
         oldPassword:
           type: string
+          minLength: 1
         newPassword:
           type: string
+          minLength: 1
       required:
       - newPassword
       - oldPassword
-    RegisterCompany:
+    RegisterCompanyRequest:
       type: object
       properties:
         email:
           type: string
           format: email
+          minLength: 1
         companyName:
           type: string
+          minLength: 1
         tin:
           type: string
+          minLength: 1
         phoneNo:
           type: string
+          minLength: 1
         countryName:
           type: string
+          minLength: 1
         cityName:
           type: string
+          minLength: 1
         streetName:
           type: string
+          minLength: 1
         streetNo:
           type: string
+          minLength: 1
         latitude:
           type: string
           format: decimal
@@ -2226,14 +2754,16 @@ components:
         workingHours:
           type: array
           items:
-            $ref: '#/components/schemas/WorkingHours'
+            $ref: '#/components/schemas/WorkingHoursRequest'
         description:
           type: string
+          minLength: 1
         password:
           type: string
+          minLength: 1
         image:
           type: string
-          format: uri
+          format: binary
           default: null
       required:
       - cityName
@@ -2247,22 +2777,28 @@ components:
       - streetNo
       - tin
       - workingHours
-    RegisterUser:
+    RegisterUserRequest:
       type: object
       properties:
         email:
           type: string
           format: email
+          minLength: 1
         firstName:
           type: string
+          minLength: 1
         lastName:
           type: string
+          minLength: 1
         driversLicense:
           type: string
+          minLength: 1
         phoneNo:
           type: string
+          minLength: 1
         password:
           type: string
+          minLength: 1
       required:
       - driversLicense
       - email
@@ -2270,7 +2806,7 @@ components:
       - lastName
       - password
       - phoneNo
-    RemoveMoney:
+    RemoveMoneyRequest:
       type: object
       properties:
         amount:
@@ -2369,10 +2905,11 @@ components:
           type: string
         companyLogo:
           type: string
-          default: base64
+          format: uri
         dealership_id:
           type: integer
       required:
+      - companyLogo
       - companyName
       - dealership_id
     ShowcasedCompanyList:
@@ -2416,9 +2953,12 @@ components:
         role:
           type: string
           default: guest/user/company
-        name:
+        firstName:
           type: string
           default: name if not guest, balance only for user
+        lastName:
+          type: string
+          default: last name if not guest
         balance:
           type: string
           format: decimal
@@ -2427,14 +2967,60 @@ components:
     WorkingHours:
       type: object
       properties:
+        dayOfTheWeek:
+          type: integer
+        openTime:
+          type: integer
+        closeTime:
+          type: integer
+      required:
+      - closeTime
+      - dayOfTheWeek
+      - openTime
+    WorkingHoursRequest:
+      type: object
+      properties:
         day:
           type: string
+          minLength: 1
           default: mon=monday, leave out the day if the dealership is closed
         startTime:
           type: string
+          minLength: 1
         endTime:
           type: string
+          minLength: 1
       required:
+      - endTime
+      - startTime
+    WorkingHoursSer:
+      type: object
+      properties:
+        dayOfTheWeek:
+          type: integer
+        startTime:
+          type: string
+          format: time
+        endTime:
+          type: string
+          format: time
+      required:
+      - dayOfTheWeek
+      - endTime
+      - startTime
+    WorkingHoursSerRequest:
+      type: object
+      properties:
+        dayOfTheWeek:
+          type: integer
+        startTime:
+          type: string
+          format: time
+        endTime:
+          type: string
+          format: time
+      required:
+      - dayOfTheWeek
       - endTime
       - startTime
   securitySchemes:

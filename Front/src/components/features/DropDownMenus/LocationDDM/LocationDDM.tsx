@@ -1,38 +1,48 @@
+'use client';
+
 import {
   Menu,
   MenuList,
   Input,
   InputGroup,
   InputLeftElement,
+  InputRightElement,
+  IconButton,
   Stack,
   Text,
   useOutsideClick,
   useBreakpointValue,
 } from '@chakra-ui/react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { FaCarAlt } from 'react-icons/fa';
+import { CloseIcon } from '@chakra-ui/icons';
 import LocationDDMGroups from './LocationDDMGroups/LocationDDMGroups';
 import { LocationDDMProps } from '@/typings/DDM-DropDownMenu/DDM';
 
+interface EnhancedLocationDDMProps extends LocationDDMProps {
+  value?: string; // Added prop for initial value
+}
+
 export default function LocationDDM({
-  options,
+  options, // { [countryName: string]: string[] }
   description,
   placeHolder,
   onLocationChange,
-}: LocationDDMProps) {
+  value, // Current selected value (e.g. "Zagreb, Croatia")
+}: EnhancedLocationDDMProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState<string | null>(null);
+  const [search, setSearch] = useState<string | null>(value || null);
 
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement | null>(null);
 
   const inputTextSize = useBreakpointValue({
-    base: 'sm', // Manji tekst za male ekrane
-    md: 'md', // Normalan tekst za srednje i velike ekrane
+    base: 'sm',
+    md: 'md',
   });
 
   const inputWidth = useBreakpointValue({
-    base: '100%', // Zauzima ceo prostor na manjim ekranima
-    md: '100%', // Automatski zauzima prostor na većim ekranima
+    base: '100%',
+    md: '100%',
   });
 
   useOutsideClick({
@@ -40,41 +50,53 @@ export default function LocationDDM({
     handler: () => setIsOpen(false),
   });
 
+  // Update local state if the parent passes in a new value
+  useEffect(() => {
+    setSearch(value || null);
+  }, [value]);
+
   const handleSelectLocation = (location: string) => {
     setSearch(location);
-    onLocationChange?.(location); // Obavijesti roditelja o odabiru lokacije
+    onLocationChange?.(location);
     setIsOpen(false);
   };
 
   const handleInputClick = () => {
-    if (!isOpen) setIsOpen(true); // Otvori menu samo ako nije već otvoren
+    if (!isOpen) setIsOpen(true);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearch(value);
+    const val = e.target.value;
+    setSearch(val);
 
-    if (value.trim() === '') {
-      setSearch(null); // Postavi vrijednost na null kad se polje izbriše
-      onLocationChange?.(''); // Obavijesti roditelja o brisanju lokacije
+    // If user erases everything, also inform the parent
+    if (val.trim() === '') {
+      setSearch(null);
+      onLocationChange?.('');
     }
 
-    if (!isOpen) setIsOpen(true); // Osigurava da menu ostaje otvoren dok tipkamo
+    // Open the menu while typing
+    if (!isOpen) setIsOpen(true);
+  };
+
+  const handleClearInput = () => {
+    setSearch(null);
+    onLocationChange?.('');
   };
 
   return (
-    <Stack gap={0} position={'relative'} ref={ref} width="100%">
+    <Stack gap={0} position="relative" ref={ref} width="100%">
       <Menu isOpen={isOpen}>
-        <Text fontSize={'0.8rem'} color={'brandblue'}>
+        <Text fontSize="0.8rem" color="brandblue">
           {description}
         </Text>
         <InputGroup
-          height={'fit-content'}
-          borderWidth={'2px'}
+          height="fit-content"
+          borderWidth="2px"
           borderRadius="md"
-          borderColor={'brandblue'}
-          width={inputWidth} // Omogućava maksimalno širenje
-          bg={'brandlightgray'}
+          borderColor="brandblue"
+          width={inputWidth}
+          bg="brandlightgray"
           _focusWithin={{
             bg: 'brandwhite',
             borderColor: 'brandblack',
@@ -92,13 +114,26 @@ export default function LocationDDM({
             onClick={handleInputClick}
             cursor="pointer"
             placeholder={placeHolder}
-            value={search || ''} // Prikaži prazan string ako je null
+            value={search || ''}
             onChange={handleInputChange}
-            color={'brandblack'}
-            border={'none'}
+            color="brandblack"
+            border="none"
             _focus={{ borderColor: 'none', boxShadow: 'none' }}
             fontSize={inputTextSize}
           />
+          {search && (
+            <InputRightElement>
+              <IconButton
+                aria-label="Clear location"
+                icon={<CloseIcon />}
+                size="sm"
+                onClick={handleClearInput}
+                bg="transparent"
+                color="brandblack"
+                _hover={{ color: 'brandred' }}
+              />
+            </InputRightElement>
+          )}
         </InputGroup>
         <MenuList
           position="absolute"
@@ -107,15 +142,14 @@ export default function LocationDDM({
           maxH="300px"
           overflowY="auto"
           zIndex="1000"
-          color={'brandblack'}
+          color="brandblack"
         >
+          {/* Pass the filtered data to the groups component */}
           <LocationDDMGroups
             options={options}
             handleSelectLocation={handleSelectLocation}
-            search={search || ''} // Proslijedi prazan string ako je null
-            setSearch={() => {
-              return;
-            }}
+            search={search || ''}
+            setSearch={() => null}
           />
         </MenuList>
       </Menu>

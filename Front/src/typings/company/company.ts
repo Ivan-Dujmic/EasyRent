@@ -1,3 +1,8 @@
+export interface IDealership {
+  companyName: string;
+  image: string;
+}
+
 export interface IRegisterCompany {
   name: string; // ime kompanije
   email: string; // email kompanije
@@ -17,4 +22,14 @@ export interface IRegisterCompany {
   password: string; // lozinka kompanije
   confirmPassword: string; // potvrda lozinke
   logo: string;
+}
+
+export interface Company {
+  companyName: string;
+  companyLogo: string;
+  dealership_id: number;
+}
+
+export interface CompaniesResponse {
+  companies: Company[];
 }

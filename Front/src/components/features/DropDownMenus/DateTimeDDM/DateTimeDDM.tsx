@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Stack,
   Text,
@@ -24,7 +24,10 @@ interface DateTimeDDMProps {
   placeHolder: string;
   minDate?: Date;
   maxDate?: Date;
-  minTime?: string; // New prop to restrict time
+  minTime?: string; // Minimalno dopušteno vrijeme
+  initialDate?: Date | null; // Početna vrijednost datuma i vremena
+  relatedMinDate?: Date; // Ograničenje za minimum datuma kod drop-off
+  relatedMaxDate?: Date; // Ograničenje za maksimum datuma kod pickup
   onDateTimeChange?: (dateTime: Date | null) => void;
 }
 
@@ -34,12 +37,16 @@ export default function DateTimeDDM({
   minDate,
   maxDate,
   minTime,
+  initialDate,
+  relatedMinDate,
+  relatedMaxDate,
   onDateTimeChange,
 }: DateTimeDDMProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [error, setError] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const updateRef = useRef(false);
 
   const ref = useRef(null);
 
@@ -48,42 +55,69 @@ export default function DateTimeDDM({
     handler: () => setIsOpen(false),
   });
 
+  // Postavi početne vrijednosti iz initialDate
+  useEffect(() => {
+    if (initialDate) {
+      const hours = String(initialDate.getHours());
+      const minutes = String(initialDate.getMinutes()).padStart(2, '0');
+      setSelectedDate(initialDate);
+      setSelectedTime(`${hours}:${minutes}`);
+    }
+  }, [initialDate]);
+
   const handleDateChange: CalendarProps['onChange'] = (value) => {
     if (value instanceof Date) {
       setSelectedDate(value);
-      setIsOpen(false);
+      // kada se promejni datum odmah updejatj to, maka ri sa defolut vrmeenom
+      onDateTimeChange?.(new Date(value));
+
       if (selectedTime) {
         const [hours, minutes] = selectedTime.split(':').map(Number);
         const dateTime = new Date(value);
         dateTime.setHours(hours);
         dateTime.setMinutes(minutes);
-        setError(false);
+
+        // Obavijesti roditelja
         onDateTimeChange?.(dateTime);
-      } else {
-        setError(true);
       }
+      setIsOpen(false);
     }
   };
 
   const handleTimeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const time = event.target.value;
+    if (!time) {
+      setSelectedTime(null);
+      onDateTimeChange?.(selectedDate); // Obavijesti roditelja samo o datumu
+      return;
+    }
+
     setSelectedTime(time);
+
     if (selectedDate) {
       const [hours, minutes] = time.split(':').map(Number);
       const dateTime = new Date(selectedDate);
       dateTime.setHours(hours);
       dateTime.setMinutes(minutes);
-      setError(false);
-      onDateTimeChange?.(dateTime);
+
+      // Obavijesti roditelja
+      if (!updateRef.current) {
+        updateRef.current = true;
+        onDateTimeChange?.(dateTime);
+        setTimeout(() => (updateRef.current = false), 100); // Debounce update
+      }
     } else {
-      setError(true);
+      // Ako nema odabranog datuma, prikaži grešku
+      setShowError(true);
     }
   };
 
   const handleClearDateTime = () => {
     setSelectedDate(null);
     setSelectedTime(null);
-    setError(true);
+    setShowError(false); // Resetiraj grešku
+
+    // Resetiraj roditelju
     onDateTimeChange?.(null);
   };
 
@@ -120,15 +154,15 @@ export default function DateTimeDDM({
             onClick={() => setIsOpen(!isOpen)}
             borderWidth={'2px'}
             borderRadius="md"
-            borderColor={error ? 'brandyellow' : 'brandblue'}
+            borderColor={'brandblue'}
             bg={'brandlightgray'}
             color="brandblack"
             _focusWithin={{
               bg: 'brandwhite',
-              borderColor: error ? 'brandyellow' : 'brandblack',
+              borderColor: 'brandblack',
             }}
           />
-          {selectedDate && (
+          {(selectedDate || selectedTime) && (
             <InputRightElement>
               <IconButton
                 aria-label="Clear date"
@@ -142,18 +176,18 @@ export default function DateTimeDDM({
 
         {/* Time Dropdown */}
         <Select
-          placeholder="Select"
-          value={selectedTime || ''}
+          placeholder="Select Time"
+          value={selectedTime || ''} // Prikaži trenutni odabrani sat
           onChange={handleTimeChange}
           width={{ base: '110px', md: '100%', lg: '110px' }}
           borderWidth={'2px'}
           borderRadius="md"
-          borderColor={error ? 'brandyellow' : 'brandblue'}
+          borderColor={'brandblue'}
           bg={'brandlightgray'}
           color="brandblack"
           _focusWithin={{
             bg: 'brandwhite',
-            borderColor: error ? 'brandyellow' : 'brandblack',
+            borderColor: 'brandblack',
           }}
         >
           {Array.from({ length: 24 }, (_, hour) => (
@@ -183,8 +217,8 @@ export default function DateTimeDDM({
           <Calendar
             onChange={handleDateChange}
             value={selectedDate}
-            minDate={minDate || new Date()}
-            maxDate={maxDate}
+            minDate={relatedMinDate || minDate || new Date()}
+            maxDate={relatedMaxDate || maxDate}
           />
         </Box>
       )}

@@ -11,7 +11,7 @@ import React, {
 
 interface CarContextType {
   cars: ICar[] | null;
-  setCars: (cars: ICar[]) => void;
+  setCars: (cars: ICar[] | null) => void;
 }
 
 // Kreiraj kontekst
@@ -22,7 +22,7 @@ export const CarProvider = ({ children }: { children: ReactNode }) => {
   const [cars, setCarsState] = useState<ICar[] | null>(null);
 
   // Funkcija koja ažurira stanje i localStorage
-  const setCars = (newCars: ICar[]) => {
+  const setCars = (newCars: ICar[] | null) => {
     setCarsState(newCars);
     if (typeof window !== 'undefined') {
       localStorage.setItem('cars', JSON.stringify(newCars)); // Spremi automobile u localStorage

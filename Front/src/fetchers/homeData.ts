@@ -1,21 +1,35 @@
 import { fetcher } from './fetcher';
 
+export interface OffersResponse {
+  offers: ICar[];
+  last?: boolean;
+}
+
 export interface IDealership {
   companyName: string;
   image: string;
 }
 
 export interface ICar {
+  // dode isto kao i I offer prije koji je nasljedi IVechile
   image: string;
   companyName: string;
   makeName: string;
   modelName: string;
-  noOfSeats?: string;
-  automatic?: string;
-  price?: number;
-  rating?: number;
-  noOfReviews?: number;
+  noOfSeats?: number; // Number of seats
+  automatic?: boolean; // Automatic or manual
+  price?: string; // Price as a string
+  rating?: number; // Rating value
+  noOfReviews?: number; // Number of reviews
   offer_id?: string;
+}
+
+// Extended interface for offers
+export interface IOffer extends ICar {
+  dealership_id: number; // ID of the dealership
+  modelType: string; // Model type (e.g., SUV)
+  description?: string; // Description of the offer
+  companyLogo?: string;
 }
 
 export interface IShowcased {

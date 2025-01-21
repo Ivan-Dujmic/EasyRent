@@ -14,12 +14,20 @@ import {
 } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie'
+import NextLink from 'next/link';
 import { useUserContext } from '@/context/UserContext/UserContext';
 import useSWRMutation from 'swr/mutation';
 import { CustomPost } from '@/fetchers/post';
 import { swrKeys } from '@/fetchers/swrKeys';
+import { IUser } from '@/typings/users/user.type';
 
-export default function LogOutButton() {
+interface LogOutProps {
+    useAlt? : boolean
+}
+
+export default function LogOutButton({
+   useAlt = true
+} : LogOutProps) {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const { setUser } = useUserContext();
     const router = useRouter();
@@ -32,7 +40,7 @@ export default function LogOutButton() {
                 // Reset user context to guest
                 Cookies.remove('sessionid');
                 Cookies.remove('csrftoken');
-                setUser({ role: 'guest' });
+                setUser({ role: 'guest' } as IUser);
                 router.push('/home');
             },
             onError: (error) => {
@@ -47,67 +55,81 @@ export default function LogOutButton() {
         onClose(); // Close modal
     };
 
+    let alt = <Button
+        bg={'brandblue'}
+        color={'white'}
+        fontWeight={'semibold'}
+        fontSize="sm"
+        _hover={{
+            bg: 'brandyellow',
+            color: 'brandblack',
+            transform: 'translateY(-2px)',
+            transition: 'transform 0.2s ease, box-shadow 0.3s ease',
+        }}
+        onClick={onOpen}
+    >
+        Log out
+    </Button>
+    
     return (
-        <>
-            <Button
-                bg={'brandblue'}
-                color={'white'}
+    <>
+        {useAlt ? alt : 
+            <Text
+                cursor={"pointer"}
+                onClick={onOpen}
+                color={'brandblack'}
                 fontWeight={'semibold'}
-                fontSize="sm"
                 _hover={{
-                    bg: 'brandyellow',
-                    color: 'brandblack',
+                    textDecoration: "underline",
                     transform: 'translateY(-2px)',
                     transition: 'transform 0.2s ease, box-shadow 0.3s ease',
                 }}
-                onClick={onOpen}
             >
                 Log out
-            </Button>
-
-            <Modal isOpen={isOpen} onClose={onClose} isCentered>
-                <ModalOverlay />
-                <ModalContent borderRadius="lg" bg="brandwhite" boxShadow="xl">
-                    <ModalHeader textAlign="center" fontWeight="bold" fontSize="lg">
-                        Confirm Logout
-                    </ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody>
-                        <Text textAlign="center" fontSize="md" color="brandblack" mt={2}>
-                            Are you sure you want to log out?
-                        </Text>
-                        <Text textAlign="center" fontSize="sm" color="brandgray" mt={1}>
-                            You’ll need to log back in to access your account.
-                        </Text>
-                    </ModalBody>
-                    <ModalFooter justifyContent="center" gap={4}>
-                        <Button
-                            color="brandwhite"
-                            bg="brandblue"
-                            _hover={{
-                                bg: 'brandyellow',
-                                color: 'brandblack',
-                            }}
-                            onClick={handleLogout}
-                            size="md"
-                            isLoading={isMutating}
-                        >
-                            Yes, Log Out
-                        </Button>
-                        <Button
-                            color="brandblack"
-                            bg="brandmiddlegray"
-                            _hover={{
-                                bg: 'brandlightgray',
-                            }}
-                            onClick={onClose}
-                            size="md"
-                        >
-                            No, I want to stay
-                        </Button>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal>
-        </>
-    );
+            </Text>
+        }
+        <Modal isOpen={isOpen} onClose={onClose} isCentered>
+            <ModalOverlay />
+            <ModalContent borderRadius="lg" bg="brandwhite" boxShadow="xl">
+                <ModalHeader textAlign="center" fontWeight="bold" fontSize="lg">
+                    Confirm Logout
+                </ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <Text textAlign="center" fontSize="md" color="brandblack" mt={2}>
+                        Are you sure you want to log out?
+                    </Text>
+                    <Text textAlign="center" fontSize="sm" color="brandgray" mt={1}>
+                        You’ll need to log back in to access your account.
+                    </Text>
+                </ModalBody>
+                <ModalFooter justifyContent="center" gap={4}>
+                    <Button
+                        color="brandwhite"
+                        bg="brandblue"
+                        _hover={{
+                            bg: 'brandyellow',
+                            color: 'brandblack',
+                        }}
+                        onClick={handleLogout}
+                        size="md"
+                        isLoading={isMutating}
+                    >
+                        Yes, Log Out
+                    </Button>
+                    <Button
+                        color="brandblack"
+                        bg="brandmiddlegray"
+                        _hover={{
+                            bg: 'brandlightgray',
+                        }}
+                        onClick={onClose}
+                        size="md"
+                    >
+                        No, I want to stay
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    </>)
 }

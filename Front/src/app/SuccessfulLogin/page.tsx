@@ -12,10 +12,11 @@ import {
   Icon,
   Flex,
 } from '@chakra-ui/react';
-import { User, useUserContext } from '@/context/UserContext/UserContext';
-import { CustomGet } from '@/fetchers/homeData';
+import { useUserContext } from '@/context/UserContext/UserContext';
+import { CustomGet } from '@/fetchers/get';
 import { CheckCircleIcon } from '@chakra-ui/icons';
 import { swrKeys } from '@/fetchers/swrKeys';
+import { IUser } from '@/typings/users/user.type';
 
 export default function SuccessfulLogin() {
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function SuccessfulLogin() {
   // Koristimo useSWR za dohvat podataka o korisniku
   const { data, error, isValidating } = useSWR(
     swrKeys.userinfo,
-    CustomGet<User>,
+    CustomGet<IUser>,
     {
       revalidateOnFocus: false,
     }
@@ -66,8 +67,8 @@ export default function SuccessfulLogin() {
             Something went wrong 😞
           </Heading>
           <Text fontSize="md" color="brandgray" textAlign="center">
-            We couldn't access your data. Please try again later or contact us
-            for help.
+            We couldn `&apos;`t access your data. Please try again later or
+            contact us for help.
           </Text>
           <Button
             as="a"

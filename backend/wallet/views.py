@@ -6,7 +6,7 @@ from rest_framework import status
 from wallet.serializers import AddMoneySerializer, RemoveMoneySerializer
 from .models import Wallet, Transactions
 from src.models import Dealership, Rentoid, Location, WorkingHours
-from home.models import Offer, Rent, Vehicle
+from home.models import Offer, Rent, Vehicle, Model
 from .serializers import *
 from django.shortcuts import get_object_or_404, redirect
 import stripe
@@ -40,7 +40,7 @@ def getBalance(request):
 
 @csrf_exempt
 @extend_schema(
-    tags=["wallet"],  # Group under "wallet" tag
+    tags=["admin"],  # Group under "admin" tag
     request=AddMoneySerializer,
 )
 @api_view(["POST"])
@@ -72,7 +72,7 @@ def addMoney(request, rentoid_id):
 # Remove money from an existing wallet
 @csrf_exempt
 @extend_schema(
-    tags=["wallet"],  # Group under "wallet" tag
+    tags=["admin"],  # Group under "admin" tag
     request=RemoveMoneySerializer,
 )
 @api_view(["POST"])
@@ -198,7 +198,8 @@ def offerRent(request, offer_id):
 
     vehicle_id = available_vehicles[0]["vehicle_id"]
     diff = dropoff_datetime - pickup_datetime
-    totalPrice = offer.price * int(diff.days)
+    total_hours = diff.total_seconds() / 3600
+    totalPrice = round(float(offer.price) * total_hours / 24, 2)
     gemPrice = int(totalPrice * 100)
     vehDropoff = Dealership.objects.filter(
         location__location_id=dropoff_locid, dealership_id=dealer_id
@@ -209,6 +210,8 @@ def offerRent(request, offer_id):
     pickDay = pickup_datetime.weekday()
     dropDay = dropoff_datetime.weekday()
     dropoffHour = dropoff_datetime.time()
+    if pickup_datetime > dropoff_datetime:
+        return Response({"error": "Pickup datetime must be before dropoff datetime."}, status=404)
     workingHpick = WorkingHours.objects.filter(
         location_id=pickup_locid, dayOfTheWeek=pickDay
     ).exclude(Q(startTime__gte=pickupHour) | Q(endTime__lte=pickupHour))
@@ -219,7 +222,7 @@ def offerRent(request, offer_id):
     ).exclude(Q(startTime__gte=dropoffHour) | Q(endTime__lte=dropoffHour))
     if not workingHdrop.exists():
         return Response({"error": "Dropoff outside off working hours."}, status=404)
-    print(offer.price, totalPrice, diff.days, buyer_id)
+    print(offer.price, totalPrice, diff.days, buyer_id, gemPrice)
     # Handle payment via Wallet
     if method == "wallet":
         if wallet.gems < gemPrice:
@@ -259,13 +262,14 @@ def offerRent(request, offer_id):
         try:
             # Create a Stripe Checkout session
             trans = Transactions.objects.create(status="unfinished")
+            model = get_object_or_404(Model, model_id=model_id)
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=["card"],
                 line_items=[
                     {
                         "price_data": {
                             "currency": "eur",
-                            "product_data": {"name": offer.description},
+                            "product_data": {"name": model.makeName + " " + model.modelName},
                             "unit_amount": int(totalPrice * 100),
                         },
                         "quantity": 1,

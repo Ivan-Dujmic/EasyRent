@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from django.contrib.auth.decorators import *
 from django import forms
 from datetime import datetime
+from django.utils.timezone import make_aware, make_naive
 import random
 from .models import *
 from .serializers import *
@@ -19,6 +20,7 @@ from drf_spectacular.utils import (
     extend_schema,
     OpenApiResponse,
     OpenApiExample,
+    OpenApiParameter,
 )
 
 
@@ -64,8 +66,9 @@ def userRentals(request):
                     "dateTimeRented": rental.dateTimeRented,
                     "dateTimeReturned": rental.dateTimeReturned,
                     "expired": isUserRentalExpired(rental),
-                    "canReview": canUserReview(user, rental),
+                    "canReview": canUserReview(rental),
                     "offer_id": offer.offer_id,
+                    "rent_id": rental.rent_id,
                     "image": offer.image.url if offer.image else None,
                 }
 
@@ -83,14 +86,107 @@ def isUserRentalExpired(rental):
     return rental.dateTimeReturned < now()
 
 
-def canUserReview(user, rental):
+def canUserReview(rental):
     oneMonthAfterExpiry = rental.dateTimeReturned + timedelta(days=30)
-    hasReviewed = Review.objects.filter(user=user, rental=rental).exists()
+    hasReviewed = Review.objects.filter(rent=rental).exists()
     return (
         rental.dateTimeReturned < now()
         and not hasReviewed
         and now() <= oneMonthAfterExpiry
     )
+
+
+def calculateReviewsForOffer(offer):
+    rentals = (
+        Rent.objects.filter(vehicle__dealer=offer.dealer)
+        .filter(vehicle__model=offer.model)
+        .values("rent_id")
+    )
+    reviews = Review.objects.filter(rent__in=rentals).all()
+    rating = 0
+    for review in reviews:
+        rating += review.rating
+    offer.rating = round(rating / reviews.count(), 2)
+    offer.noOfReviews = reviews.count()
+    offer.save()
+
+
+def calculateReviewsForVehicle(vehicle):
+    rentals = Rent.objects.filter(vehicle=vehicle).values("rent_id")
+    reviews = Review.objects.filter(rent__in=rentals).all()
+    rating = 0
+    for review in reviews:
+        rating += review.rating
+    vehicle.rating = round(rating / reviews.count(), 2)
+    vehicle.noOfReviews = reviews.count()
+    vehicle.save()
+
+
+def calculateReviewsForAllOffers():
+    offers = Offer.objects.all()
+    for offer in offers:
+        calculateReviewsForOffer(offer)
+
+
+def calculateReviewsForAllVehicles():
+    vehicles = Vehicle.objects.all()
+    for vehicle in vehicles:
+        calculateReviewsForVehicle(vehicle)
+
+@extend_schema(
+    methods=["GET"],
+    operation_id="calculate_all_reviews",
+    tags=["admin"],
+)
+@api_view(["GET"])
+def calculateAllReviews(request):
+    if request.method == "GET":
+        user = request.user
+        if user.is_authenticated:
+            if user.is_superuser:
+                calculateReviewsForAllVehicles()
+                calculateReviewsForAllOffers()
+                return Response({"message": "Reviews calculated"}, status=200)
+            else:
+                return Response({"error": "User is not a superuser"}, status=403)
+
+@extend_schema(
+    methods=["POST"],
+    operation_id="post_review",
+    tags=["profile"],
+    request=PostReviewSerializer,
+)
+@api_view(["POST"])
+def postReview(request, rent_id):
+    try:
+        rent = Rent.objects.get(pk=rent_id)
+        user = request.user
+        if not user.is_authenticated or not canUserReview(rent):
+            return Response({"error": "User can't review"}, status=404)
+        rentoid = Rentoid.objects.get(user=user)
+        if Review.objects.filter(rent=rent).exists():
+            return Response({"error": "Review already exists"}, status=404)
+        rating = request.data.get("rating")
+        description = request.data.get("description")
+        if rating == None:
+            return Response({"error": "Rating not specified"}, status=404)
+        try:
+            rating = int(rating)
+        except:
+            return Response({"error": "Invalid rating format"}, status=404)
+        if rating < 1 or rating > 5:
+            return Response({"error": "Invalid rating format"}, status=404)
+        review = Review(
+            rent=rent, rating=rating, description=description, reviewDate=datetime.now()
+        )
+        review.save()
+        offer = Offer.objects.get(model=rent.vehicle.model, dealer=rent.vehicle.dealer)
+        calculateReviewsForOffer(offer)
+        vehicle = Vehicle.objects.get(pk=rent.vehicle.vehicle_id)
+        calculateReviewsForVehicle(vehicle)
+        return Response({"message": "Review added"}, status=200)
+    except Rent.DoesNotExist:
+        return Response({"error": "Rent not found"}, status=404)
 
 
 @extend_schema(
@@ -340,7 +436,7 @@ def userPass(request):
 
 
 @extend_schema(
-    methods=["DELETE"],
+    methods=["POST"],
     operation_id="delete_user",
     tags=["profile"],
     request=DeleteUserSerializer,
@@ -383,13 +479,13 @@ def userPass(request):
         ),
     },
 )
-@api_view(["DELETE"])
+@login_required
+@api_view(["POST"])
 def userDelete(request):
-    if request.method == "DELETE":
+    if request.method == "POST":
         user = request.user
         if user.is_authenticated:
             data = request.data
-
             if not data.get("password"):
                 return Response(
                     {"success": 0, "message": "Password is required"}, status=400
@@ -425,7 +521,7 @@ def companyVehicles(request):
         company = request.user
         if company.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user=company)
+                dealership = Dealership.objects.get(user=company)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
 
@@ -440,12 +536,12 @@ def companyVehicles(request):
                 vehicleIds = []
                 offerIds = []
 
-                vehicles = Vehicle.objects.filter(dealer_id=dealership.dealer_id)
+                vehicles = Vehicle.objects.filter(dealer=dealership)
                 # Return: [image, makeName, modelName, registration, price, rating, noOfReviews, isVisible, vehicle_id, offer_id]
                 res = []
                 for vehicle in vehicles:
                     # make, model, registration, noOfReviews, isVisible, vehicleId
-                    model = Model.object.filter(vehicle_id=vehicle)
+                    model = Model.objects.get(vehicle_id=vehicle)
                     makeNames.append(model.makeName)
                     modelNames.append(model.modelName)
                     registrations.append(vehicle.registration)
@@ -454,9 +550,7 @@ def companyVehicles(request):
                     vehicleIds.append(vehicle.vehicle_id)
 
                     # price, rating, offerId, image
-                    offer = Offer.object.filter(
-                        model=vehicle.model, dealer_id=dealership.dealer_id
-                    )
+                    offer = Offer.objects.get(model=vehicle.model, dealer=dealership)
                     prices.append(offer.price)
                     ratings.append(offer.rating)
                     offerIds.append(offer.offer_id)
@@ -540,7 +634,7 @@ def companyOffers(request):
         company = request.user
         if company.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user=company)
+                dealership = Dealership.objects.get(user=company)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
 
@@ -553,15 +647,13 @@ def companyOffers(request):
                 offerIds = []
                 isVisible = []
 
-                offers = Offer.objects.filter(dealer_id=dealership.dealer_id)
+                offers = Offer.objects.filter(dealer=dealership)
                 # Return: [image, makeName, modelName, price, rating, noOfReviews, isVisible, offer_id]
                 res = []
                 for offer in offers:
                     # make, model, noOfReviews, offerId
-                    model = Model.object.filter(model_id=offer.model)
-                    vehicle = Vehicle.object.filter(
-                        model=model, dealer_id=dealership.dealer_id
-                    )
+                    model = Model.objects.get(model_id=offer.model)
+                    vehicle = Vehicle.objects.get(model=model, dealer=dealership)
                     makeNames.append(model.makeName)
                     modelNames.append(model.modelName)
                     noOfReviews.append(offer.noOfReviews)
@@ -611,11 +703,9 @@ def toggleOfferVisibility(request):
                     {"success": 0, "message": "Offer ID is required"}, status=400
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 offer = Offer.objects.get(offer_id=data.get("offerId"))
-                vehicles = Vehicle.objects.get(
-                    model=offer.model, dealer_id=dealership.dealer_id
-                )
+                vehicles = Vehicle.objects.get(model=offer.model, dealer=dealership)
                 if all(not vehicle.isVisible for vehicle in vehicles):
                     for vehicle in vehicles:
                         vehicle.isVisible = True
@@ -648,6 +738,24 @@ def toggleOfferVisibility(request):
     responses={
         200: GetCompanyRents(many=True),
     },
+    parameters=[
+        OpenApiParameter(
+            name="page",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Page as integer",
+            required=False,
+            default=1,
+        ),
+        OpenApiParameter(
+            name="limit",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Limit as integer",
+            required=False,
+            default=1,
+        ),
+    ],
 )
 @login_required
 @api_view(["GET"])
@@ -656,31 +764,33 @@ def upcomingCompanyRents(request):
         user = request.user
         if user.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
-                rents = Rent.objects.filter(dealer_id=dealership.dealer_id)
+                rents = Rent.objects.filter(dealer=dealership)
                 res = []
                 for rent in rents:
-                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
-                    rentUser = User.object.filter(id=rentoid.user_id)
-                    vehicle = Vehicle.object.filter(vehicle_id=rent.vehicle_id)
-                    offer = Offer.objects.filter(
-                        dealer=rent.dealer_id, model=vehicle.model
-                    )
-                    model = Model.object.filter(model_id=vehicle.model_id)
-                    if rent.dateTimeRented < datetime.now():
+                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    rentUser = User.objects.get(id=rentoid.user_id)
+                    vehicle = Vehicle.objects.get(vehicle_id=rent.vehicle_id)
+                    offer = Offer.objects.get(dealer=rent.dealer, model=vehicle.model)
+                    model = Model.objects.get(model_id=vehicle.model_id)
+                    if rent.dateTimeRented > make_aware(datetime.now()):
                         item = {
                             "dateTimePickup": rent.dateTimeRented,
                             "dateTimeReturned": rent.dateTimeReturned,
                             "firstName": rentUser.first_name,
                             "lastName": rentUser.last_name,
                             "price": offer.price,
-                            "vehicleId": offer.vehicle_id,
+                            "vehicleId": vehicle.vehicle_id,
                             "registration": vehicle.registration,
                             "makeName": model.makeName,
                             "modelName": model.modelName,
-                            "image": offer.image,
+                            "image": (
+                                request.build_absolute_uri(offer.image.url)
+                                if offer.image
+                                else None
+                            ),
                         }
                         res.append(item)
                 retObject = {
@@ -694,7 +804,7 @@ def upcomingCompanyRents(request):
                         "success": 0,
                         "message": "User has no upcoming rents yet or does not exist!",
                     },
-                    status=200,
+                    status=404,
                 )
         else:
             return Response(
@@ -709,6 +819,24 @@ def upcomingCompanyRents(request):
     responses={
         200: GetCompanyRents(many=True),
     },
+    parameters=[
+        OpenApiParameter(
+            name="page",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Page as integer",
+            required=False,
+            default=1,
+        ),
+        OpenApiParameter(
+            name="limit",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Limit as integer",
+            required=False,
+            default=1,
+        ),
+    ],
 )
 @login_required
 @api_view(["GET"])
@@ -717,34 +845,36 @@ def ongoingCompanyRents(request):
         user = request.user
         if user.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
-                rents = Rent.objects.filter(dealer_id=dealership.dealer_id)
+                rents = Rent.objects.filter(dealer=dealership)
                 res = []
                 for rent in rents:
-                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
-                    rentUser = User.object.filter(id=rentoid.user_id)
-                    vehicle = Vehicle.object.filter(vehicle_id=rent.vehicle_id)
-                    offer = Offer.objects.filter(
-                        dealer=rent.dealer_id, model=vehicle.model
-                    )
-                    model = Model.object.filter(model_id=vehicle.model_id)
-                    if (
-                        rent.dateTimeRented >= datetime.now()
-                        and rent.dateTimeReturned < datetime.now()
-                    ):
+                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    rentUser = User.objects.get(id=rentoid.user_id)
+                    vehicle = Vehicle.objects.get(vehicle_id=rent.vehicle_id)
+                    offer = Offer.objects.get(dealer=rent.dealer, model=vehicle.model)
+                    model = Model.objects.get(model_id=vehicle.model_id)
+                    if rent.dateTimeReturned > make_aware(
+                        datetime.now()
+                    ) and rent.dateTimeRented <= make_aware(datetime.now()):
+
                         item = {
                             "dateTimePickup": rent.dateTimeRented,
                             "dateTimeReturned": rent.dateTimeReturned,
                             "firstName": rentUser.first_name,
                             "lastName": rentUser.last_name,
                             "price": offer.price,
-                            "vehicleId": offer.vehicle_id,
+                            "vehicleId": vehicle.vehicle_id,
                             "registration": vehicle.registration,
                             "makeName": model.makeName,
                             "modelName": model.modelName,
-                            "image": offer.image,
+                            "image": (
+                                request.build_absolute_uri(offer.image.url)
+                                if offer.image
+                                else None
+                            ),
                         }
                         res.append(item)
                 retObject = {
@@ -758,7 +888,7 @@ def ongoingCompanyRents(request):
                         "success": 0,
                         "message": "User has no upcoming rents yet or does not exist!",
                     },
-                    status=200,
+                    status=404,
                 )
         else:
             return Response(
@@ -773,6 +903,24 @@ def ongoingCompanyRents(request):
     responses={
         200: GetCompanyRents(many=True),
     },
+    parameters=[
+        OpenApiParameter(
+            name="page",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Page as integer",
+            required=False,
+            default=1,
+        ),
+        OpenApiParameter(
+            name="limit",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Limit as integer",
+            required=False,
+            default=1,
+        ),
+    ],
 )
 @login_required
 @api_view(["GET"])
@@ -781,31 +929,33 @@ def completedCompanyRents(request):
         user = request.user
         if user.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
-                rents = Rent.objects.filter(dealer_id=dealership.dealership_id)
+                rents = Rent.objects.filter(dealer=dealership)
                 res = []
                 for rent in rents:
-                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
-                    rentUser = User.object.filter(id=rentoid.user_id)
-                    vehicle = Vehicle.object.filter(vehicle_id=rent.vehicle_id)
-                    offer = Offer.objects.filter(
-                        dealer=rent.dealer_id, model=vehicle.model
-                    )
-                    model = Model.object.filter(model_id=vehicle.model_id)
-                    if rent.dateTimeReturned >= datetime.now():
+                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    rentUser = User.objects.get(id=rentoid.user_id)
+                    vehicle = Vehicle.objects.get(vehicle_id=rent.vehicle_id)
+                    offer = Offer.objects.get(dealer=rent.dealer, model=vehicle.model)
+                    model = Model.objects.get(model_id=vehicle.model_id)
+                    if rent.dateTimeReturned <= make_aware(datetime.now()):
                         item = {
                             "dateTimePickup": rent.dateTimeRented,
                             "dateTimeReturned": rent.dateTimeReturned,
                             "firstName": rentUser.first_name,
                             "lastName": rentUser.last_name,
                             "price": offer.price,
-                            "vehicleId": offer.vehicle_id,
+                            "vehicleId": vehicle.vehicle_id,
                             "registration": vehicle.registration,
                             "makeName": model.makeName,
                             "modelName": model.modelName,
-                            "image": offer.image,
+                            "image": (
+                                request.build_absolute_uri(offer.image.url)
+                                if offer.image
+                                else None
+                            ),
                         }
                         res.append(item)
                 retObject = {
@@ -819,7 +969,7 @@ def completedCompanyRents(request):
                         "success": 0,
                         "message": "User has no upcoming rents yet or does not exist!",
                     },
-                    status=200,
+                    status=404,
                 )
         else:
             return Response(
@@ -834,6 +984,24 @@ def completedCompanyRents(request):
     responses={
         200: GetCompanyReviews(many=True),
     },
+    parameters=[
+        OpenApiParameter(
+            name="page",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Page as integer",
+            required=False,
+            default=1,
+        ),
+        OpenApiParameter(
+            name="limit",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Limit as integer",
+            required=False,
+            default=1,
+        ),
+    ],
 )
 @login_required
 @api_view(["GET"])
@@ -842,56 +1010,67 @@ def companyReviews(request):
         user = request.user
         if user.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
-
-                rents = Rent.object.filter(dealer_id=dealership.dealer_id)
+                rents = Rent.objects.filter(dealer=dealership)
                 res = []
                 for rent in rents:
-                    reviews = Review.object.filter(rent_id=rent.rent_id)
-                    vehicle = Vehicle.object.filter(vehicle_id=rent.vehicle_id)
-                    model = Model.object.filter(model_id=vehicle.model_id)
-                    offer = Offer.object.filter(
-                        dealer_id=dealership.dealer_id, model_id=vehicle.model_id
+                    try:
+                        review = Review.objects.get(rent=rent)
+                    except:
+                        continue
+                    vehicle = Vehicle.objects.get(vehicle_id=rent.vehicle_id)
+                    model = Model.objects.get(model_id=vehicle.model_id)
+                    offer = Offer.objects.get(
+                        dealer=dealership, model_id=vehicle.model_id
                     )
-                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
-                    rentUser = User.object.filter(id=rentoid.user_id)
-
+                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid.rentoid_id)
+                    rentUser = User.objects.get(id=rentoid.user.id)
                     current = {
-                        "image": offer.image,
+                        "image": (
+                            request.build_absolute_uri(dealership.image.url)
+                            if dealership.image
+                            else None
+                        ),
                         "makeName": model.makeName,
                         "modelName": model.modelName,
                         "registration": vehicle.registration,
                         "firstName": rentUser.first_name,
                         "lastName": rentUser.last_name,
-                        "descriptions": [review.description for review in reviews],
-                        "ratings": [review.rating for review in reviews],
+                        "descriptions": review.description,
+                        "ratings": review.rating,
                         "vehicleId": vehicle.vehicle_id,
                     }
                     res.append(current)
-                    retObject = {
-                        "results": res[(page - 1) * limit : page * limit],
-                        "isLastPage": True if len(res) <= page * limit else False,
-                    }
-                    return JsonResponse(retObject, status=200)
+                retObject = {
+                    "results": res[(page - 1) * limit : page * limit],
+                    "isLastPage": True if len(res) <= page * limit else False,
+                }
+                return JsonResponse(retObject, status=200)
             except:
                 return Response(
                     {
                         "success": 0,
                         "message": "Company does not exist or has no offers yet!",
                     },
-                    status=200,
+                    status=404,
                 )
 
 
 @extend_schema(
-    methods=["GET"],
-    operation_id="get_company_earnings",
     tags=["profile"],
-    responses={
-        200: GetCompanyEarnings(),
-    },
+    responses={200: GetCompanyEarnings},
+    parameters=[
+        OpenApiParameter(
+            name="year",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Year as integer",
+            required=False,
+            default=1,
+        ),
+    ],
 )
 @login_required
 @api_view(["GET"])
@@ -900,16 +1079,18 @@ def companyEarnings(request):
         user = request.user
         if user.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                year = int(request.GET.get("year", datetime.now().year))
-
-                rents = Rent.object.filter(dealer_id=dealership.dealer_id)
+                dealership = Dealership.objects.get(user=user.id)
+                year = int(request.GET.get("year"))
+                rents = Rent.objects.all()
                 totalEarnings = 0
                 monthlyEarnings = {i: 0 for i in range(1, 13)}
                 thisYearEarnings = 0
                 totalRentals = 0
                 thisYearRentals = 0
+
                 for rent in rents:
+                    if rent.dealer_id != dealership.dealership_id:
+                        continue
                     totalEarnings += rent.price
                     totalRentals += 1
                     if rent.dateTimeReturned.year == year:
@@ -930,19 +1111,17 @@ def companyEarnings(request):
                 return Response(
                     {
                         "success": 0,
-                        "message": "Company does not exist or has no offers yet!",
+                        "message": "Company does not exist or has no rents yet!",
                     },
-                    status=200,
+                    status=404,
                 )
 
 
 @extend_schema(
-    methods=["GET"],
-    operation_id="get_company_info",
+    methods=["PUT"],
+    operation_id="put_company_info",
     tags=["profile"],
-    responses={
-        200: GetCompanyInfo(many=True),
-    },
+    request=PutCompanyInfo,
 )
 @login_required
 @api_view(["PUT", "GET"])
@@ -951,9 +1130,9 @@ def companyInfo(request):
         user = request.user
         if user.is_authenticated:
             data = request.data
-
-            logo = data.get("companyLogo")
-            name = data.get("companyName")
+            company = User.objects.get(id=user.id)
+            logo = request.FILES.get("logo")
+            name = data.get("name")
             phoneNo = data.get("phoneNo")
             description = data.get("description")
             if not user.check_password(data.get("password")):
@@ -961,16 +1140,17 @@ def companyInfo(request):
                     {"success": 0, "message": "Wrong password!"}, status=401
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 if phoneNo:
                     dealership.phoneNo = phoneNo
                 if name:
-                    dealership.companyName = name
+                    company.first_name = name
                 if description:
                     dealership.description = description
                 if logo:
                     dealership.image = logo
                 dealership.save()
+                company.save()
                 return Response(
                     {"success": 1, "message": "Company info updated successfully"},
                     status=200,
@@ -987,27 +1167,23 @@ def companyInfo(request):
             return Response(
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
-    else:
-        return Response({"success": 0, "message": "Method not allowed"}, status=405)
 
     if request.method == "GET":
         user = request.user
         if user.is_authenticated:
             try:
                 # Return: {companyLogo, companyName, phoneNo, description}
-                dealership = Dealership.object.filter(user_id=user)
-                workingHours = WorkingHours.object.filter(
-                    dealership_id=dealership.dealer_id
-                )
-                res = []
-                for workingHour in workingHours:
-                    current = {
-                        "day": workingHour.day,
-                        "startTime": workingHour.startTime,
-                        "endTime": workingHour.endTime,
-                    }
-                    res.append(current)
-                retObject = {"results": res, "isLastPage": True}
+                dealership = Dealership.objects.get(user=user.id)
+                retObject = {
+                    "image": (
+                        request.build_absolute_uri(dealership.image.url)
+                        if dealership.image
+                        else None
+                    ),
+                    "companyName": user.first_name,
+                    "phoneNo": dealership.phoneNo,
+                    "description": dealership.description,
+                }
                 return JsonResponse(retObject, status=200)
             except:
                 return Response(
@@ -1019,6 +1195,12 @@ def companyInfo(request):
                 )
 
 
+@extend_schema(
+    methods=["PUT"],
+    operation_id="put_company_password",
+    tags=["profile"],
+    request=PutCompanyPassword,
+)
 @login_required
 @api_view(["PUT"])
 def companyPasswordChange(request):
@@ -1072,15 +1254,18 @@ def companyLocations(request):
         user = request.user
         if user.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 # Return: [streetName, streetNo, cityName, location_id]
-                locations = Location.object.filter(dealership_id=dealership.dealer_id)
+                locations = Location.objects.filter(
+                    dealership_id=dealership.dealership_id
+                )
                 res = [{}]
                 for location in locations:
                     current = {
                         "cityName": location.cityName,
                         "streetName": location.streetName,
                         "streetNo": location.streetNo,
+                        "countryName": location.countryName,
                         "locationId": location.location_id,
                     }
                     if location.isHQ:
@@ -1117,13 +1302,13 @@ def companySetHQ(request):
                     {"success": 0, "message": "Location ID is required"}, status=200
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                locations = Location.object.filter(dealership_id=dealership.dealer_id)
+                dealership = Dealership.objects.get(user=user.id)
+                locations = Location.objects.get(dealership_id=dealership.dealership_id)
 
                 for location in locations:
                     location.isHQ = False
                     location.save()
-                location = Location.object.filter(location_id=data.get("locationId"))
+                location = Location.objects.get(location_id=data.get("locationId"))
                 location.isHQ = True
                 location.save()
                 return Response(
@@ -1154,27 +1339,25 @@ def companySetHQ(request):
         200: GetCompanyLocation(),
     },
 )
+@extend_schema(
+    methods=["PUT"],
+    operation_id="put_company_location",
+    tags=["profile"],
+    request=PutCompanyLocation,
+)
 @login_required
-@api_view(["GET", "POST", "PUT", "DELETE"])
-def companyLocation(request):
+@api_view(["GET", "PUT", "DELETE"])
+def companyLocation(request, location_id):
     if request.method == "GET":
         user = request.user
         if user.is_authenticated:
-            data = request.data
-            locationId = request.locationId
-            if not data.get("locationId"):
-                return Response(
-                    {"success": 0, "message": "Location ID is required"}, status=200
-                )
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                location = Location.object.filter(
-                    location_id=locationId,
-                    dealership_id=dealership.dealer_id,
+                dealership = Dealership.objects.get(user=user.id)
+                location = Location.objects.get(
+                    location_id=location_id,
+                    dealership=dealership.dealership_id,
                 )
-                workingHours = WorkingHours.object.filter(
-                    location_id=location.location_id
-                )
+                workingHours = WorkingHours.objects.filter(location=location_id)
                 retObject = {
                     "latitude": location.latitude,
                     "longitude": location.longitude,
@@ -1183,7 +1366,7 @@ def companyLocation(request):
                     "cityName": location.cityName,
                     "workingHours": [
                         {
-                            "dayOfTheWeek": workingHour.day,
+                            "dayOfTheWeek": workingHour.dayOfTheWeek,
                             "startTime": workingHour.startTime,
                             "endTime": workingHour.endTime,
                         }
@@ -1198,7 +1381,7 @@ def companyLocation(request):
                         "success": 0,
                         "message": "Company has no locations yet or does not exist!",
                     },
-                    status=200,
+                    status=404,
                 )
         else:
             return Response(
@@ -1207,17 +1390,11 @@ def companyLocation(request):
     elif request.method == "DELETE":
         user = request.user
         if user.is_authenticated:
-            data = request.data
-            locationId = request.locationId
-            if not data.get("locationId"):
-                return Response(
-                    {"success": 0, "message": "Location ID is required"}, status=200
-                )
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                location = Location.object.filter(
-                    location_id=locationId,
-                    dealership_id=dealership.dealer_id,
+                dealership = Dealership.objects.get(user=user.id)
+                location = Location.objects.get(
+                    location_id=location_id,
+                    dealership_id=dealership.dealership_id,
                 )
                 location.delete()
                 return Response(
@@ -1241,21 +1418,16 @@ def companyLocation(request):
         user = request.user
         if user.is_authenticated:
             data = request.data
-            locationId = request.locationId
-            if not request.locationId:
-                return Response(
-                    {"success": 0, "message": "Location ID is required"}, status=200
-                )
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                location = Location.object.filter(
-                    location_id=locationId,
-                    dealership_id=dealership.dealer_id,
+                dealership = Dealership.objects.get(user=user.id)
+                location = Location.objects.get(
+                    location_id=location_id,
+                    dealership_id=dealership.dealership_id,
                 )
                 workingHours = data.get("workingHours")
                 for workingHour in workingHours:
-                    wh = WorkingHours.object.filter(
-                        location_id=locationId, day=workingHour["dayOfTheWeek"]
+                    wh = WorkingHours.objects.get(
+                        location=location_id, dayOfTheWeek=workingHour["dayOfTheWeek"]
                     )
                     wh.startTime = (
                         workingHour["startTime"]
@@ -1268,7 +1440,7 @@ def companyLocation(request):
 
                     wh.save()
                 return Response(
-                    {"success": 1, "message": "Location deleted successfully"},
+                    {"success": 1, "message": "Location updated successfully"},
                     status=200,
                 )
             except:
@@ -1284,7 +1456,20 @@ def companyLocation(request):
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
 
-    elif request.method == "POST":
+    else:
+        return Response({"success": 0, "message": "Method not allowed"}, status=405)
+
+
+@extend_schema(
+    methods=["POST"],
+    operation_id="post_company_location",
+    tags=["profile"],
+    request=PostCompanyLocation,
+)
+@login_required
+@api_view(["POST"])
+def postCompanyLocation(request):
+    if request.method == "POST":
         user = request.user
         if user.is_authenticated:
             data = request.data
@@ -1299,26 +1484,25 @@ def companyLocation(request):
                     {"success": 0, "message": "All fields are required"}, status=400
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                location = Location.object.create(
+                dealership = Dealership.objects.get(user=user.id)
+                location = Location.objects.create(
                     latitude=data.get("latitude"),
                     longitude=data.get("longitude"),
                     streetName=data.get("streetName"),
                     countryName=data.get("countryName"),
                     streetNo=data.get("streetNo"),
                     cityName=data.get("cityName"),
-                    dealership_id=dealership.dealer_id,
+                    dealership=dealership,
                     isHQ=False,
                 )
-                location.save()
                 for workingHour in workingHours:
-                    wh = WorkingHours.object.create(
-                        day=workingHour["dayOfTheWeek"],
+                    wh = WorkingHours.objects.create(
+                        dayOfTheWeek=workingHour["dayOfTheWeek"],
                         startTime=workingHour["startTime"],
                         endTime=workingHour["endTime"],
-                        location_id=location.location_id,
+                        location=location,
                     )
-                    wh.save()
+
                 return Response(
                     {"success": 1, "message": "Location added successfully"}, status=200
                 )
@@ -1326,9 +1510,9 @@ def companyLocation(request):
                 return Response(
                     {
                         "success": 0,
-                        "message": "Company does not exist or has no locations yet!",
+                        "message": "Company does not exist!",
                     },
-                    status=200,
+                    status=404,
                 )
         else:
             return Response(
@@ -1338,10 +1522,54 @@ def companyLocation(request):
         return Response({"success": 0, "message": "Method not allowed"}, status=405)
 
 
+@extend_schema(
+    methods=["POST"],
+    operation_id="delete_company",
+    tags=["profile"],
+    request=DeleteCompanySerializer,
+    responses={
+        200: OpenApiResponse(
+            description="User deleted successfully",
+            examples=[
+                OpenApiExample(
+                    "User deleted successfully",
+                    value={"success": 1, "message": "User deleted successfully"},
+                ),
+            ],
+        ),
+        400: OpenApiResponse(
+            description="Password is required",
+            examples=[
+                OpenApiExample(
+                    "Password is required",
+                    value={"success": 0, "message": "Password is required"},
+                ),
+            ],
+        ),
+        401: OpenApiResponse(
+            description="User not authenticated",
+            examples=[
+                OpenApiExample(
+                    "User not authenticated",
+                    value={"success": 0, "message": "User not authenticated"},
+                ),
+            ],
+        ),
+        403: OpenApiResponse(
+            description="Incorrect password",
+            examples=[
+                OpenApiExample(
+                    "Incorrect password",
+                    value={"success": 0, "message": "Incorrect password"},
+                ),
+            ],
+        ),
+    },
+)
 @login_required
-@api_view(["DELETE"])
+@api_view(["POST"])
 def deleteCompany(request):
-    if request.method == "DELETE":
+    if request.method == "POST":
         user = request.user
         if user.is_authenticated:
             data = request.data
@@ -1395,10 +1623,10 @@ def companyVehicleEdit(request):
                     {"success": 0, "message": "Vehicle ID is required"}, status=400
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 vehicle = Vehicle.objects.get(
                     vehicle_id=request.GET.get("vehicleId"),
-                    dealer_id=dealership.dealer_id,
+                    dealer=dealership,
                 )
                 hasUpcomingRental = False
                 upcoming_rental = Rent.objects.filter(
@@ -1442,13 +1670,13 @@ def companyVehicleEdit(request):
         user = request.user
         if user.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 # Return: {registration, streetName, streetNo, cityName, location_id}
                 vehicle = Vehicle.objects.filter(
-                    dealer_id=dealership.dealer_id,
+                    dealer=dealership,
                     vehicle_id=request.GET.get("vehicleId"),
                 )
-                location = location.object.filter(location_id=vehicle.location_id)
+                location = location.objects.get(location_id=vehicle.location_id)
                 retObject = {
                     "registration": vehicle.registration,
                     "streetName": location.streetName,
@@ -1468,6 +1696,12 @@ def companyVehicleEdit(request):
 
 
 @login_required
+@extend_schema(
+    methods=["POST"],
+    operation_id="post_company_vehicle",
+    tags=["profile"],
+    request=CompanyVehicleSerializer,
+)
 @api_view(["DELETE", "POST"])
 def companyVehicle(request):
     if request.method == "DELETE":
@@ -1479,13 +1713,13 @@ def companyVehicle(request):
                     {"success": 0, "message": "Vehicle ID is required"}, status=400
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 vehicle = Vehicle.objects.get(
                     vehicle_id=request.GET.get("vehicleId"),
-                    dealer_id=dealership.dealer_id,
+                    dealer=dealership,
                 )
-                vehicles = Vehicle.object.get(
-                    dealer_id=dealership.dealer_id, model_id=vehicle.model_id
+                vehicles = Vehicle.objects.get(
+                    dealer=dealership, model_id=vehicle.model_id
                 )
                 hasUpcomingRental = False
                 upcoming_rental = Rent.objects.filter(
@@ -1505,7 +1739,7 @@ def companyVehicle(request):
                     )
                 if len(vehicles) == 1:
                     offer = Offer.objects.filter(
-                        model=vehicle.model_id, dealer_id=dealership.dealer_id
+                        model=vehicle.model_id, dealer=dealership
                     )
                     offer.delete()
                 vehicle.delete()
@@ -1539,16 +1773,17 @@ def companyVehicle(request):
                     {"success": 0, "message": "All fields are required"}, status=400
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                model = Model.object.filter(model_id=data.get("model_id"))
-                location = Location.object.filter(
-                    location_id=data.get("locationId"),
-                    dealership_id=dealership.dealer_id,
+                dealership = Dealership.objects.get(user=user.id)
+                model = Model.objects.get(model_id=data.get("model_id"))
+                location = Location.objects.get(
+                    location_id=data.get("location_id"),
+                    dealership=dealership.dealership_id,
                 )
-                vehicle = Vehicle.object.create(
+
+                vehicle = Vehicle.objects.create(
                     model_id=model.model_id,
                     location_id=location.location_id,
-                    dealer_id=dealership.dealer_id,
+                    dealer=dealership,
                     registration=data.get("registration"),
                     noOfReviews=0,
                     isVisible=True,
@@ -1578,29 +1813,66 @@ def companyVehicle(request):
     operation_id="get_company_offer",
     tags=["profile"],
     responses={
-        200: GetCompanyOffer(),
+        200: GetCompanyOffer,
     },
 )
-@login_required
-@api_view(["GET", "POST", "PUT", "DELETE"])
-def companyOffer(request):
-    if request.method == "PUT":
+@extend_schema(
+    methods=["PUT"],
+    operation_id="put_company_offer",
+    tags=["profile"],
+    request=CompanyOfferPutSerializer,
+)
+@extend_schema(
+    methods=["DELETE"], operation_id="delete_company_offer", tags=["profile"]
+)
+@api_view(["GET", "PUT", "DELETE"])
+def getCompanyOffer(request, offerId):
+    if request.method == "GET":
+        user = request.user
+        if user.is_authenticated:
+            try:
+                dealership = Dealership.objects.get(user=user.id)
+                # , makeName, modelName,
+                offer = Offer.objects.get(
+                    dealer=dealership,
+                    offer_id=offerId,
+                )
+                model = Model.objects.get(model_id=offer.model_id)
+                retObject = {
+                    "price": offer.price,
+                    "image": (
+                        request.build_absolute_uri(dealership.image.url)
+                        if dealership.image
+                        else None
+                    ),
+                    "description": offer.description,
+                    "model_id": model.model_id,
+                    "makeName": model.makeName,
+                    "modelName": model.modelName,
+                }
+                return JsonResponse(retObject, status=200)
+            except Exception as e:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Company does not exist or has no offers yet!",
+                    },
+                    status=404,
+                )
+    elif request.method == "PUT":
         user = request.user
         if user.is_authenticated:
             data = request.data
-            if not data.get("offerId"):
-                return Response(
-                    {"success": 0, "message": "Offer ID is required"}, status=400
-                )
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 offer = Offer.objects.get(
-                    offer_id=request.GET.get("offerId"),
+                    dealer=dealership,
+                    offer_id=offerId,
                 )
                 if data.get("price"):
                     offer.price = data.get("price")
                 if data.get("image"):
-                    offer.image = data.get("image")
+                    offer.image = request.FILES.get("image")
                 if data.get("description"):
                     offer.description = data.get("description")
                 offer.save()
@@ -1613,49 +1885,7 @@ def companyOffer(request):
                         "success": 0,
                         "message": "Company does not exist or has no offers yet!",
                     },
-                    status=200,
-                )
-        else:
-            return Response(
-                {"success": 0, "message": "User not authenticated"}, status=401
-            )
-
-    elif request.method == "POST":
-        user = request.user
-        if user.is_authenticated:
-            data = request.data
-            if (
-                not data.get("price")
-                or not data.get("image")
-                or not data.get("description")
-                or not data.get("model_id")
-            ):
-                return Response(
-                    {"success": 0, "message": "All fields are required"}, status=400
-                )
-            try:
-                dealership = Dealership.object.filter(user_id=user)
-                model = Model.object.filter(model_id=data.get("model_id"))
-                offer = Offer.object.create(
-                    model_id=model.model_id,
-                    dealer_id=dealership.dealer_id,
-                    price=data.get("price"),
-                    image=data.get("image"),
-                    description=data.get("description"),
-                    noOfReviews=0,
-                    rating=0,
-                )
-                offer.save()
-                return Response(
-                    {"success": 1, "message": "Offer added successfully"}, status=200
-                )
-            except:
-                return Response(
-                    {
-                        "success": 0,
-                        "message": "Company does not exist or wronge vehicle id!",
-                    },
-                    status=200,
+                    status=404,
                 )
         else:
             return Response(
@@ -1671,9 +1901,9 @@ def companyOffer(request):
                     {"success": 0, "message": "Offer ID is required"}, status=400
                 )
             try:
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 offer = Offer.objects.get(
-                    offer_id=request.GET.get("offerId"),
+                    offer_id=request.data.get("offerId"),
                 )
                 offer.delete()
                 return Response(
@@ -1692,34 +1922,58 @@ def companyOffer(request):
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
 
-    elif request.method == "GET":
+
+@extend_schema(
+    methods=["POST"],
+    operation_id="post_company_offer",
+    tags=["profile"],
+    request=CompanyOfferPostSerializer,
+)
+@login_required
+@api_view(["POST"])
+def companyOffer(request):
+    if request.method == "POST":
         user = request.user
         if user.is_authenticated:
-            try:
-                dealership = Dealership.object.filter(user_id=user)
-                # , makeName, modelName,
-                offer = Offer.objects.filter(
-                    # dealer_id=dealership.dealer_id,
-                    offer_id=request.GET.get("offerId"),
+            data = request.data
+            if (
+                not data.get("price")
+                or not request.FILES.get("image")
+                or not data.get("description")
+                or not data.get("model_id")
+            ):
+                return Response(
+                    {"success": 0, "message": "All fields are required"}, status=400
                 )
-                model = Model.object.filter(model_id=offer.model_id)
-                retObject = {
-                    "price": offer.price,
-                    "image": offer.image,
-                    "description": offer.description,
-                    "model_id": model.model_id,
-                    "makeName": model.makeName,
-                    "modelName": model.modelName,
-                }
-                return JsonResponse(retObject, status=200)
-            except:
+            try:
+                dealership = Dealership.objects.get(user=user.id)
+                model = Model.objects.get(model_id=data.get("model_id"))
+
+                offer = Offer.objects.create(
+                    model=model,
+                    dealer=dealership,
+                    price=data.get("price"),
+                    image=request.FILES.get("image"),
+                    description=data.get("description"),
+                    noOfReviews=0,
+                    rating=0,
+                )
+                offer.save()
+                return Response(
+                    {"success": 1, "message": "Offer added successfully"}, status=200
+                )
+            except Exception as e:
                 return Response(
                     {
                         "success": 0,
-                        "message": "Company does not exist or has no offers yet!",
+                        "message": "Company does not exist or wrong vehicle id!",
                     },
                     status=200,
                 )
+        else:
+            return Response(
+                {"success": 0, "message": "User not authenticated"}, status=401
+            )
 
 
 @extend_schema(
@@ -1735,25 +1989,25 @@ def companyOffer(request):
 def companyVehicleLog(request):
     if request.method == "GET":
         user = request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             try:
                 vehicle_id = request.GET.get("vehicleId")
-                dealership = Dealership.object.filter(user_id=user)
-                vehicle = Vehicle.object.filter(vehicle_id=vehicle_id)
-                model = Model.object.filter(model_id=vehicle.model_id)
-                location = Location.object.filter(location_id=vehicle.location_id)
-                rents = Rent.object.filter(vehicle_id=vehicle_id)
+                dealership = Dealership.objects.get(user=user.id)
+                vehicle = Vehicle.objects.get(vehicle_id=vehicle_id)
+                model = Model.objects.get(model_id=vehicle.model_id)
+                location = Location.objects.get(location_id=vehicle.location_id)
+                rents = Rent.objects.get(vehicle_id=vehicle_id)
                 rentCount = 0
                 rentTime = 0
                 moneyMade = 0
                 onGoing = {}
                 for rent in rents:
-                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
-                    rentUser = User.object.filter(id=rentoid.user_id)
-                    rentLocation = Location.object.filter(
+                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    rentUser = User.objects.get(id=rentoid.user_id)
+                    rentLocation = Location.objects.get(
                         location_id=rent.rentedLocation_id
                     )
-                    returnLocation = Location.object.filter(
+                    returnLocation = Location.objects.get(
                         location_id=rent.returnLocation_id
                     )
                     if rent.dateTimeReturned >= datetime.now():
@@ -1809,32 +2063,47 @@ def companyVehicleLog(request):
     responses={
         200: GetCompanyLog(many=True),
     },
+    parameters=[
+        OpenApiParameter(
+            name="page",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Page as integer",
+            required=False,
+            default=1,
+        ),
+        OpenApiParameter(
+            name="limit",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Limit as integer",
+            required=False,
+            default=1,
+        ),
+    ],
 )
 @login_required
 @api_view(["GET"])
-def companyLogUpcoming(request):
+def companyLogUpcoming(request, vehicle_id):
     if request.method == "GET":
         user = request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                rents = Rent.object.filter(
-                    dealer_id=dealership.dealer_id,
-                    vehicle_id=request.GET.get("vehicleId"),
+                dealership = Dealership.objects.get(user=user.id)
+                rents = Rent.objects.filter(
+                    dealer=dealership,
+                    vehicle=vehicle_id,
                 )
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
-                vehicle_id = request.GET.get("vehicleId")
                 res = []
-                for rent in rents:
-                    if (
-                        rent.vehicle_id != vehicle_id
-                        or rent.dateTimeRented < datetime.now()
-                    ):
+                for i, rent in enumerate(rents):
+                    rentDateTimeRented = rent.dateTimeRented
+                    if rent.dateTimeRented < make_aware(datetime.now()):
                         continue
-                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
-                    rentUser = User.object.filter(id=rentoid.user_id)
-                    if rent.dateTimeRented >= datetime.now():
+                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    rentUser = User.objects.get(id=rentoid.user_id)
+                    if rent.dateTimeRented >= make_aware(datetime.now()):
                         item = {
                             "dateTimePickup": rent.dateTimeRented,
                             "dateTimeReturned": rent.dateTimeReturned,
@@ -1857,7 +2126,7 @@ def companyLogUpcoming(request):
                         "success": 0,
                         "message": "Company does not exist or has no offers yet!",
                     },
-                    status=200,
+                    status=404,
                 )
 
 
@@ -1868,36 +2137,44 @@ def companyLogUpcoming(request):
     responses={
         200: GetCompanyLog(many=True),
     },
+    parameters=[
+        OpenApiParameter(
+            name="page",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Page as integer",
+            required=False,
+            default=1,
+        ),
+        OpenApiParameter(
+            name="limit",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Limit as integer",
+            required=False,
+            default=1,
+        ),
+    ],
 )
 @login_required
 @api_view(["GET"])
-def companyLogOngoing(request):
+def companyLogOngoing(request, vehicle_id):
     if request.method == "GET":
         user = request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                rents = Rent.object.filter(
-                    dealer_id=dealership.dealer_id,
-                    vehicle_id=request.GET.get("vehicleId"),
-                )
+                dealership = Dealership.objects.get(user=user.id)
+                rents = Rent.objects.filter(dealer=dealership, vehicle=vehicle_id)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
-                vehicle_id = request.GET.get("vehicleId")
                 res = []
                 for rent in rents:
-                    if (
-                        rent.vehicle_id != vehicle_id
-                        or rent.dateTimeRented > datetime.now()
-                        or (
-                            rent.dateTimeReturned < datetime.now()
-                            and rent.DateTimeRented >= datetime.now()
-                        )
-                    ):
-                        continue
-                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
-                    rentUser = User.object.filter(id=rentoid.user_id)
-                    if rent.dateTimeRented >= datetime.now():
+
+                    if rent.dateTimeRented <= make_aware(
+                        datetime.now()
+                    ) and rent.dateTimeReturned > make_aware(datetime.now()):
+                        rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                        rentUser = User.objects.get(id=rentoid.user_id)
                         item = {
                             "dateTimePickup": rent.dateTimeRented,
                             "dateTimeReturned": rent.dateTimeReturned,
@@ -1920,44 +2197,52 @@ def companyLogOngoing(request):
                         "success": 0,
                         "message": "Company does not exist or has no offers yet!",
                     },
-                    status=200,
+                    status=404,
                 )
 
 
 @extend_schema(
     methods=["GET"],
-    operation_id="get_company_log_ongoing",
+    operation_id="get_company_log_completed",
     tags=["profile"],
     responses={
         200: GetCompanyLog(many=True),
     },
+    parameters=[
+        OpenApiParameter(
+            name="page",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Page as integer",
+            required=False,
+            default=1,
+        ),
+        OpenApiParameter(
+            name="limit",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Limit as integer",
+            required=False,
+            default=1,
+        ),
+    ],
 )
 @login_required
 @api_view(["GET"])
-def companyLogCompleted(request):
+def companyLogCompleted(request, vehicle_id):
     if request.method == "GET":
         user = request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             try:
-                dealership = Dealership.object.filter(user_id=user)
-                rents = Rent.object.filter(
-                    dealer_id=dealership.dealer_id,
-                    vehicle_id=request.GET.get("vehicleId"),
-                )
+                dealership = Dealership.objects.get(user=user.id)
+                rents = Rent.objects.filter(dealer=dealership, vehicle_id=vehicle_id)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
-                vehicle_id = request.GET.get("vehicleId")
                 res = []
                 for rent in rents:
-                    if (
-                        rent.vehicle_id != vehicle_id
-                        or rent.dateTimeReturned > datetime.now()
-                        or rent.dateTimeRented > datetime.now()
-                    ):
-                        continue
-                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
-                    rentUser = User.object.filter(id=rentoid.user_id)
-                    if rent.dateTimeRented >= datetime.now():
+                    if rent.dateTimeReturned <= make_aware(datetime.now()):
+                        rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                        rentUser = User.objects.get(id=rentoid.user_id)
                         item = {
                             "dateTimePickup": rent.dateTimeRented,
                             "dateTimeReturned": rent.dateTimeReturned,
@@ -1997,24 +2282,22 @@ def companyLogCompleted(request):
 def companyLogReviews(request, query):
     if request.method == "GET":
         user = request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             try:
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
-                dealership = Dealership.object.filter(user_id=user)
+                dealership = Dealership.objects.get(user=user.id)
                 vehicle_id = request.GET.get("vehicleId")
-                rents = Rent.object.filter(
-                    dealer_id=dealership.dealer_id, vehicle_id=vehicle_id
-                )
+                rents = Rent.objects.get(dealer=dealership, vehicle_id=vehicle_id)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
                 res = []
                 for rent in rents:
                     if rent.vehicle_id != vehicle_id:
                         continue
-                    review = Review.object.filter(rent_id=rent.rent_id)
-                    rentoid = Rentoid.object.filter(rentoid_id=rent.rentoid_id)
-                    rentUser = User.object.filter(id=rentoid.user_id)
+                    review = Review.objects.get(rent_id=rent.rent_id)
+                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    rentUser = User.objects.get(id=rentoid.user_id)
 
                     item = {
                         "firstName": rentUser.first_name,
@@ -2036,5 +2319,5 @@ def companyLogReviews(request, query):
                         "success": 0,
                         "message": "Company does not exist or has no offers yet!",
                     },
-                    status=200,
+                    status=404,
                 )

@@ -40,7 +40,7 @@ export const AuthRedirect = ({
         }
       }
     }
-  }, [condition, router, to]);
+  }, [RedIfRole, condition, router, to]);
 
   return null;
 };

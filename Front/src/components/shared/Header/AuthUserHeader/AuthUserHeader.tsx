@@ -20,11 +20,12 @@ import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 import NextLink from 'next/link';
 import EasyRentLogo from '@/components/core/EasyRentLogo/EasyRentLogo';
 import { AnimatedMyProfile } from '../../user/AnimatedMyProfile/AnimatedMyProfile';
-import { User } from '@/context/UserContext/UserContext';
 import LogOutButton from '../../auth/LogOutButton/LogOutButton';
+import { IUser } from '@/typings/users/user.type';
 
-export default function AuthUserHeader({ UserData }: { UserData?: User }) {
+export default function AuthUserHeader({ UserData }: { UserData?: IUser }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  console.log(UserData);
 
   return (
     <Box

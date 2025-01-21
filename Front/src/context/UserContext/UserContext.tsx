@@ -1,19 +1,26 @@
 'use client';
 
+import { IUser } from '@/typings/users/user.type';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Definiraj strukturu podataka
-export interface User {
-  role: string; // "guest", "user", "company", "admin"
-  firstName?: string;
-  lastName?: string;
-  companyName?: string;
-  balance?: number;
+// Funkcija koja provjerava je li localStorage dostupan
+function isLocalStorageAvailable(): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+  try {
+    const testKey = '__test__';
+    window.localStorage.setItem(testKey, '1');
+    window.localStorage.removeItem(testKey);
+    return true;
+  } catch (error) {
+    return false;
+  }
 }
 
 interface UserContextType {
-  user: User;
-  setUser: (user: User) => void;
+  user: IUser;
+  setUser: (user: IUser) => void;
 }
 
 // Kreiraj kontekst
@@ -21,33 +28,49 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // Provider komponenta
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User>({ role: 'guest' }); // Default vrijednost
+
+
+  const [user, setUser] = useState<IUser>({role: 'guest', user_id: 0}); // Default vrijednost (user_id: 0 su svi guestovi)
 
   // Dohvati podatke pri inicijalizaciji komponente
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedUser = localStorage.getItem('user');
-      if (savedUser) {
-        setUser(JSON.parse(savedUser)); // Postavi korisnika iz localStorage
-      } else {
-        // Možeš ovdje pozvati API ako želiš dohvatiti podatke s backend-a
-        fetch('/api/user') // Primjer API poziva
-          .then((res) => res.json())
-          .then((data) => {
-            setUser(data);
-            localStorage.setItem('user', JSON.stringify(data)); // Spremi podatke u localStorage
-          })
-          .catch(() => {
-            console.error('Failed to fetch user data');
-          });
+    if (typeof window !== 'undefined' && isLocalStorageAvailable()) {
+      try {
+        const savedUser = localStorage.getItem('user');
+        if (savedUser) {
+          setUser(JSON.parse(savedUser));
+        } else {
+          // Ako korisnik ne postoji u localStorage, možemo ga dohvatiti s API-ja
+          fetch('/api/user') // Primjer API poziva
+            .then((res) => res.json())
+            .then((data) => {
+              setUser(data);
+              localStorage.setItem('user', JSON.stringify(data));
+            })
+            .catch(() => {
+              console.error('Failed to fetch user data');
+            });
+        }
+      } catch (error) {
+        console.error('Error accessing localStorage:', error);
       }
+    } else {
+      // Ukoliko localStorage nije dostupan, možeš po potrebi odraditi neku drugu logiku
+      // npr. samo fetch s /api/user ili ostaviti default guest user
+      console.log(
+        'localStorage nije dostupan - radi se SSR ili je blokiran pristup.'
+      );
     }
-  }, []); // Pokreće se samo jednom nakon montaže komponente
+  }, []);
 
   // Kad god se podaci o korisniku promijene, ažuriraj localStorage
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('user', JSON.stringify(user));
+    if (typeof window !== 'undefined' && isLocalStorageAvailable()) {
+      try {
+        localStorage.setItem('user', JSON.stringify(user));
+      } catch (error) {
+        console.error('Error saving to localStorage:', error);
+      }
     }
   }, [user]);
 

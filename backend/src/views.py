@@ -653,6 +653,7 @@ def userInfo(request):
                     {
                         "role": "user",
                         "firstName": request.user.first_name,
+                        "lastName": request.user.last_name,
                     },
                     status=200,
                 )
@@ -663,7 +664,7 @@ def userInfo(request):
                     return JsonResponse(
                         {
                             "role": "company",
-                            "companyName": request.user.first_name,
+                            "firstName": request.user.first_name,
                         },
                         status=200,
                     )

@@ -1,9 +1,12 @@
 "use client"
 
 import { FormControl, InputProps, FormLabel, Input, FormErrorMessage } from "@chakra-ui/react"
+import { HTMLInputTypeAttribute } from "react";
 
 interface ICustomInput extends InputProps{
     label: string;
+    type: HTMLInputTypeAttribute;
+    placeholder: string;
     error?: string;
 }
 

@@ -1,40 +1,36 @@
 'use client';
 
-import {
-  Flex,
-  Heading,
-  IconButton,
-  Box,
-  useBreakpointValue,
-} from '@chakra-ui/react';
+import { Flex, Heading, IconButton } from '@chakra-ui/react';
 import { FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import React, { useState, useRef, useEffect } from 'react';
 import VehicleCard from '../VehicleCard/VechileCard';
-import { ICar } from '@/fetchers/homeData';
 import { mockVehicles } from '@/mockData/mockVehicles';
+import { NextRouter } from 'next/router';
+import { ICar } from '@/fetchers/homeData';
 
 interface VehicleListProps {
   vehicles?: Array<ICar>;
   description?: string;
-  numCards?: number
-  cardGap?: number
+  numCards?: number;
+  cardGap?: number;
 }
 
 export default function VehicleList({
   vehicles = mockVehicles,
-  description = "",
+  description = '',
   numCards = 4,
-  cardGap = 24
+  cardGap = 24,
 }: VehicleListProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
 
-  let [numCards_d, setNumCard] = useState(numCards) 
+  let [numCards_d, setNumCard] = useState(numCards);
 
   useEffect(() => {
+    const current = containerRef.current;
     const updateContainerWidth = () => {
-      if (containerRef.current) {
-        const { width } = containerRef.current.getBoundingClientRect();
+      if (current) {
+        const { width } = current.getBoundingClientRect();
         setContainerWidth(width);
       }
     };
@@ -45,13 +41,13 @@ export default function VehicleList({
       updateContainerWidth();
     });
 
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
+    if (current) {
+      resizeObserver.observe(current);
     }
 
     return () => {
-      if (containerRef.current) {
-        resizeObserver.unobserve(containerRef.current);
+      if (current) {
+        resizeObserver.unobserve(current);
       }
     };
   });
@@ -59,12 +55,15 @@ export default function VehicleList({
   const cardWidth = 260;
 
   useEffect(() => {
-    let neededLength = numCards_d * cardWidth + (numCards_d - 1) * cardGap + 90
+    let neededLength = numCards_d * cardWidth + (numCards_d - 1) * cardGap + 90;
     if (numCards_d > 1 && neededLength > containerWidth)
-        setNumCard(numCards_d - 1)
-    else if (numCards_d < numCards && neededLength + cardWidth + cardGap <= containerWidth)
-        setNumCard(numCards_d + 1)
-  });
+      setNumCard(numCards_d - 1);
+    else if (
+      numCards_d < numCards &&
+      neededLength + cardWidth + cardGap <= containerWidth
+    )
+      setNumCard(numCards_d + 1);
+  }, [numCards_d, cardGap, containerWidth, numCards]);
 
   const [startIndex, setStartIndex] = useState(0);
 
@@ -79,23 +78,24 @@ export default function VehicleList({
   const visibleVehicles = vehicles.slice(startIndex, startIndex + numCards_d);
 
   return (
-    <Flex direction="column" align="center" width="100%" gap={8} ref = {containerRef}>
+    <Flex
+      direction="column"
+      align="center"
+      width="100%"
+      gap={8}
+      ref={containerRef}
+    >
       {description && (
         <Heading fontSize="1.4rem" color="brandblack" alignSelf="flex-start">
           {description}
         </Heading>
       )}
-      <Flex
-        position="relative"
-        align="center"
-        width="100%"
-        mb={4}
-      >
+      <Flex position="relative" align="center" width="100%" mb={4}>
         {/* Left Scroll Button */}
-        <Flex width="40px" justify={"center"} align={"center"}>
+        <Flex width="40px" justify={'center'} align={'center'}>
           {startIndex > 0 && (
             <IconButton
-              mx = "none"
+              mx="none"
               // transform="translateX(-50%)"
               aria-label="Scroll left"
               icon={<FaChevronLeft />}
@@ -112,18 +112,19 @@ export default function VehicleList({
           justify="center"
           align="center"
           gap={`${cardGap}px`}
-          py={"2px"}
+          minWidth={cardWidth + cardGap}
+          py={'2px'}
         >
           {visibleVehicles.map((vehicle, index) => (
-              <VehicleCard vehicle={vehicle} index={index}/>
+            <VehicleCard vehicle={vehicle} key={index} />
           ))}
         </Flex>
 
         {/* Right Scroll Button */}
-        <Flex width="40px" justify={"center"} align={"center"}>
+        <Flex width="40px" justify={'center'} align={'center'}>
           {startIndex < vehicles.length - numCards && (
             <IconButton
-              mx = "none"
+              mx="none"
               // transform="translateX(50%)"
               aria-label="Scroll right"
               icon={<FaChevronRight />}
