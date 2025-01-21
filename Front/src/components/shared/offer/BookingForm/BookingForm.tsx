@@ -207,6 +207,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
           onDateTimeChange={handleDateTimeSelect}
           initialDateTime={null}
           minDate={new Date()} // Ne dopusti prošlost
+          isDisabled={!isPickupDateEnabled}
         />
         <Box>
           <Text fontSize="sm" fontWeight="bold" mb={1}>

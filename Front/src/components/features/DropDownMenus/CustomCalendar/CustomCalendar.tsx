@@ -53,6 +53,7 @@ interface PickupDateTimeProps {
   workingHours?: WorkingHour[];
   /** Kad god se promijeni datum/vrijeme ili se briše, javimo roditelju */
   onDateTimeChange?: (dateTime: Date | null) => void;
+  isDisabled?: boolean;
 }
 
 /* --- Pomoćne funkcije za rad s vremenom i radnim satima --- */
@@ -131,6 +132,7 @@ export default function CustomCalendar({
   intervals,
   workingHours,
   onDateTimeChange,
+  isDisabled,
 }: PickupDateTimeProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -259,6 +261,22 @@ export default function CustomCalendar({
     return curH < minH || (curH === minH && curM < minM);
   };
 
+  // trebalo bi ponisiti vrijednosti unutra svaki put kada se odaber eneka druga loakcija
+  useEffect(() => {
+    // Ako imaš neku početnu vrijednost (initialDateTime) i želiš je opet primijeniti:
+    if (initialDateTime) {
+      const initDate = new Date(initialDateTime);
+      setSelectedDate(initDate);
+      const hh = String(initDate.getHours()).padStart(2, '0');
+      const mm = String(initDate.getMinutes()).padStart(2, '0');
+      setSelectedTime(`${hh}:${mm}`);
+    } else {
+      // Inače postavi sve na null
+      setSelectedDate(null);
+      setSelectedTime(null);
+    }
+  }, [intervals, workingHours, initialDateTime]);
+
   return (
     <Flex gap={4} direction={{ base: 'column', md: 'row' }}>
       {/* Lijevi Box -> PICKUP DATE */}
@@ -279,6 +297,7 @@ export default function CustomCalendar({
             borderWidth="2px"
             borderRadius="md"
             _focusWithin={{ bg: 'brandwhite', borderColor: 'brandblack' }}
+            isDisabled={isDisabled}
           />
           {(selectedDate || selectedTime) && (
             <InputRightElement>
@@ -327,6 +346,7 @@ export default function CustomCalendar({
           borderWidth="2px"
           borderRadius="md"
           _focusWithin={{ bg: 'brandwhite', borderColor: 'brandblack' }}
+          isDisabled={isDisabled}
         >
           {validTimeSlots.length === 0 && <option disabled>--:--</option>}
           {validTimeSlots.map((slot) => (
