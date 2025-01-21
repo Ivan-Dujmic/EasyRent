@@ -1152,71 +1152,76 @@ def getUnavailablePickupTimes(request, offer_id):
         .filter(model=offer.model)
     )
     all_rentals = Rent.objects.filter(vehicle__in=vehicles)
-    currentDateTime = datetime.now()
+    currentDateTime = datetime.now(None)
     currentDateTime = currentDateTime.replace(
         hour=currentDateTime.hour + 1, minute=0, second=0, microsecond=0
     )
     finalDateTime = all_rentals.aggregate(Max("dateTimeReturned"))[
         "dateTimeReturned__max"
     ]
+    finalDateTime = finalDateTime.replace(tzinfo = None)
     unavailable_pickup_times = []
     interval_start = None
     interval_end = None
-    while currentDateTime < finalDateTime:
-        closedDay = False
-        unavailable_vehicles = 0
-        currentWorkingHours = workingHours.filter(
-            dayOfTheWeek=currentDateTime.weekday()
-        )
-        # if there are no working hours for the current day, we will skip to the next openining hours
-        while currentWorkingHours.count() == 0:
-            closedDay = True
-            currentDateTime = currentDateTime.replace(hour=0) + timedelta(days=1)
-            currentWorkingHours = workingHours.filter(
-                dayOfTheWeek=currentDateTime.weekday()
-            )
-        if closedDay:
-            currentDateTime = currentDateTime.replace(
-                hour=currentWorkingHours[0].startTime.hour
-            )
-        # if the current time is before the opening hours, we will skip to the opening hours
-        if currentDateTime.hour < currentWorkingHours[0].startTime.hour:
-            currentDateTime = currentDateTime.replace(
-                hour=currentWorkingHours[0].startTime.hour
-            )
-        # if the current time is after the closing hours, we will skip to the next opening hours
-        if currentDateTime.hour > currentWorkingHours[0].endTime.hour:
-            currentDateTime = currentDateTime.replace(hour=0) + timedelta(days=1)
-            while (
-                workingHours.filter(dayOfTheWeek=currentDateTime.weekday()).count() == 0
-            ):
-                currentDateTime = currentDateTime + timedelta(days=1)
-            currentDateTime = currentDateTime.replace(
-                hour=workingHours.filter(dayOfTheWeek=currentDateTime.weekday())[
-                    0
-                ].startTime.hour
-            )
-        for vehicle in vehicles:
-            vehicle_rents = all_rentals.filter(vehicle=vehicle).filter(
-                dateTimeRented__lte=currentDateTime,
-                dateTimeReturned__gte=currentDateTime,
-            )
-            if vehicle_rents.count() != 0:
-                unavailable_vehicles += 1
-
-        if unavailable_vehicles == vehicles.count():
-            if interval_start == None:
-                interval_start = currentDateTime
-        else:
-            if interval_start != None:
-                interval_end = currentDateTime - timedelta(hours=1)
-                unavailable_pickup_times.append(
-                    {"start": interval_start, "end": interval_end}
+    try:
+        if all_rentals.count() > 0:
+            while currentDateTime < finalDateTime:
+                closedDay = False
+                unavailable_vehicles = 0
+                currentWorkingHours = workingHours.filter(
+                    dayOfTheWeek=currentDateTime.weekday()
                 )
-                interval_start = None
-        currentDateTime = currentDateTime + timedelta(hours=1)
-    if interval_start != None:
-        unavailable_pickup_times.append({"start": interval_start, "end": finalDateTime})
+                # if there are no working hours for the current day, we will skip to the next openining hours
+                while currentWorkingHours.count() == 0:
+                    closedDay = True
+                    currentDateTime = currentDateTime.replace(hour=0) + timedelta(days=1)
+                    currentWorkingHours = workingHours.filter(
+                        dayOfTheWeek=currentDateTime.weekday()
+                    )
+                if closedDay:
+                    currentDateTime = currentDateTime.replace(
+                        hour=currentWorkingHours[0].startTime.hour
+                    )
+                # if the current time is before the opening hours, we will skip to the opening hours
+                if currentDateTime.hour < currentWorkingHours[0].startTime.hour:
+                    currentDateTime = currentDateTime.replace(
+                        hour=currentWorkingHours[0].startTime.hour
+                    )
+                # if the current time is after the closing hours, we will skip to the next opening hours
+                if currentDateTime.hour > currentWorkingHours[0].endTime.hour:
+                    currentDateTime = currentDateTime.replace(hour=0) + timedelta(days=1)
+                    while (
+                        workingHours.filter(dayOfTheWeek=currentDateTime.weekday()).count() == 0
+                    ):
+                        currentDateTime = currentDateTime + timedelta(days=1)
+                    currentDateTime = currentDateTime.replace(
+                        hour=workingHours.filter(dayOfTheWeek=currentDateTime.weekday())[
+                            0
+                        ].startTime.hour
+                    )
+                for vehicle in vehicles:
+                    vehicle_rents = all_rentals.filter(vehicle=vehicle).filter(
+                        dateTimeRented__lte=currentDateTime,
+                        dateTimeReturned__gte=currentDateTime,
+                    )
+                    if vehicle_rents.count() != 0:
+                        unavailable_vehicles += 1
+
+                if unavailable_vehicles == vehicles.count():
+                    if interval_start == None:
+                        interval_start = currentDateTime
+                else:
+                    if interval_start != None:
+                        interval_end = currentDateTime - timedelta(hours=1)
+                        unavailable_pickup_times.append(
+                            {"start": interval_start, "end": interval_end}
+                        )
+                        interval_start = None
+                currentDateTime = currentDateTime + timedelta(hours=1)
+            if interval_start != None:
+                unavailable_pickup_times.append({"start": interval_start, "end": finalDateTime})
+    except:
+        pass
     # we also need to return the working hours of the pick up location
     workingHoursArray = []
     for workingHour in workingHours:
@@ -1318,6 +1323,10 @@ def getLastAvailableDropOffTime(request, offer_id):
         pickUpDateTime = datetime.combine(pickUpDate, datetime.min.time()) + timedelta(
             hours=pickUpTime
         )
+    else:
+        return Response({"error": "Missing required fields"}, status=404)
+    if pickUpDateTime < datetime.now():
+        return Response({"error": "Pick up time must not be in the past"}, status=404)
     # check if locations exist
     try:
         pickUpLocation = Location.objects.get(pk=pickUpLocationId)
@@ -1352,7 +1361,7 @@ def getLastAvailableDropOffTime(request, offer_id):
             break
         vehicleReturnDateTime = rentals.order_by("dateTimeRented")[0].dateTimeRented
         vehicleReturnDateTime = getFirstAvailableWorkingTime(
-            vehicleReturnDateTime, dropOffLocation
+            vehicleReturnDateTime - timedelta(hours= 1), dropOffLocation
         )
         if vehicleReturnDateTime == False:
             return Response(
@@ -1405,11 +1414,11 @@ def getFirstAvailableWorkingTime(returnDateTime, dropOffLocation):
         # 1. returnDateTime is after closing time and we have to return it at the endtime of the current day
         # 2. returnDateTime is before opening time and we have to return it at the endtime of the last working day
         # 3. returnDateTime is during working hours and we can return it normally
-        if returnDateTime.hour > workingHours[0].endTime:
+        if returnDateTime.hour > workingHours[0].endTime.hour:
             returnDateTime = returnDateTime.replace(
                 hour=workingHours[0].endTime.hour, minute=0, second=0
             )
-        elif returnDateTime.hour < workingHours[0].startTime:
+        elif returnDateTime.hour < workingHours[0].startTime.hour:
             returnDateTime -= timedelta(days=1)
             # find first previous working day
             while workingHours.count() == 0:
