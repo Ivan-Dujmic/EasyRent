@@ -14,7 +14,40 @@ import { FaMapMarkerAlt, FaClock, FaCar } from 'react-icons/fa';
 interface CustomMapProps {
   locations: ExtraLocationInfo[]; // Lista lokacija
   showInfoWindow?: boolean; // Opcionalno prikazivanje InfoWindow
+  focusOnClosestLocation?: boolean;
 }
+
+// Funkcija za izračun najbliže lokacije
+const getClosestLocation = (
+  lat: number,
+  lng: number,
+  locations: ExtraLocationInfo[]
+) => {
+  if (!locations || locations.length === 0) {
+    throw new Error('No locations provided');
+  }
+
+  let closestLocation = locations[0];
+  let minDistance = Number.MAX_VALUE;
+
+  locations.forEach((location) => {
+    if (location.latitude && location.longitude) {
+      const distance = Math.sqrt(
+        Math.pow(lat - parseFloat(location.latitude), 2) +
+          Math.pow(lng - parseFloat(location.longitude), 2)
+      );
+
+      if (distance < minDistance) {
+        closestLocation = location;
+        minDistance = distance;
+      }
+    } else {
+      console.warn('Invalid location data:', location);
+    }
+  });
+
+  return closestLocation;
+};
 
 // Stilovi mape u skladu s vašim brandom
 const mapStyles = [
@@ -69,6 +102,7 @@ const generateRandomWorkingHours = () => {
 const CustomMap: React.FC<CustomMapProps> = ({
   locations,
   showInfoWindow = true,
+  focusOnClosestLocation = false,
 }) => {
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
@@ -99,21 +133,30 @@ const CustomMap: React.FC<CustomMapProps> = ({
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-
-          // Spremi korisnikovu lokaciju
           setUserLocation({ lat: latitude, lng: longitude });
 
-          // Postavi centar na korisnikovu lokaciju
-          setCenter({ lat: latitude, lng: longitude });
+          if (focusOnClosestLocation) {
+            const closest = getClosestLocation(
+              latitude,
+              longitude,
+              enrichedLocations
+            );
+            setCenter({
+              lat: parseFloat(closest.latitude),
+              lng: parseFloat(closest.longitude),
+            });
+          } else {
+            setCenter({ lat: latitude, lng: longitude });
+          }
         },
-        (error) => {
-          console.error('Error getting location:', error);
-          // Zadrži default centar (Zagreb)
-          setCenter({ lat: 45.815399, lng: 15.966568 });
+        () => {
+          if (!focusOnClosestLocation) {
+            setCenter({ lat: 45.815399, lng: 15.966568 });
+          }
         }
       );
     }
-  }, []);
+  }, [enrichedLocations, focusOnClosestLocation]);
 
   const mapContainerStyle = useMemo(
     () => ({

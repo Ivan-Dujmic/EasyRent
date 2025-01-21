@@ -226,6 +226,7 @@ export default function OfferPage({
           <CustomMap
             locations={offerLocations.locations}
             showInfoWindow={true}
+            focusOnClosestLocation={true}
           />
         </Box>
 
