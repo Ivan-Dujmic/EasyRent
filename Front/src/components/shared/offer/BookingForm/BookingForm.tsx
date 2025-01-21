@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import {
   Box,
   Button,
@@ -13,29 +13,115 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react';
 import { FaCreditCard, FaWallet } from 'react-icons/fa';
+import { ExtraLocationInfo } from '@/typings/locations/locations';
+import useSWRMutation from 'swr/mutation';
+import { swrKeys } from '@/fetchers/swrKeys';
+import { CustomGet } from '@/fetchers/get';
+import BookingCalendar from '@/components/features/DropDownMenus/BookingCalendar/BookingCalendar';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+
+const disabledDates = [new Date('2025-01-10'), new Date('2025-01-15')];
+
+const rentalIntervals = [
+  {
+    dateTimeRented: '2025-01-21T15:27:13.009Z',
+    dateTimeReturned: '2025-01-23T15:27:13.009Z',
+  },
+];
+
+const workingHours = [
+  { dayOfTheWeek: 0, startTime: '09:00', endTime: '17:00' },
+  { dayOfTheWeek: 1, startTime: '09:00', endTime: '17:00' },
+];
+
+const minDate = new Date();
+const maxDate = new Date('2025-12-31');
 
 interface BookingFormProps {
-  balance: number; // The balance to be displayed on the button
+  balance: number;
+  locations: ExtraLocationInfo[];
+  offer_id: string;
 }
 
-const options = ['Zagreb, Croatia', 'Split, Croatia', 'Rijeka, Croatia'];
+interface UnavailablePickupResponse {
+  intervals: {
+    dateTimeRented: string;
+    dateTimeReturned: string;
+  }[];
+  workingHours: {
+    dayOfTheWeek: number;
+    startTime: string;
+    endTime: string;
+  }[];
+}
 
-const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
-  const [pickupLocation, setPickupLocation] = useState('');
+const BookingForm: React.FC<BookingFormProps> = ({
+  balance,
+  locations,
+  offer_id,
+}) => {
+  const [pickupLocationId, setPickupLocationId] = useState('');
   const [pickupDate, setPickupDate] = useState('');
   const [pickupTime, setPickupTime] = useState('');
-  const [dropoffLocation, setDropoffLocation] = useState('');
+  const [dropoffLocationId, setDropoffLocationId] = useState('');
   const [dropoffDate, setDropoffDate] = useState('');
   const [dropoffTime, setDropoffTime] = useState('');
+  const [isPickupDateEnabled, setIsPickupDateEnabled] = useState(false);
 
-  const isDropoffEnabled = pickupLocation && pickupDate && pickupTime;
+  //nove stavri za pick up date chnage:
+  const handleDateChange = (date: string | null) => {
+    if (date) {
+      setPickupDate(date);
+    } else {
+      setPickupDate('');
+    }
+  };
+
+  const { trigger } = useSWRMutation<UnavailablePickupResponse>(
+    swrKeys.unavailable_pick_up(offer_id, pickupLocationId),
+    CustomGet,
+    {
+      onSuccess: (data) => {
+        console.log('Unavailable pickup times:', data.intervals);
+        console.log('Working hours:', data.workingHours);
+        setIsPickupDateEnabled(true);
+      },
+      onError: (error) => {
+        console.error('Error fetching pickup data:', error);
+      },
+    }
+  );
+
+  const handlePickupLocationChange = (locationId: string) => {
+    console.log('e je: ', locationId);
+
+    setPickupLocationId(locationId); // Set state first
+
+    // Reset fields to ensure a clean state
+    setPickupDate('');
+    setPickupTime('');
+    setDropoffLocationId('');
+    setDropoffDate('');
+    setDropoffTime('');
+    setIsPickupDateEnabled(false);
+  };
+
+  // React to state update
+  React.useEffect(() => {
+    if (pickupLocationId) {
+      trigger();
+    }
+  }, [pickupLocationId, trigger]);
+
+  const isDropoffEnabled = pickupLocationId && pickupDate && pickupTime;
 
   const handleRent = (paymentMethod: string) => {
     console.log({
-      pickupLocation,
+      pickupLocationId,
       pickupDate,
       pickupTime,
-      dropoffLocation,
+      dropoffLocationId,
       dropoffDate,
       dropoffTime,
       paymentMethod,
@@ -43,9 +129,9 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
   };
 
   const formWidth = useBreakpointValue({
-    base: '100%', // Full width on small screens
-    md: '80%', // Slightly narrower on medium screens
-    lg: '60%', // Smaller width on large screens
+    base: '100%',
+    md: '80%',
+    lg: '60%',
   });
 
   return (
@@ -61,28 +147,24 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
       <Heading size="md" mb={6} color="brandblue" textAlign="center">
         Book this car
       </Heading>
-
       <Stack spacing={4}>
-        {/* Pick-up location */}
         <Box>
           <Text fontSize="sm" fontWeight="bold" mb={1}>
             Pick-up location
           </Text>
           <Select
             placeholder="Select location"
-            value={pickupLocation}
-            onChange={(e) => setPickupLocation(e.target.value)}
+            value={pickupLocationId}
+            onChange={(e) => handlePickupLocationChange(e.target.value)}
             borderColor="brandblue"
           >
-            {options.map((option) => (
-              <option key={option} value={option}>
-                {option}
+            {locations.map((location) => (
+              <option key={location.location_id} value={location.location_id}>
+                {`${location.streetName} ${location.streetNo}, ${location.cityName} ${location.location_id}`}
               </option>
             ))}
           </Select>
         </Box>
-
-        {/* Pick-up date and time */}
         <Flex gap={4} direction={{ base: 'column', md: 'row' }}>
           <Box flex="1">
             <Text fontSize="sm" fontWeight="bold" mb={1}>
@@ -93,7 +175,19 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
               value={pickupDate}
               onChange={(e) => setPickupDate(e.target.value)}
               borderColor="brandblue"
+              isDisabled={!isPickupDateEnabled}
             />
+            {/*             <BookingCalendar
+              description="Pick-up Date and Time"
+              placeHolder="Select date"
+              intervals={rentalIntervals}
+              workingHours={workingHours}
+              minDate={minDate}
+              maxDate={maxDate}
+              onDateTimeChange={(dateTime) =>
+                console.log('Selected:', dateTime)
+              }
+            /> */}
           </Box>
           <Box flex="1">
             <Text fontSize="sm" fontWeight="bold" mb={1}>
@@ -104,31 +198,28 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
               value={pickupTime}
               onChange={(e) => setPickupTime(e.target.value)}
               borderColor="brandblue"
+              isDisabled={!isPickupDateEnabled}
             />
           </Box>
         </Flex>
-
-        {/* Drop-off location */}
         <Box>
           <Text fontSize="sm" fontWeight="bold" mb={1}>
             Drop-off location
           </Text>
           <Select
             placeholder="Select location"
-            value={dropoffLocation}
-            onChange={(e) => setDropoffLocation(e.target.value)}
+            value={dropoffLocationId}
+            onChange={(e) => setDropoffLocationId(e.target.value)}
             borderColor="brandblue"
             isDisabled={!isDropoffEnabled}
           >
-            {options.map((option) => (
-              <option key={option} value={option}>
-                {option}
+            {locations.map((location) => (
+              <option key={location.location_id} value={location.location_id}>
+                {`${location.streetName} ${location.streetNo}, ${location.cityName}`}
               </option>
             ))}
           </Select>
         </Box>
-
-        {/* Drop-off date and time */}
         <Flex gap={4} direction={{ base: 'column', md: 'row' }}>
           <Box flex="1">
             <Text fontSize="sm" fontWeight="bold" mb={1}>
@@ -156,8 +247,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ balance }) => {
           </Box>
         </Flex>
       </Stack>
-
-      {/* Payment buttons */}
       <Flex
         justifyContent="center"
         alignItems="center"

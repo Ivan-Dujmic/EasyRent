@@ -24,7 +24,7 @@ import {
   TabPanels,
   Tabs,
 } from '@chakra-ui/react';
-import { ReactElement, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import useSWRMutation from 'swr/mutation';
 import DeleteButton from '@/components/shared/auth/DeleteButton/DeleteButton';
@@ -33,6 +33,7 @@ import useSWR from 'swr';
 import { CustomPost } from '@/fetchers/post';
 
 export default function EditPage() {
+  const [isStylesLoaded, setIsStylesLoaded] = useState(false);
   const {
     handleSubmit: handleUser,
     formState: { isSubmitting: isSubUser, errors: errUser },
@@ -125,6 +126,19 @@ export default function EditPage() {
     base: '100%', // Full width on small screens
     md: '48%', // Two columns on medium and large screens
   });
+
+  useEffect(() => {
+    // Simulating style loading completion with a short delay
+    const timeout = setTimeout(() => {
+      setIsStylesLoaded(true);
+    }, 100); // Adjust timing as needed
+
+    return () => clearTimeout(timeout);
+  }, []);
+
+  if (!isStylesLoaded) {
+    return null; // Do not render anything until styles are loaded
+  }
 
   return success ? (
     <SuccessWindow />
@@ -296,6 +310,11 @@ export default function EditPage() {
                 mt="10"
                 password={dataGet?.password}
                 float={'right'}
+                bg="brandyellow"
+                _hover={{
+                  transform: 'translateY(-2px)',
+                  transition: 'transform 0.2s ease, box-shadow 0.3s ease',
+                }}
               />
             </TabPanel>
           </TabPanels>
