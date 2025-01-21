@@ -2,8 +2,9 @@
 
 import React, { useState, useMemo } from 'react';
 import { Calendar, CalendarProps } from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
 import { Box, Select, Text, Stack } from '@chakra-ui/react';
+import 'react-calendar/dist/Calendar.css';
+import './custom-calendar-booking.css';
 
 /** Interfejsi koje očekujemo */
 interface Interval {

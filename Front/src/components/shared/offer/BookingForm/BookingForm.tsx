@@ -17,8 +17,6 @@ import { ExtraLocationInfo } from '@/typings/locations/locations';
 import useSWRMutation from 'swr/mutation';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { CustomGet } from '@/fetchers/get';
-import BookingCalendar from '@/components/features/DropDownMenus/BookingCalendar/BookingCalendar';
-import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import CustomCalendar from '@/components/features/DropDownMenus/CustomCalendar/CustomCalendar';
 
@@ -26,8 +24,8 @@ const disabledDates = [new Date('2025-01-10'), new Date('2025-01-15')];
 
 const rentalIntervals = [
   {
-    dateTimeRented: '2025-01-21T15:27:13.009Z',
-    dateTimeReturned: '2025-01-23T15:27:13.009Z',
+    dateTimeRented: '2025-02-02T15:27:13.009Z',
+    dateTimeReturned: '2025-02-10T15:27:13.009Z',
   },
 ];
 
@@ -78,11 +76,15 @@ const BookingForm: React.FC<BookingFormProps> = ({
   const intervals = [
     {
       dateTimeRented: '2025-01-21T16:52:11.243Z',
-      dateTimeReturned: '2025-01-22T10:15:00.000Z',
+      dateTimeReturned: '2025-01-24T10:15:00.000Z',
     },
     {
-      dateTimeRented: '2025-01-23T12:00:00.000Z',
-      dateTimeReturned: '2025-01-23T13:00:00.000Z',
+      dateTimeRented: '2025-01-26T16:52:11.243Z',
+      dateTimeReturned: '2025-01-28T10:15:00.000Z',
+    },
+    {
+      dateTimeRented: '2025-02-05T16:52:11.243Z',
+      dateTimeReturned: '2025-02-10T10:15:00.000Z',
     },
   ];
 
@@ -92,9 +94,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
     { dayOfTheWeek: 2, startTime: '09:00:00', endTime: '17:00:00' },
     { dayOfTheWeek: 3, startTime: '09:00:00', endTime: '17:00:00' },
     { dayOfTheWeek: 4, startTime: '09:00:00', endTime: '17:00:00' },
-    { dayOfTheWeek: 5, startTime: '10:00:00', endTime: '14:00:00' },
-    { dayOfTheWeek: 6, startTime: '12:00:00', endTime: '14:00:00' },
-    // Primjer da je 6 (ned) zatvoren i nije naveden
+    { dayOfTheWeek: 6, startTime: '10:00:00', endTime: '14:00:00' },
   ];
 
   const handleDateTimeSelect = (dateTime: Date | null) => {
