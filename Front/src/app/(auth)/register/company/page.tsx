@@ -14,12 +14,13 @@ import {
   chakra,
   useBreakpointValue,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import useSWRMutation from 'swr/mutation';
 import { CustomPost } from '@/fetchers/post';
 
 export default function RegisterCompanyPage() {
+  const [isStylesLoaded, setIsStylesLoaded] = useState(false);
   const [registered, setRegistered] = useState(false);
   const {
     register,
@@ -61,6 +62,19 @@ export default function RegisterCompanyPage() {
     base: '100%', // Full width for small screens
     md: '48%', // Half width for medium and larger screens
   });
+
+  useEffect(() => {
+    // Simulating style loading completion with a short delay
+    const timeout = setTimeout(() => {
+      setIsStylesLoaded(true);
+    }, 100); // Adjust timing as needed
+
+    return () => clearTimeout(timeout);
+  }, []);
+
+  if (!isStylesLoaded) {
+    return null; // Do not render anything until styles are loaded
+  }
 
   return registered ? (
     <SuccessWindowCompany />
@@ -180,6 +194,9 @@ export default function RegisterCompanyPage() {
             submittingLabel="Trying to register..."
             isSubmitting={isSubmitting}
             w={{ base: '100%', md: '30%' }}
+            whiteSpace="normal" // Allows text to wrap
+            textAlign="center" // Centers the text
+            wordBreak="break-word" // Ensures long words break
           />
         </Flex>
       </chakra.form>
