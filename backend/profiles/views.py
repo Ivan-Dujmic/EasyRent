@@ -133,6 +133,11 @@ def calculateReviewsForAllVehicles():
     for vehicle in vehicles:
         calculateReviewsForVehicle(vehicle)
 
+@extend_schema(
+    methods=["GET"],
+    operation_id="calculate_all_reviews",
+    tags=["admin"],
+)
 @api_view(["GET"])
 def calculateAllReviews(request):
     if request.method == "GET":

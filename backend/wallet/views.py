@@ -40,7 +40,7 @@ def getBalance(request):
 
 @csrf_exempt
 @extend_schema(
-    tags=["wallet"],  # Group under "wallet" tag
+    tags=["admin"],  # Group under "admin" tag
     request=AddMoneySerializer,
 )
 @api_view(["POST"])
@@ -72,7 +72,7 @@ def addMoney(request, rentoid_id):
 # Remove money from an existing wallet
 @csrf_exempt
 @extend_schema(
-    tags=["wallet"],  # Group under "wallet" tag
+    tags=["admin"],  # Group under "admin" tag
     request=RemoveMoneySerializer,
 )
 @api_view(["POST"])
