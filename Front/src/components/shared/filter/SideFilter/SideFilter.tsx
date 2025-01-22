@@ -17,7 +17,7 @@ import {
 import React, { useState, useEffect } from 'react';
 import Select, { MultiValue, GroupBase } from 'react-select';
 import useSWRMutation from 'swr/mutation';
-import { CustomGet, ICar, OffersResponse } from '@/fetchers/homeData';
+import { CustomGet, OffersResponse } from '@/fetchers/homeData';
 import { useFilterContext } from '@/context/FilterContext/FilterContext';
 import { useCarContext } from '@/context/CarContext';
 import { usePathname, useRouter } from 'next/navigation';
