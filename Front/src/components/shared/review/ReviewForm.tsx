@@ -17,16 +17,16 @@ import {
 } from '@chakra-ui/react';
 import CustomInput from '../auth/CustomInput';
 import { IReview } from '@/typings/users/user.type';
-import { useForm } from 'react-hook-form';
+import { useForm, UseFormSetValue } from 'react-hook-form';
 import { Overlay } from '../filter/overlay/Overlay';
 import useSWRMutation from 'swr/mutation';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { CustomPost } from '@/fetchers/post';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { HStack, Icon } from '@chakra-ui/react';
 import { FaStar } from 'react-icons/fa';
-import { ICar } from '@/fetchers/homeData';
+import { ICar } from '@/typings/vehicles/vehicles.type';
 
 interface ReviewFormProps {
   isOpen: boolean;
@@ -41,13 +41,15 @@ export default function ReviewForm({
 }: ReviewFormProps) {
   const {
     handleSubmit,
-    formState: { errors, isSubmitted, isSubmitting },
+    formState: { errors, isSubmitted, isSubmitting, isSubmitSuccessful: success},
     clearErrors,
     register,
+    setValue,
+    reset
   } = useForm<IReview>();
 
   const { trigger } = useSWRMutation(
-    swrKeys.review(vehicle.offer_id?.toString() || ''),
+    swrKeys.addReview(vehicle.rent_id || ''),
     CustomPost<IReview>,
     {
       onSuccess: () => {
@@ -59,7 +61,7 @@ export default function ReviewForm({
     }
   );
 
-  const onAddFunds = async (data: IReview) => {
+  const onSubmit = async (data: IReview) => {
     clearErrors();
     await trigger(data);
   };
@@ -72,10 +74,11 @@ export default function ReviewForm({
       <ModalContent>
         {isSubmitted ? (
           <>
-            <ModalHeader>Thank you for your feedback!</ModalHeader>
+            <ModalHeader>{success ? `Thank you for your feedback!` : `Something went wrong: ${errors.root?.message}`}</ModalHeader>
             <ModalCloseButton />
             <ModalFooter>
               <Button
+                {...!success? {display: "none"} : {}}
                 onClick={() => router.push(`/offer/:${vehicle.offer_id}`)}
                 mr={3}
               >
@@ -88,15 +91,15 @@ export default function ReviewForm({
                   color: 'brandblack',
                   bg: 'brandyellow',
                 }}
-                onClick={onClose}
+                onClick={() => success ? onClose() : reset()}
                 mr={3}
               >
-                Exit
+                {success ? `Exit` : `Retry`}
               </Button>
             </ModalFooter>
           </>
         ) : (
-          <chakra.form onSubmit={handleSubmit(onAddFunds)}>
+          <chakra.form onSubmit={handleSubmit(onSubmit)}>
             <ModalHeader width={'90%'}>
               {`Leave a Review for ${vehicle.companyName}'s ${vehicle.makeName} ${vehicle.modelName}`}
             </ModalHeader>
@@ -110,11 +113,7 @@ export default function ReviewForm({
                 height="160px" // Fixed height for images
                 borderRadius="md"
               />
-              <StarRating
-                {...register('rating', {
-                  required: 'Rating is required',
-                })}
-              ></StarRating>
+              <StarRating setValue={setValue}/>
               <Textarea
                 mt={4}
                 placeholder="Write your review here..."
@@ -152,19 +151,25 @@ interface StarRatingProps extends InputProps {
   label?: string;
   spacing?: number;
   starSize?: number;
+  setValue: UseFormSetValue<IReview>
 }
 
 export function StarRating({
   stars = 5,
   label = '',
   spacing = 1,
-  type = 'button',
-  value = 0,
   starSize = 8,
-  ...rest
+  setValue,
+
 }: StarRatingProps) {
   const [hover, setHover] = useState(0);
-  const [rating, setRating] = useState(value as number);
+  const [rating, setRating] = useState(1);
+
+  useEffect(() => {
+    if (setValue) {
+        setValue("rating", rating);
+    }
+  }, [rating]);
 
   let items = Array.from({ length: stars }, (_, index) => (
     <Icon
@@ -183,7 +188,6 @@ export function StarRating({
     <>
       {label !== '' && <FormLabel>{label}</FormLabel>}
       <HStack spacing={spacing}>{items}</HStack>
-      <Input display={'none'} type="number" value={rating} {...rest} />
     </>
   );
 }
