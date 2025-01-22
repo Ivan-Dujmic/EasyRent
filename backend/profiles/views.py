@@ -727,6 +727,24 @@ def toogleVehicleVisibility(request):
     responses={
         200: GetCompanyOffers(many=True),
     },
+    parameters=[
+        OpenApiParameter(
+            name="page",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Page as integer",
+            required=False,
+            default=1,
+        ),
+        OpenApiParameter(
+            name="limit",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Limit as integer",
+            required=False,
+            default=10,
+        ),
+    ],
 )
 @login_required
 @api_view(["GET"])
@@ -739,50 +757,32 @@ def companyOffers(request):
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
 
-                images = []
-                makeNames = []
-                modelNames = []
-                prices = []
-                ratings = []
-                noOfReviews = []
-                offerIds = []
-                isVisible = []
-
                 offers = Offer.objects.filter(dealer=dealership)
                 # Return: [image, makeName, modelName, price, rating, noOfReviews, isVisible, offer_id]
                 res = []
                 for offer in offers:
                     # make, model, noOfReviews, offerId
-                    model = Model.objects.get(model_id=offer.model)
-                    vehicle = Vehicle.objects.get(model=model, dealer=dealership)
-                    makeNames.append(model.makeName)
-                    modelNames.append(model.modelName)
-                    noOfReviews.append(offer.noOfReviews)
-                    offerIds.append(offer.offer_id)
-                    isVisible.append(vehicle.isVisible)
-
-                    # price, rating, image
-                    prices.append(offer.price)
-                    ratings.append(offer.rating)
-                    images.append(offer.image)
-
+                    model = Model.objects.get(model_id=offer.model_id)
+                    vehicles = Vehicle.objects.filter(model=model, dealer=dealership)
                     current = {
-                        "isVisible": vehicle.isVisible,
+                        "isVisible": any(vehicle.isVisible for vehicle in vehicles),
                         "makeName": model.makeName,
                         "modelName": model.modelName,
                         "noOfReviews": offer.noOfReviews,
                         "offerId": offer.offer_id,
                         "price": offer.price,
                         "rating": offer.rating,
-                        "image": offer.image,
+                        "image": request.build_absolute_uri(offer.image.url)
                     }
+
                     res.append(current)
-                    retObject = {
-                        "results": res[(page - 1) * limit : page * limit],
-                        "isLastPage": True if len(res) <= page * limit else False,
-                    }
-                    return JsonResponse(retObject, status=200)
-            except:
+                retObject = {
+                    "results": res[(page - 1) * limit : page * limit],
+                    "isLastPage": True if len(res) <= page * limit else False,
+                }
+                return JsonResponse(retObject, status=200)
+            except Exception as e:
+                print(e)
                 return Response(
                     {
                         "success": 0,
@@ -1125,20 +1125,27 @@ def companyReviews(request):
                     model = Model.objects.get(model_id=vehicle.model_id)
                     offer = Offer.objects.get(
                         dealer=dealership, model_id=vehicle.model_id
-                    )
-                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid.rentoid_id)
-                    rentUser = User.objects.get(id=rentoid.user.id)
+                        )
+                    first_name = ''
+                    last_name = ''
+                    try:
+                        rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid.rentoid_id)
+                        rentUser = User.objects.get(id=rentoid.user.id)
+                        first_name = rentUser.first_name
+                        last_name = rentUser.last_name
+                    except:
+                        pass
                     current = {
                         "image": (
-                            request.build_absolute_uri(dealership.image.url)
-                            if dealership.image
+                            request.build_absolute_uri(offer.image.url)
+                            if offer.image
                             else None
                         ),
                         "makeName": model.makeName,
                         "modelName": model.modelName,
                         "registration": vehicle.registration,
-                        "firstName": rentUser.first_name,
-                        "lastName": rentUser.last_name,
+                        "firstName": first_name,
+                        "lastName": last_name,
                         "descriptions": review.description,
                         "ratings": review.rating,
                         "vehicleId": vehicle.vehicle_id,
@@ -1149,7 +1156,8 @@ def companyReviews(request):
                     "isLastPage": True if len(res) <= page * limit else False,
                 }
                 return JsonResponse(retObject, status=200)
-            except:
+            except Exception as e:
+                print(e)
                 return Response(
                     {
                         "success": 0,
@@ -2387,9 +2395,7 @@ def companyLogReviews(request, vehicle_id):
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
                 dealership = Dealership.objects.get(user=user.id)
-                rents = Rent.objects.get(dealer=dealership, vehicle_id=vehicle_id)
-                page = int(request.GET.get("page", 1))
-                limit = int(request.GET.get("limit", 10))
+                rents = Rent.objects.filter(dealer=dealership, vehicle=vehicle_id)
                 res = []
                 for rent in rents:
                     if rent.vehicle_id != vehicle_id:
