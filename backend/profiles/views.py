@@ -579,6 +579,24 @@ def userDelete(request):
     responses={
         200: GetCompanyVehicles(many=True),
     },
+    parameters=[
+        OpenApiParameter(
+            name="page",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Page as integer",
+            required=False,
+            default=1,
+        ),
+        OpenApiParameter(
+            name="limit",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Limit as integer",
+            required=False,
+            default=10,
+        ),
+    ]
 )
 @login_required
 @api_view(["GET"])
@@ -588,67 +606,84 @@ def companyVehicles(request):
         if company.is_authenticated:
             try:
                 dealership = Dealership.objects.get(user=company)
-                page = int(request.GET.get("page", 1))
-                limit = int(request.GET.get("limit", 10))
+                page = int(request.GET.get("page", 1))  # Default to page 1
+                limit = int(request.GET.get("limit", 10))  # Default to limit 10
 
-                images = []
-                makeNames = []
-                modelNames = []
-                registrations = []
-                prices = []
-                ratings = []
-                noOfReviews = []
-                isVisible = []
-                vehicleIds = []
-                offerIds = []
+                # Get vehicles for the dealership
+                vehicles_query = Vehicle.objects.filter(dealer=dealership).order_by('registration')
+                
+                # Apply pagination at the query level
+                paginator = Paginator(vehicles_query, limit)
+                try:
+                    vehicles = paginator.page(page)
+                except EmptyPage:
+                    return JsonResponse(
+                        {
+                            "results": [],
+                            "isLastPage": True,
+                        },
+                        status=200,
+                    )
 
-                vehicles = Vehicle.objects.filter(dealer=dealership)
-                # Return: [image, makeName, modelName, registration, price, rating, noOfReviews, isVisible, vehicle_id, offer_id]
                 res = []
                 for vehicle in vehicles:
-                    # make, model, registration, noOfReviews, isVisible, vehicleId
-                    model = Model.objects.get(vehicle_id=vehicle)
-                    makeNames.append(model.makeName)
-                    modelNames.append(model.modelName)
-                    registrations.append(vehicle.registration)
-                    noOfReviews.append(vehicle.noOfReviews)
-                    isVisible.append(vehicle.isVisible)
-                    vehicleIds.append(vehicle.vehicle_id)
+                    # Fetch related model and offer information
+                    model = Model.objects.get(model_id=vehicle.model_id)
+                    offer = Offer.objects.filter(model=vehicle.model, dealer=dealership).first()
 
-                    # price, rating, offerId, image
-                    offer = Offer.objects.get(model=vehicle.model, dealer=dealership)
-                    prices.append(offer.price)
-                    ratings.append(offer.rating)
-                    offerIds.append(offer.offer_id)
-                    images.append(offer.image)
-
-                    current = {
-                        "makeName": model.makeName,
-                        "modelName": model.modelName,
-                        "registration": vehicle.registration,
-                        "noOfReviews": vehicle.noOfReviews,
-                        "isVisible": vehicle.isVisible,
-                        "vehicleId": vehicle.vehicle_id,
-                        "price": offer.price,
-                        "rating": offer.rating,
-                        "offerId": offer.offer_id,
-                        "image": offer.image,
-                    }
+                    if offer:
+                        current = {
+                            "makeName": model.makeName,
+                            "modelName": model.modelName,
+                            "registration": vehicle.registration,
+                            "noOfReviews": vehicle.noOfReviews,
+                            "isVisible": vehicle.isVisible,
+                            "vehicleId": vehicle.vehicle_id,
+                            "price": offer.price,
+                            "rating": offer.rating,
+                            "offerId": offer.offer_id,
+                            "image": request.build_absolute_uri(offer.image.url)
+                                if offer.image
+                                else None
+                        }
+                    else:
+                        current = {
+                            "makeName": model.makeName,
+                            "modelName": model.modelName,
+                            "registration": vehicle.registration,
+                            "noOfReviews": vehicle.noOfReviews,
+                            "isVisible": vehicle.isVisible,
+                            "vehicleId": vehicle.vehicle_id,
+                            "price": None,
+                            "rating": None,
+                            "offerId": None,
+                            "image": None,
+                        }
                     res.append(current)
+
                 retObject = {
-                    "results": res[(page - 1) * limit : page * limit],
-                    "isLastPage": True if len(res) <= page * limit else False,
+                    "results": res,
+                    "isLastPage": not vehicles.has_next(),  # Check if it's the last page
                 }
                 return JsonResponse(retObject, status=200)
-            except:
-                return Response(
+            except Dealership.DoesNotExist:
+                return JsonResponse(
                     {
                         "success": 0,
                         "message": "Company does not exist or has no vehicles yet!",
                     },
                     status=200,
                 )
-
+            except Exception as e:
+                print(e)
+                return JsonResponse(
+                    {
+                        "success": 0,
+                        "message": f"An error occurred: {str(e)}",
+                    },
+                    status=500,
+                )
+            
 
 @login_required
 @api_view(["PUT"])
@@ -1438,7 +1473,6 @@ def companyLocation(request, location_id):
                         }
                         for workingHour in workingHours
                     ],
-                    "isLastPage": True,
                 }
                 return JsonResponse(retObject, status=200)
             except:
@@ -2345,7 +2379,7 @@ def companyLogCompleted(request, vehicle_id):
 )
 @login_required
 @api_view(["GET"])
-def companyLogReviews(request, query):
+def companyLogReviews(request, vehicle_id):
     if request.method == "GET":
         user = request.user
         if user.is_authenticated:
@@ -2353,7 +2387,6 @@ def companyLogReviews(request, query):
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
                 dealership = Dealership.objects.get(user=user.id)
-                vehicle_id = request.GET.get("vehicleId")
                 rents = Rent.objects.get(dealer=dealership, vehicle_id=vehicle_id)
                 page = int(request.GET.get("page", 1))
                 limit = int(request.GET.get("limit", 10))
