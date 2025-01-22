@@ -5,7 +5,7 @@ import VehicleList from '@/components/shared/cars/VechileList/VechileList';
 import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { CustomGet } from '@/fetchers/get';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Flex,
   useDisclosure,
@@ -38,8 +38,8 @@ import Footer from '@/components/shared/Footer/Footer';
 import { useUserContext } from '@/context/UserContext/UserContext';
 import LogOutButton from '@/components/shared/auth/LogOutButton/LogOutButton';
 import {
+  ICar,
   IRentalEntry,
-  IRentals,
   IReviewable,
   toOffer,
 } from '@/typings/vehicles/vehicles.type';
@@ -49,6 +49,7 @@ import { CustomPost } from '@/fetchers/post';
 import CustomInput from '@/components/shared/auth/CustomInput';
 import { useForm } from 'react-hook-form';
 import { Overlay } from '@/components/shared/filter/overlay/Overlay';
+import { mockReviews } from '@/mockData/mockReviews';
 
 const userProfileFooterLinks = {
   quickLinks: [
@@ -100,22 +101,37 @@ export default function UserProfilePage() {
     }
   );
 
-  const previouslyRented = (Array.isArray(entries) ? entries : [])
-    .filter((vehicle) => vehicle.dateTimeReturned !== undefined)
-    .map((vehicle) => {
-      console.log(`rented: ${!vehicle.canReview}`, vehicle);
-      let item = toOffer(vehicle) as IReviewable;
-      item.rated = !vehicle.canReview;
-      return item;
-    });
+  const [currentRentals, setCurrent] = useState([] as ICar[])
+  const [previouslyRented, setPrevious] = useState([] as ICar[])
 
-  const currentRentals = (Array.isArray(entries) ? entries : [])
-    .filter((vehicle) => vehicle.dateTimeReturned === undefined)
+  useEffect (() => {
+    console.log("logging", entries, Array.isArray(entries))
+
+    const prev = Array.isArray(entries) ? entries.filter((vehicle) => new Date(vehicle.dateTimeReturned) > new Date())
+      .map((vehicle) => {
+        let item = toOffer(vehicle) as IReviewable;
+        item.rated = !vehicle.canReview;
+        // console.log(item)
+        return item;
+      }).sort((v, _) => v.rated === undefined || v.rated ? 1 : -1) : [];
+
+    const curr = Array.isArray(entries) ? entries.filter((vehicle) => new Date(vehicle.dateTimeReturned) <= new Date())
     .map((vehicle) => {
-      console.log('current', vehicle);
+      // console.log(toOffer(vehicle))
       return toOffer(vehicle);
-    });
+    }) : [];
 
+    console.log(prev);
+    console.log(curr);
+
+    if (prev.length > 0) setPrevious(prev);
+    if (curr.length > 0) setCurrent(curr)
+
+    console.log(previouslyRented);
+    console.log(currentRentals)
+
+  }, [entries]) 
+  
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
   };
@@ -244,14 +260,24 @@ export default function UserProfilePage() {
               {`${user.firstName ? `${user.firstName}'s` : 'Your'} Profile`}
             </Heading>
             <Divider />
-            <VehicleList
-              vehicles={currentRentals}
-              description="Ongoing rentals:"
-            />
-            <VehicleList
-              vehicles={previouslyRented}
-              description="Previously rented:"
-            />
+            {Array.isArray(currentRentals) ? (
+              <VehicleList 
+                justify={"flex-start"}
+                vehicles={previouslyRented} 
+                description="Ongoing rentals:"
+              />
+            ) : (
+              <Heading size = "md" color = "brandblue" opacity={0.5} >No ongoing rentals</Heading>
+            )}
+            {Array.isArray(previouslyRented) ? (
+              <VehicleList
+                justify={"flex-start"}
+                vehicles={previouslyRented}
+                description="Previously rented:"
+              />
+            ) : (
+              <Heading size="md" color = "brandblue" opacity={0.5} >No previous rentals</Heading>
+            )}
           </Flex>
 
           {/* Chats Section (UNIMPLEMENTED) */}

@@ -31,6 +31,7 @@ import DeleteButton from '@/components/shared/auth/DeleteButton/DeleteButton';
 import { CustomGet } from '@/fetchers/get';
 import useSWR from 'swr';
 import { CustomPost } from '@/fetchers/post';
+import Header from '@/components/shared/Header/Header';
 
 export default function EditPage() {
   const [isStylesLoaded, setIsStylesLoaded] = useState(false);
@@ -143,9 +144,12 @@ export default function EditPage() {
   return success ? (
     <SuccessWindow />
   ) : (
+    <Flex direction={"column"} width={"100%"} justify={"space-between"}>
+    <Header></Header>
     <Box
       width={boxWidth}
       margin="0 auto"
+      flex={3}
       my="10"
       p={{ base: 4, md: 6 }}
       boxShadow="0 0 15px rgba(0, 0, 0, 0.2)"
@@ -218,19 +222,21 @@ export default function EditPage() {
                 </Flex>
                 {/* Buttons */}
                 <Flex
-                  direction={{ base: 'column', md: 'row' }}
+                  direction={{ base: 'column-reverse', md: 'row' }}
                   gap={4}
                   mt={6}
                   justify="center"
                   align="center"
                 >
                   <SupportButton
+                    mt={8}
                     href="/myProfile"
                     w={{ base: '100%', md: '30%' }}
                   >
                     Cancel
                   </SupportButton>
                   <SubmitButton
+                    mt={8}
                     label="Save changes"
                     submittingLabel="Trying to save..."
                     isSubmitting={isSubUser}
@@ -276,14 +282,30 @@ export default function EditPage() {
                     placeholder="Repeat new password"
                     error={errPass.confirmPassword?.message}
                   />
-                  <SubmitButton
-                    mt={4}
-                    alignSelf={'flex-start'}
-                    label="Reset Password"
-                    submittingLabel="Trying to reset..."
-                    isSubmitting={isSubPass}
-                    w={{ base: '100%', md: '30%' }}
-                  />
+                  <Flex
+                    direction={{ base: 'column-reverse', md: 'row' }}
+                    gap={4}
+                    mt={6}
+                    justify="center"
+                    align="center"
+                    width={"100%"}
+                  >
+                   <SupportButton
+                      mt={4}
+                      href="/myProfile"
+                      w={{ base: '100%', md: '30%' }}
+                    >
+                      Cancel
+                    </SupportButton>
+                    <SubmitButton
+                      mt={4}
+                      alignSelf={'flex-start'}
+                      label="Reset Password"
+                      submittingLabel="Trying to reset..."
+                      isSubmitting={isSubPass}
+                      w={{ base: '100%', md: '30%' }}
+                    />
+                  </Flex>
                 </VStack>
               </chakra.form>
             </TabPanel>
@@ -305,21 +327,24 @@ export default function EditPage() {
                   - <cite>Gandalf the Gray</cite>
                 </Box>
               </Flex>
-              <DeleteButton
-                label="Delete Account"
-                mt="10"
-                password={dataGet?.password}
-                float={'right'}
-                bg="brandyellow"
-                _hover={{
-                  transform: 'translateY(-2px)',
-                  transition: 'transform 0.2s ease, box-shadow 0.3s ease',
-                }}
-              />
+              <Flex direction={{base: "column-reverse", md: "row"}} justify={"space-between"} mt={10} gap={4}>
+                <SupportButton
+                  mt="2px"
+                  href="/myProfile"
+                  w={{ base: '100%', md: '30%' }}
+                >
+                  Cancel
+                </SupportButton>
+                <DeleteButton
+                  label="Delete Account"
+                  password={dataGet?.password}
+                />
+              </Flex>
             </TabPanel>
           </TabPanels>
         </Tabs>
       </Flex>
     </Box>
+    </Flex>
   );
 }

@@ -1,14 +1,14 @@
 'use client';
 
-import { Flex, Heading, IconButton } from '@chakra-ui/react';
+import { Flex, FlexProps, Heading, IconButton } from '@chakra-ui/react';
 import { FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import React, { useState, useRef, useEffect } from 'react';
 import VehicleCard from '../VehicleCard/VechileCard';
 import { mockVehicles } from '@/mockData/mockVehicles';
 import { NextRouter } from 'next/router';
-import { ICar } from '@/fetchers/homeData';
+import { ICar } from '@/typings/vehicles/vehicles.type';
 
-interface VehicleListProps {
+interface VehicleListProps extends FlexProps {
   vehicles?: Array<ICar>;
   description?: string;
   numCards?: number;
@@ -20,6 +20,8 @@ export default function VehicleList({
   description = '',
   numCards = 4,
   cardGap = 24,
+  justify = "center",
+  ...rest
 }: VehicleListProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -55,7 +57,7 @@ export default function VehicleList({
   const cardWidth = 260;
 
   useEffect(() => {
-    let neededLength = numCards_d * cardWidth + (numCards_d - 1) * cardGap + 90;
+    let neededLength = numCards_d * cardWidth + (numCards_d - 1) * cardGap + 120;
     if (numCards_d > 1 && neededLength > containerWidth)
       setNumCard(numCards_d - 1);
     else if (
@@ -76,6 +78,7 @@ export default function VehicleList({
   };
 
   const visibleVehicles = vehicles.slice(startIndex, startIndex + numCards_d);
+  const justify_ = justify= numCards <= vehicles.length ? justify : "center"
 
   return (
     <Flex
@@ -90,9 +93,14 @@ export default function VehicleList({
           {description}
         </Heading>
       )}
-      <Flex position="relative" align="center" width="100%" mb={4}>
+      <Flex 
+        position="relative" 
+        align="center" 
+        width="100%" mb={4} 
+        justify={justify_}
+      >
         {/* Left Scroll Button */}
-        <Flex width="40px" justify={'center'} align={'center'}>
+        <Flex width="60px" justify={'center'} align={'center'}>
           {startIndex > 0 && (
             <IconButton
               mx="none"
@@ -109,7 +117,7 @@ export default function VehicleList({
         <Flex
           flex="1"
           overflow="hidden"
-          justify="center"
+          justify={justify_}
           align="center"
           gap={`${cardGap}px`}
           minWidth={cardWidth + cardGap}
@@ -121,7 +129,7 @@ export default function VehicleList({
         </Flex>
 
         {/* Right Scroll Button */}
-        <Flex width="40px" justify={'center'} align={'center'}>
+        <Flex width="60px" justify={'center'} align={'center'}>
           {startIndex < vehicles.length - numCards && (
             <IconButton
               mx="none"

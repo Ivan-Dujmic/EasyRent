@@ -1,3 +1,5 @@
+import { IRentalEntry } from "../vehicles/vehicles.type";
+
 export interface IUser {
   role: "guest" | "user" | "company" | "admin"
   firstName?: string;
@@ -5,6 +7,7 @@ export interface IUser {
   companyName?: string;
   balance?: number;
   user_id: number
+  rentals?: IRentalEntry[]
 }
 
 export interface IReview {

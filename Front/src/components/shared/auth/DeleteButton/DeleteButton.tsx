@@ -66,7 +66,7 @@ export default function DeleteButton({
     <Button
       type="button"
       borderRadius="md"
-      bg="red"
+      bg="crimson"
       border="2px solid"
       color="brandblack"
       borderColor="white"
@@ -74,7 +74,7 @@ export default function DeleteButton({
         bg: 'brandwhite',
         color: 'brandblack',
         border: "2px solid",
-        borderColor: "red",
+        borderColor: "crimson",
         transition: 'all 0.3s ease', // Smooth hover animation
       }}
       _disabled={{

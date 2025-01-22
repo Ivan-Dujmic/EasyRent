@@ -34,14 +34,12 @@ export default function VehicleCard({
   } = useDisclosure();
 
   let vehicle = maybeVehicle as IReviewable;
-  let isReviewable = vehicle.rated !== undefined;
-  let isReviewed = !isReviewable || vehicle.rated;
+  let isReviewable = vehicle.rated !== undefined && !vehicle.rated;
 
   return (
     <Card
       margin={0}
-      as={NextLink}
-      href={!isReviewable ? `/offer/${vehicle.offer_id}` : {}}
+      {...!isReviewable ? {as: NextLink, href: `/offer/${vehicle.offer_id}`} : {}}
       maxW="260px"
       minW="260px"
       height="250px" // Fixed height for consistency
@@ -73,7 +71,7 @@ export default function VehicleCard({
       >
         <GrayFilter
           onClick={onOpenReview}
-          show={!isReviewed}
+          show={isReviewable}
           _hover={{
             opacity: 0,
           }}
