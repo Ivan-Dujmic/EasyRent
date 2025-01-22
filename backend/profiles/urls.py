@@ -12,10 +12,11 @@ urlpatterns = [
     path("user/delete/", views.userDelete, name="userDelete"),
     path("company/vehicles/", views.companyVehicles, name="companyVehicles"),
     path(
-        "company/toggle-vehicle-visibility/",
+        "company/toggle-vehicle-visibility/<int:vehicle_id>/",
         views.toogleVehicleVisibility,
         name="toggleVehicleVisibility",
     ),
+    path("company/toggle-offer-visibility/<int:offer_id>/", views.toggleOfferVisibility, name="toggleOfferVisibility"),
     path(
         "company/log/upcoming/", views.upcomingCompanyRents, name="upcomingCompanyRents"
     ),
@@ -32,7 +33,7 @@ urlpatterns = [
     path("company/info/", views.companyInfo, name="companyInfo"),
     path("company/pass/", views.companyPasswordChange, name="companyPasswordChange"),
     path("company/locations/", views.companyLocations, name="companyLocations"),
-    path("company/setHQ/", views.companySetHQ, name="companySetHQ"),
+    path("company/setHQ/<int:location_id>/", views.companySetHQ, name="companySetHQ"),
     path(
         "company/location/<int:location_id>/",
         views.companyLocation,
@@ -49,16 +50,11 @@ urlpatterns = [
     ),
     path("company/vehicle/", views.companyVehicle, name="companyVehicle"),
     path("company/offer/", views.companyOffer, name="companyOffer"),
-    path("company/vehicle-log/", views.companyVehicleLog, name="companyVehicleLog"),
+    path("company/vehicle-log/<int:vehicle_id>/", views.companyVehicleLog, name="companyVehicleLog"),
     path(
         "company/log-upcoming/<int:vehicle_id>/",
         views.companyLogUpcoming,
         name="companyLogUpcoming",
-    ),
-    path(
-        "company/log-ongoing/<int:vehicle_id>/",
-        views.companyLogOngoing,
-        name="companyLogOngoing",
     ),
     path(
         "company/log-completed/<int:vehicle_id>/",

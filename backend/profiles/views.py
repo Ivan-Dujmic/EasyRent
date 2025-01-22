@@ -687,17 +687,17 @@ def companyVehicles(request):
 
 @login_required
 @api_view(["PUT"])
-def toogleVehicleVisibility(request):
+def toogleVehicleVisibility(request, vehicle_id):
     if request.method == "PUT":
         user = request.user
         if user.is_authenticated:
             data = request.data
-            if not data.get("vehicleId"):
+            if not vehicle_id:
                 return Response(
                     {"success": 0, "message": "Vehicle ID is required"}, status=400
                 )
             try:
-                vehicle = Vehicle.objects.get(vehicle_id=data.get("vehicleId"))
+                vehicle = Vehicle.objects.get(vehicle_id=vehicle_id)
                 vehicle.isVisible = not vehicle.isVisible
                 vehicle.save()
                 return Response(
@@ -709,7 +709,7 @@ def toogleVehicleVisibility(request):
                 )
             except:
                 return Response(
-                    {"success": 0, "message": "Company has no vehicles yet!"},
+                    {"success": 0, "message": "This vehicle does not exist"},
                     status=200,
                 )
         else:
@@ -794,19 +794,19 @@ def companyOffers(request):
 
 @login_required
 @api_view(["PUT"])
-def toggleOfferVisibility(request):
+def toggleOfferVisibility(request, offer_id):
     if request.method == "PUT":
         user = request.user
         if user.is_authenticated:
             data = request.data
-            if not data.get("offerId"):
+            if not offer_id:
                 return Response(
                     {"success": 0, "message": "Offer ID is required"}, status=400
                 )
             try:
                 dealership = Dealership.objects.get(user=user.id)
-                offer = Offer.objects.get(offer_id=data.get("offerId"))
-                vehicles = Vehicle.objects.get(model=offer.model, dealer=dealership)
+                offer = Offer.objects.get(offer_id=offer_id)
+                vehicles = Vehicle.objects.filter(model=offer.model, dealer=dealership)
                 if all(not vehicle.isVisible for vehicle in vehicles):
                     for vehicle in vehicles:
                         vehicle.isVisible = True
@@ -820,9 +820,10 @@ def toggleOfferVisibility(request):
                     {"success": 1, "message": "Offer visibility toggled successfully"},
                     status=200,
                 )
-            except:
+            except Exception as e:
+                print(e)
                 return Response(
-                    {"success": 0, "message": "Company has no offers yet!"}, status=200
+                    {"success": 0, "message": "This offer does not exist!"}, status=200
                 )
         else:
             return Response(
@@ -1401,34 +1402,35 @@ def companyLocations(request):
 
 @login_required
 @api_view(["PUT"])
-def companySetHQ(request):
+def companySetHQ(request, location_id):
     if request.method == "PUT":
         user = request.user
         if user.is_authenticated:
             data = request.data
-            if not data.get("locationId"):
+            if not location_id:
                 return Response(
                     {"success": 0, "message": "Location ID is required"}, status=200
                 )
             try:
                 dealership = Dealership.objects.get(user=user.id)
-                locations = Location.objects.get(dealership_id=dealership.dealership_id)
+                locations = Location.objects.filter(dealership_id=dealership.dealership_id)
 
                 for location in locations:
                     location.isHQ = False
                     location.save()
-                location = Location.objects.get(location_id=data.get("locationId"))
+                location = Location.objects.get(dealership_id=dealership.dealership_id, location_id=location_id)
                 location.isHQ = True
                 location.save()
                 return Response(
                     {"success": 1, "message": "HQ location set successfully"},
                     status=200,
                 )
-            except:
+            except Exception as e:
+                print(e)
                 return Response(
                     {
                         "success": 0,
-                        "message": "Company has no locations yet or does not exist!",
+                        "message": "Location does not exist!",
                     },
                     status=200,
                 )
@@ -2094,17 +2096,15 @@ def companyOffer(request):
 )
 @login_required
 @api_view(["GET"])
-def companyVehicleLog(request):
+def companyVehicleLog(request, vehicle_id):
     if request.method == "GET":
         user = request.user
         if user.is_authenticated:
             try:
-                vehicle_id = request.GET.get("vehicleId")
-                dealership = Dealership.objects.get(user=user.id)
                 vehicle = Vehicle.objects.get(vehicle_id=vehicle_id)
                 model = Model.objects.get(model_id=vehicle.model_id)
                 location = Location.objects.get(location_id=vehicle.location_id)
-                rents = Rent.objects.get(vehicle_id=vehicle_id)
+                rents = Rent.objects.filter(vehicle_id=vehicle_id)
                 rentCount = 0
                 rentTime = 0
                 moneyMade = 0
@@ -2118,7 +2118,7 @@ def companyVehicleLog(request):
                     returnLocation = Location.objects.get(
                         location_id=rent.returnLocation_id
                     )
-                    if rent.dateTimeReturned >= datetime.now():
+                    if rent.dateTimeReturned >= (make_aware(datetime.now()) if datetime.now().tzinfo is None else datetime.now()) and rent.dateTimeRented <= (make_aware(datetime.now()) if datetime.now().tzinfo is None else datetime.now()):
                         onGoing = {
                             "pickUpDateTime": rent.dateTimeRented,
                             "dropOffDateTime": rent.dateTimeReturned,
@@ -2135,7 +2135,8 @@ def companyVehicleLog(request):
                             + returnLocation.streetNo,
                         }
                     rentTime += (
-                        rent.dateTimeReturned - rent.dateTimeRented
+                        (make_aware(rent.dateTimeReturned) if rent.dateTimeReturned.tzinfo is None else rent.dateTimeReturned) - 
+                        (make_aware(rent.dateTimeRented) if rent.dateTimeRented.tzinfo is None else rent.dateTimeRented)
                     ).total_seconds()
                     rentCount += 1
                     moneyMade += rent.price
@@ -2154,7 +2155,8 @@ def companyVehicleLog(request):
                 }
 
                 return JsonResponse(retObject, status=200)
-            except:
+            except Exception as e:
+                print(e)
                 return Response(
                     {
                         "success": 0,
@@ -2212,77 +2214,6 @@ def companyLogUpcoming(request, vehicle_id):
                     rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
                     rentUser = User.objects.get(id=rentoid.user_id)
                     if rent.dateTimeRented >= make_aware(datetime.now()):
-                        item = {
-                            "dateTimePickup": rent.dateTimeRented,
-                            "dateTimeReturned": rent.dateTimeReturned,
-                            "firstName": rentUser.first_name,
-                            "lastName": rentUser.last_name,
-                            "price": rent.price,
-                            "pickUpLocation": rent.rentedLocation_id,
-                            "dropOffLocation": rent.returnLocation_id,
-                        }
-                        res.append(item)
-                retObject = {
-                    "results": res[(page - 1) * limit : page * limit],
-                    "isLastPage": True if len(res) <= page * limit else False,
-                }
-
-                return JsonResponse(retObject, status=200)
-            except:
-                return Response(
-                    {
-                        "success": 0,
-                        "message": "Company does not exist or has no offers yet!",
-                    },
-                    status=404,
-                )
-
-
-@extend_schema(
-    methods=["GET"],
-    operation_id="get_company_log_ongoing",
-    tags=["profile"],
-    responses={
-        200: GetCompanyLog(many=True),
-    },
-    parameters=[
-        OpenApiParameter(
-            name="page",
-            type=int,
-            location=OpenApiParameter.QUERY,
-            description="Page as integer",
-            required=False,
-            default=1,
-        ),
-        OpenApiParameter(
-            name="limit",
-            type=int,
-            location=OpenApiParameter.QUERY,
-            description="Limit as integer",
-            required=False,
-            default=1,
-        ),
-    ],
-)
-@login_required
-@api_view(["GET"])
-def companyLogOngoing(request, vehicle_id):
-    if request.method == "GET":
-        user = request.user
-        if user.is_authenticated:
-            try:
-                dealership = Dealership.objects.get(user=user.id)
-                rents = Rent.objects.filter(dealer=dealership, vehicle=vehicle_id)
-                page = int(request.GET.get("page", 1))
-                limit = int(request.GET.get("limit", 10))
-                res = []
-                for rent in rents:
-
-                    if rent.dateTimeRented <= make_aware(
-                        datetime.now()
-                    ) and rent.dateTimeReturned > make_aware(datetime.now()):
-                        rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
-                        rentUser = User.objects.get(id=rentoid.user_id)
                         item = {
                             "dateTimePickup": rent.dateTimeRented,
                             "dateTimeReturned": rent.dateTimeReturned,
