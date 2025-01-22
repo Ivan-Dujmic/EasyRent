@@ -13,11 +13,10 @@ import {
 import { IoPersonSharp } from 'react-icons/io5';
 import { TbManualGearboxFilled, TbAutomaticGearbox } from 'react-icons/tb';
 import NextLink from 'next/link';
-import { IReviewable } from '@/typings/vehicles/vehicles.type';
+import { ICar, IReviewable } from '@/typings/vehicles/vehicles.type';
 import ReviewForm from '../../review/ReviewForm';
 import { useRouter } from 'next/navigation';
 import GrayFilter from '../../filter/overlay/GrayFilter';
-import { ICar } from '@/fetchers/homeData';
 
 interface VehicleCardProps {
   vehicle: ICar;

@@ -1,4 +1,5 @@
-import { IOffer } from '@/fetchers/homeData';
+
+import { IOffer } from '@/typings/vehicles/vehicles.type';
 import { StarIcon } from '@chakra-ui/icons';
 import { Box, Flex, Heading, Text, Image, Stack } from '@chakra-ui/react';
 import { IoPersonSharp } from 'react-icons/io5';
