@@ -1370,6 +1370,7 @@ def companyLocations(request):
                     dealership_id=dealership.dealership_id
                 )
                 res = [{}]
+                hq_location = None
                 for location in locations:
                     current = {
                         "cityName": location.cityName,
@@ -1379,9 +1380,11 @@ def companyLocations(request):
                         "locationId": location.location_id,
                     }
                     if location.isHQ:
-                        res[0] = current
+                        hq_location = current
                     else:
                         res.append(current)
+                if hq_location:
+                    res.insert(0, hq_location)
                 retObject = {"results": res, "isLastPage": True}
                 return JsonResponse(retObject, status=200)
             except:
@@ -1506,6 +1509,26 @@ def companyLocation(request, location_id):
                     location_id=location_id,
                     dealership_id=dealership.dealership_id,
                 )
+                if location.isHQ:
+                    return Response(
+                        {
+                            "success": 0,
+                            "message": "Cannot delete HQ location!",
+                        },
+                        status=400,
+                    )
+                upcoming_rentals = Rent.objects.filter(
+                    vehicle__location=location,
+                    dateTimeRented__gte=make_aware(datetime.now())
+                )
+                if upcoming_rentals.exists():
+                    return Response(
+                        {
+                            "success": 0,
+                            "message": "Cannot delete location with upcoming rentals!",
+                        },
+                        status=400,
+                    )
                 location.delete()
                 return Response(
                     {"success": 1, "message": "Location deleted successfully"},
@@ -1515,9 +1538,9 @@ def companyLocation(request, location_id):
                 return Response(
                     {
                         "success": 0,
-                        "message": "Company has no locations yet or does not exist!",
+                        "message": "Location does not exist!",
                     },
-                    status=200,
+                    status=400,
                 )
         else:
             return Response(
@@ -1721,21 +1744,32 @@ def deleteCompany(request):
         200: GetCompanyVehicleEdit(),
     },
 )
+@extend_schema(
+    methods=["PUT"],
+    operation_id="put_company_vehicle_id",
+    tags=["profile"],
+    request=CompanyEditVehicleSerializer
+)
+@extend_schema(
+    methods=["DELETE"],
+    operation_id="delete_company_vehicle_id",
+    tags=["profile"],
+)
 @login_required
-@api_view(["PUT", "GET"])
-def companyVehicleEdit(request):
+@api_view(["PUT", "GET", "DELETE"])
+def companyVehicleEdit(request, vehicle_id):
     if request.method == "PUT":
         user = request.user
         if user.is_authenticated:
             data = request.data
-            if not request.GET.get("vehicleId"):
+            if not vehicle_id:
                 return Response(
                     {"success": 0, "message": "Vehicle ID is required"}, status=400
                 )
             try:
                 dealership = Dealership.objects.get(user=user.id)
                 vehicle = Vehicle.objects.get(
-                    vehicle_id=request.GET.get("vehicleId"),
+                    vehicle_id=vehicle_id,
                     dealer=dealership,
                 )
                 hasUpcomingRental = False
@@ -1746,18 +1780,18 @@ def companyVehicleEdit(request):
                     if rental.dateTimeRented >= datetime.now():
                         hasUpcomingRental = True
                         break
-                if hasUpcomingRental:
-                    return Response(
-                        {
-                            "success": 0,
-                            "message": "Vehicle has upcoming rentals, cannot change location!",
-                        },
-                        status=200,
-                    )
                 if data.get("registration"):
                     vehicle.registration = data.get("registration")
-                if data.get("locationId"):
-                    vehicle.location_id = data.get("locationId")
+                if data.get("location_id"):
+                    if hasUpcomingRental and vehicle.location_id != data.get("location_id"):
+                        return Response(
+                            {
+                                "success": 0,
+                                "message": "Vehicle has upcoming rentals, cannot change location!",
+                            },
+                            status=400,
+                        )
+                    vehicle.location_id = data.get("location_id")
                 vehicle.save()
                 return Response(
                     {"success": 1, "message": "Vehicle updated successfully"},
@@ -1775,60 +1809,22 @@ def companyVehicleEdit(request):
             return Response(
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
-
-    elif request.method == "GET":
-        user = request.user
-        if user.is_authenticated:
-            try:
-                dealership = Dealership.objects.get(user=user.id)
-                # Return: {registration, streetName, streetNo, cityName, location_id}
-                vehicle = Vehicle.objects.filter(
-                    dealer=dealership,
-                    vehicle_id=request.GET.get("vehicleId"),
-                )
-                location = location.objects.get(location_id=vehicle.location_id)
-                retObject = {
-                    "registration": vehicle.registration,
-                    "streetName": location.streetName,
-                    "streetNo": location.streetNo,
-                    "cityName": location.cityName,
-                    "locationId": location.location_id,
-                }
-                return JsonResponse(retObject, status=200)
-            except:
-                return Response(
-                    {
-                        "success": 0,
-                        "message": "Company does not exist or has no vehicles yet!",
-                    },
-                    status=200,
-                )
-
-
-@login_required
-@extend_schema(
-    methods=["POST"],
-    operation_id="post_company_vehicle",
-    tags=["profile"],
-    request=CompanyVehicleSerializer,
-)
-@api_view(["DELETE", "POST"])
-def companyVehicle(request):
-    if request.method == "DELETE":
+        
+    elif request.method == "DELETE":
         user = request.user
         if user.is_authenticated:
             data = request.data
-            if not request.GET.get("vehicleId"):
+            if not vehicle_id:
                 return Response(
                     {"success": 0, "message": "Vehicle ID is required"}, status=400
                 )
             try:
                 dealership = Dealership.objects.get(user=user.id)
                 vehicle = Vehicle.objects.get(
-                    vehicle_id=request.GET.get("vehicleId"),
+                    vehicle_id=vehicle_id,
                     dealer=dealership,
                 )
-                vehicles = Vehicle.objects.get(
+                vehicles = Vehicle.objects.filter(
                     dealer=dealership, model_id=vehicle.model_id
                 )
                 hasUpcomingRental = False
@@ -1857,7 +1853,8 @@ def companyVehicle(request):
                     {"success": 1, "message": "Vehicle deleted successfully"},
                     status=200,
                 )
-            except:
+            except Exception as e:
+                print(e)
                 return Response(
                     {
                         "success": 0,
@@ -1870,6 +1867,45 @@ def companyVehicle(request):
                 {"success": 0, "message": "User not authenticated"}, status=401
             )
 
+
+    elif request.method == "GET":
+        user = request.user
+        if user.is_authenticated:
+            try:
+                dealership = Dealership.objects.get(user=user.id)
+                # Return: {registration, streetName, streetNo, cityName, location_id}
+                vehicle = Vehicle.objects.get(
+                    dealer=dealership,
+                    vehicle_id=vehicle_id,
+                )
+                location = Location.objects.get(location_id=vehicle.location_id)
+                retObject = {
+                    "registration": vehicle.registration,
+                    "streetName": location.streetName,
+                    "streetNo": location.streetNo,
+                    "cityName": location.cityName,
+                    "locationId": location.location_id,
+                }
+                return JsonResponse(retObject, status=200)
+            except:
+                return Response(
+                    {
+                        "success": 0,
+                        "message": "Vehicle does not exist!",
+                    },
+                    status=200,
+                )
+
+
+@login_required
+@extend_schema(
+    methods=["POST"],
+    operation_id="post_company_vehicle",
+    tags=["profile"],
+    request=CompanyVehicleSerializer,
+)
+@api_view(["POST"])
+def companyVehicle(request):
     if request.method == "POST":
         user = request.user
         if user.is_authenticated:
@@ -2006,14 +2042,14 @@ def getCompanyOffer(request, offerId):
         user = request.user
         if user.is_authenticated:
             data = request.data
-            if not data.get("offerId"):
+            if not offerId:
                 return Response(
                     {"success": 0, "message": "Offer ID is required"}, status=400
                 )
             try:
                 dealership = Dealership.objects.get(user=user.id)
                 offer = Offer.objects.get(
-                    offer_id=request.data.get("offerId"),
+                    offer_id=offerId
                 )
                 offer.delete()
                 return Response(
@@ -2023,7 +2059,7 @@ def getCompanyOffer(request, offerId):
                 return Response(
                     {
                         "success": 0,
-                        "message": "Company does not exist or has no offers yet!",
+                        "message": "Offer does not exist",
                     },
                     status=200,
                 )

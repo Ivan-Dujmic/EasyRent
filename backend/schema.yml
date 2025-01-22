@@ -840,42 +840,6 @@ paths:
                 items:
                   $ref: '#/components/schemas/GetCompanyLog'
           description: ''
-  /api/profile/company/log-ongoing/{vehicle_id}/:
-    get:
-      operationId: get_company_log_ongoing
-      parameters:
-      - in: query
-        name: limit
-        schema:
-          type: integer
-          default: 1
-        description: Limit as integer
-      - in: query
-        name: page
-        schema:
-          type: integer
-          default: 1
-        description: Page as integer
-      - in: path
-        name: vehicle_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - profile
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/GetCompanyLog'
-          description: ''
   /api/profile/company/log-reviews/{vehicle_id}/:
     get:
       operationId: get_company_log_reviews
@@ -1124,6 +1088,19 @@ paths:
   /api/profile/company/offers/:
     get:
       operationId: get_company_offers
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 10
+        description: Limit as integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Page as integer
       tags:
       - profile
       security:
@@ -1194,9 +1171,15 @@ paths:
                 items:
                   $ref: '#/components/schemas/GetCompanyReviews'
           description: ''
-  /api/profile/company/setHQ/:
+  /api/profile/company/setHQ/{location_id}/:
     put:
       operationId: api_profile_company_setHQ_update
+      parameters:
+      - in: path
+        name: location_id
+        schema:
+          type: integer
+        required: true
       tags:
       - api
       security:
@@ -1206,9 +1189,33 @@ paths:
       responses:
         '200':
           description: No response body
-  /api/profile/company/toggle-vehicle-visibility/:
+  /api/profile/company/toggle-offer-visibility/{offer_id}/:
+    put:
+      operationId: api_profile_company_toggle_offer_visibility_update
+      parameters:
+      - in: path
+        name: offer_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/profile/company/toggle-vehicle-visibility/{vehicle_id}/:
     put:
       operationId: api_profile_company_toggle_vehicle_visibility_update
+      parameters:
+      - in: path
+        name: vehicle_id
+        schema:
+          type: integer
+        required: true
       tags:
       - api
       security:
@@ -1242,20 +1249,15 @@ paths:
       responses:
         '200':
           description: No response body
-    delete:
-      operationId: api_profile_company_vehicle_destroy
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '204':
-          description: No response body
-  /api/profile/company/vehicle-log/:
+  /api/profile/company/vehicle-log/{vehicle_id}/:
     get:
       operationId: get_company_vehicle_log
+      parameters:
+      - in: path
+        name: vehicle_id
+        schema:
+          type: integer
+        required: true
       tags:
       - profile
       security:
@@ -1272,6 +1274,19 @@ paths:
   /api/profile/company/vehicles/:
     get:
       operationId: get_company_vehicles
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 10
+        description: Limit as integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Page as integer
       tags:
       - profile
       security:
@@ -1287,9 +1302,15 @@ paths:
                 items:
                   $ref: '#/components/schemas/GetCompanyVehicles'
           description: ''
-  /api/profile/company/vehicles/edit-vehicle/:
+  /api/profile/company/vehicles/edit-vehicle/{vehicle_id}/:
     get:
       operationId: get_company_vehicle_id
+      parameters:
+      - in: path
+        name: vehicle_id
+        schema:
+          type: integer
+        required: true
       tags:
       - profile
       security:
@@ -1304,15 +1325,50 @@ paths:
                 $ref: '#/components/schemas/GetCompanyVehicleEdit'
           description: ''
     put:
-      operationId: api_profile_company_vehicles_edit_vehicle_update
+      operationId: put_company_vehicle_id
+      parameters:
+      - in: path
+        name: vehicle_id
+        schema:
+          type: integer
+        required: true
       tags:
-      - api
+      - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyEditVehicleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompanyEditVehicleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompanyEditVehicleRequest'
+        required: true
       security:
       - cookieAuth: []
       - basicAuth: []
       - {}
       responses:
         '200':
+          description: No response body
+    delete:
+      operationId: delete_company_vehicle_id
+      parameters:
+      - in: path
+        name: vehicle_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - profile
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
           description: No response body
   /api/profile/user/delete/:
     post:
@@ -1454,19 +1510,6 @@ paths:
   /api/profile/user/rentals/:
     get:
       operationId: get_user_rentals
-      parameters:
-      - in: query
-        name: limit
-        schema:
-          type: integer
-          default: 10
-        description: Max number of offers per page
-      - in: query
-        name: page
-        schema:
-          type: integer
-          default: 1
-        description: Page number, starts with 1
       tags:
       - profile
       security:
@@ -1826,6 +1869,17 @@ components:
           type: string
       required:
       - cityName
+    CompanyEditVehicleRequest:
+      type: object
+      properties:
+        registration:
+          type: string
+          minLength: 1
+        location_id:
+          type: integer
+      required:
+      - location_id
+      - registration
     CompanyOfferPostRequest:
       type: object
       properties:
@@ -2777,13 +2831,13 @@ components:
         image:
           type: string
           format: binary
-          default: null
       required:
       - cityName
       - companyName
       - countryName
       - description
       - email
+      - image
       - password
       - phoneNo
       - streetName
