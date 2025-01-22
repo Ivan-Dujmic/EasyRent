@@ -24,7 +24,7 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react';
 import useSWR from 'swr';
-import { CustomGet, IOffer } from '@/fetchers/homeData'; // Your fetcher function
+import { CustomGet } from '@/fetchers/homeData'; // Your fetcher function
 import {
   FaCcMastercard,
   FaCcStripe,
@@ -36,6 +36,7 @@ import {
 } from 'react-icons/fa';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { LocationsResponse } from '@/typings/locations/locations';
+import { IOffer } from '@/typings/vehicles/vehicles.type';
 
 const FooterLinks = {
   quickLinks: [
