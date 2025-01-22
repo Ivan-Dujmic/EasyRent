@@ -1,15 +1,19 @@
 'use client';
 
 import { swrKeys } from '@/fetchers/swrKeys';
-import { ButtonProps, Button, AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, useDisclosure, chakra, Stack } from '@chakra-ui/react';
+import { Text, ButtonProps, Button, AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, useDisclosure, chakra, Stack, Heading, Modal, ModalBody, ModalContent, ModalHeader } from '@chakra-ui/react';
 import { register } from 'module';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import useSWRMutation, { TriggerWithArgs, TriggerWithoutArgs } from 'swr/mutation';
 import CustomInput from '../CustomInput';
 import SubmitButton from '../SubmitButton';
-import { IDelete, IEditUser } from '@/typings/users/user.type';
+import { IDelete, IEditUser, IUser } from '@/typings/users/user.type';
 import { useForm } from 'react-hook-form';
 import { CustomPost } from '@/fetchers/post';
+import SuccessWindow from '../../SuccessWidnow/SuccessWidnow';
+import { Overlay } from '../../filter/overlay/Overlay';
+import Cookies from 'js-cookie'
+import { useUserContext } from '@/context/UserContext/UserContext';
 
 interface DeleteButtonProps extends ButtonProps {
   label?: string;
@@ -18,23 +22,27 @@ interface DeleteButtonProps extends ButtonProps {
 
 export default function DeleteButton({
   label = "Delete",
-  password = "amongus",
   ...rest
 }: DeleteButtonProps) {
+  const [success, setSuccess] = useState(false)
   const {
     handleSubmit,
     formState: { errors },
     register,
     clearErrors,
-    setError,
     reset
   } = useForm<{password: string, check: string}>();
 
   const cancelRef = useRef<HTMLButtonElement>(null);
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const {setUser} = useUserContext()
   
   const { trigger } = useSWRMutation(swrKeys.deleteUser, CustomPost<IDelete>, {
     onSuccess: () => {
+      setSuccess(true)
+      Cookies.remove('sessionid');
+      Cookies.remove('csrftoken');
+      setUser({ role: 'guest' } as IUser);
       console.log("Account deleted")
     },
     onError: () => {
@@ -50,19 +58,26 @@ export default function DeleteButton({
   };
 
   const onDeleteProfile = async (data: IDelete) => {
-    if (password !== data.password) {
-      setError('password', {
-        type: 'manual',
-        message: 'Wrong Password, make sure to enter your current password',
-      });
-      return;
-    }
     clearErrors();
     await trigger(data);
   };
 
   return (
     <>
+    <Modal isOpen={success} onClose={onClose}>
+      <Overlay/>
+      <ModalContent>
+        <SuccessWindow 
+          mt={0}
+          title='Account Deleted'
+          returnPage={{name: "Home Page", link: "/home"}}
+        >
+          <Text>
+            We are sad to see you go but wish you luck on your journey! 
+          </Text>
+        </SuccessWindow>
+      </ModalContent>
+    </Modal>
     <Button
       type="button"
       borderRadius="md"
@@ -107,8 +122,6 @@ export default function DeleteButton({
                 <CustomInput
                   {...register('password', {
                     required: 'Must enter current password',
-                    validate: (value) =>
-                      value === password || 'Wrong password',
                   })}
                   label="Enter Password"
                   type="password"

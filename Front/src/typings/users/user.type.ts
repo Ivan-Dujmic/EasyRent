@@ -33,6 +33,7 @@ export interface IEditUser {
   lastName: string; // Prezime korisnika
   driversLicense: string; // Broj vozačke dozvole
   phoneNo: string; // Broj telefona korisnika
+  password: string;
 }
 
 export interface IEditPassword {

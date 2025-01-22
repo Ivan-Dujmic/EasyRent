@@ -13,8 +13,9 @@ export const swrKeys = {
     `${home}search?${queryString}&limit=198&page=1`, // search sa tipovima
   userinfo: `${auth}user-info/`,
   logout: `${auth}logout/`,
-  profileUser: `${profile}/user/info/`,
+  profileUser: `${profile}user/info/`,
   deleteUser: `${profile}user/delete/`,
+  userPass: `${profile}user/pass/`,
   userRentals: `${profile}user/rentals/`,
   addBalance: (amount: number) => `${wallet}addMoney/${amount}/`,
   cities: `${home}cities/`,
