@@ -124,28 +124,25 @@ const BookingForm: React.FC<BookingFormProps> = ({
     }
   );
 
-  // ** 1) Add a new SWR key for the rentOffer endpoint:
-  // in swrKeys.ts:
-  // rentOffer: (offerId: string) => `${wallet}rentOffer/${offerId}/`
-
   // ** 2) Create the SWR mutation for rentOffer
   const { trigger: rentOfferTrigger } = useSWRMutation(
     swrKeys.rentOffer(offer_id),
     CustomPost,
     {
       onSuccess: (data: any) => {
-        /**
-         * The backend might return something like:
-         *   { "detail": "https://checkout.stripe.com/..." }
-         * or
-         *   { "detail": "Some success message" }
-         */
         if (data?.detail) {
-          // If the detail is a Stripe link, redirect:
+          console.log(data?.trans_id);
+          if (typeof window !== 'undefined' && window.localStorage) {
+            try {
+              localStorage.setItem('trans_id', data.trans_id);
+              console.log('Transaction ID saved:', data.trans_id);
+            } catch (error) {
+              console.error('Error saving to localStorage:', error);
+            }
+          }
           if (data.detail.includes('stripe.com')) {
             window.location.href = data.detail;
           } else {
-            // Otherwise, just show success in a toast (or do something else):
             toast({
               title: 'Success',
               description: data.detail,
@@ -253,12 +250,12 @@ const BookingForm: React.FC<BookingFormProps> = ({
         dateTo: reverseDateFormat(dropoffDate), // "DD-MM-YYYY"
         pickLocId: Number(pickupLocationId),
         dropLocId: Number(dropoffLocationId),
-        pickUpTime: Number(pickupTime),
-        dropOffTime: Number(dropoffTime),
+        pickupTime: Number(pickupTime),
+        dropoffTime: Number(dropoffTime),
       };
       console.log(body);
       // Fire the SWR POST mutation
-      await rentOfferTrigger({ arg: body });
+      await rentOfferTrigger(body);
       // If successful, onSuccess handles the rest (redirect or toast).
     } catch (error) {
       // onError handles it, but you can also do extra logging here if needed.

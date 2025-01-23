@@ -40,4 +40,6 @@ export const swrKeys = {
   ) =>
     `${home}available-drop-off/${offer_id}/?dropOffLocationId=${dropOffLocationId}&pickUpDate=${pickUpDate}&pickUpLocationId=${pickUpLocationId}&pickUpTime=${pickUpTime}`,
   rentOffer: (offer_id: string) => `${wallet}rentOffer/${offer_id}/`,
+  checkTransaction: (trans_id: string) =>
+    `${wallet}checkTransaction/${trans_id}/`,
 };
