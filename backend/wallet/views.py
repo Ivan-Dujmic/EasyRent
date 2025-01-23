@@ -269,15 +269,15 @@ def offerRent(request, offer_id):
                     {
                         "price_data": {
                             "currency": "eur",
-                            "product_data": {"name": model.makeName + " " + model.modelName},
+                            "product_data": {"name": model.makeName + " " + model.modelName + "\n" + str(pickup_datetime) + " - " + str(dropoff_datetime) + "\n€" + str(totalPrice)},
                             "unit_amount": int(totalPrice * 100),
                         },
                         "quantity": 1,
                     }
                 ],
                 mode="payment",
-                success_url="http://localhost:3000/success/",
-                cancel_url="http://localhost:3000/cancel/",
+                success_url="https://easy-rent-ashy.vercel.app/success",
+                cancel_url="https://easy-rent-ashy.vercel.app/home",
                 expires_at=int(time.time()) + 1800,
                 metadata={
                     "payment": "offer",

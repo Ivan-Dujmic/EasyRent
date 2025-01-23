@@ -4,5 +4,3 @@ from .models import *
 admin.site.register(
     [Rentoid, Dealership, Location, WorkingHours]
 )
-
-
