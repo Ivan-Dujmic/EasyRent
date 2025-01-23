@@ -130,6 +130,24 @@ const BookingForm: React.FC<BookingFormProps> = ({
       setDropoffLocationId('');
       setDropoffDate('');
       setDropoffTime('');
+      setIsDropOffDateTimeEnabled(false);
+      console.log('vrijeme bi trebalo biti resetirano');
+    }
+  };
+
+  const handleDropoffDateTimeSelect = (dateTime: Date | null) => {
+    if (dateTime) {
+      const formattedDate = dateTime.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+      const formattedTime = dateTime.getHours(); // Extract hour (0-23)
+
+      setDropoffDate(formattedDate);
+      setDropoffTime(formattedTime.toString()); // Convert hour to string for consistency
+
+      console.log('Odabrano Drop-off vrijeme:', formattedDate, formattedTime);
+    }
+    if (dateTime === null) {
+      setDropoffDate('');
+      setDropoffTime('');
       console.log('vrijeme bi trebalo biti resetirano');
     }
   };
@@ -185,6 +203,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
     setDropoffLocationId('');
     setDropoffDate('');
     setDropoffTime('');
+    setIsDropOffDateTimeEnabled(false);
     setIsPickupDateEnabled(false);
   };
 
@@ -214,6 +233,8 @@ const BookingForm: React.FC<BookingFormProps> = ({
   }, [dropoffLocationId, triggerDropOf]);
 
   const isDropoffLocationEnabled = pickupLocationId && pickupDate && pickupTime;
+  const isTransactionEnabled =
+    isDropoffLocationEnabled && dropoffLocationId && dropoffDate && dropoffTime;
 
   const handleRent = (paymentMethod: string) => {
     console.log({
@@ -299,32 +320,32 @@ const BookingForm: React.FC<BookingFormProps> = ({
             ))}
           </Select>
         </Box>
-        <Flex gap={4} direction={{ base: 'column', md: 'row' }}>
-          <Box flex="1">
-            <Text fontSize="sm" fontWeight="bold" mb={1}>
-              Drop-off date
-            </Text>
-            <Input
-              type="date"
-              value={dropoffDate}
-              onChange={(e) => setDropoffDate(e.target.value)}
-              borderColor="brandblue"
-              isDisabled={!isDropOffDateTimeEnabled} // promjneit to kasnije
-            />
-          </Box>
-          <Box flex="1">
-            <Text fontSize="sm" fontWeight="bold" mb={1}>
-              Drop-off time
-            </Text>
-            <Input
-              type="time"
-              value={dropoffTime}
-              onChange={(e) => setDropoffTime(e.target.value)}
-              borderColor="brandblue"
-              isDisabled={!isDropOffDateTimeEnabled} // promejnit to kasnije
-            />
-          </Box>
-        </Flex>
+        <CustomCalendar
+          pickupLabel="Drop-off date"
+          pickupTimeLabel="Drop-off time"
+          placeholderDate="dd.mm.gggg."
+          placeholderTime="--:--"
+          workingHours={dropOffDateTimeAvaiable?.workingHours}
+          onDateTimeChange={handleDropoffDateTimeSelect}
+          initialDateTime={null}
+          minDate={new Date()} // Ne dopusti prošlost
+          maxDate={
+            dropOffDateTimeAvaiable?.lastReturnDateTime
+              ? new Date(
+                  new Date(dropOffDateTimeAvaiable.lastReturnDateTime).setDate(
+                    new Date(
+                      dropOffDateTimeAvaiable.lastReturnDateTime
+                    ).getDate() - 1
+                  )
+                )
+              : undefined
+          }
+          isDisabled={!isDropOffDateTimeEnabled}
+          pickupLocationId={pickupLocationId} // vidit jel treba dodat drop of lcoation id
+          dropoffLocationId={dropoffLocationId}
+          pickupDate={pickupDate}
+          pickupTime={pickupTime}
+        />
       </Stack>
       <Flex
         justifyContent="center"
@@ -340,7 +361,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
           _hover={{ bg: 'brandyellow', color: 'brandblack' }}
           size="lg"
           onClick={() => handleRent('wallet')}
-          isDisabled={!isDropOffDateTimeEnabled} // promjenit to kasnije
+          isDisabled={!isTransactionEnabled} // promjenit to kasnije
           width={{ base: '100%', md: 'auto' }}
         >
           Pay with Wallet
@@ -352,7 +373,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
           _hover={{ bg: 'brandyellow', color: 'brandblack' }}
           size="lg"
           onClick={() => handleRent('card')}
-          isDisabled={!isDropOffDateTimeEnabled} // promjenit to kasnije
+          isDisabled={!isTransactionEnabled} // promjenit to kasnije
           width={{ base: '100%', md: 'auto' }}
         >
           Pay with Card

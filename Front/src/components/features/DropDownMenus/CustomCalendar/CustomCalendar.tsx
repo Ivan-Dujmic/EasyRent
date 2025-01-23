@@ -55,6 +55,9 @@ interface PickupDateTimeProps {
   onDateTimeChange?: (dateTime: Date | null) => void;
   isDisabled?: boolean;
   pickupLocationId?: string;
+  pickupDate?: string;
+  pickupTime?: string;
+  dropoffLocationId?: string;
 }
 
 /* --- Pomoćne funkcije za rad s vremenom i radnim satima --- */
@@ -135,6 +138,9 @@ export default function CustomCalendar({
   onDateTimeChange,
   isDisabled,
   pickupLocationId,
+  pickupDate,
+  pickupTime,
+  dropoffLocationId,
 }: PickupDateTimeProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -274,7 +280,15 @@ export default function CustomCalendar({
       setSelectedDate(null);
       setSelectedTime(null);
     }
-  }, [intervals, workingHours, initialDateTime, pickupLocationId]);
+  }, [
+    intervals,
+    workingHours,
+    initialDateTime,
+    pickupLocationId,
+    pickupDate,
+    pickupTime,
+    dropoffLocationId,
+  ]);
 
   return (
     <Flex gap={4} direction={{ base: 'column', md: 'row' }}>
