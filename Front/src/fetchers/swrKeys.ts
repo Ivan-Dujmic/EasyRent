@@ -18,6 +18,11 @@ export const swrKeys = {
   userPass: `${profile}user/pass/`,
   userRentals: `${profile}user/rentals/`,
   addBalance: (amount: number) => `${wallet}addMoney/${amount}/`,
+  buyGems: `${wallet}buyGems/`,
+  rentOffer: (offer_id: string) => `${wallet}rentOffer/${offer_id}/`,
+  checkTransaction: (trans_id: string) =>
+    `${wallet}checkTransaction/${trans_id}/`,
+  getBalance:  `${wallet}getBalance/`,
   cities: `${home}cities/`,
   companies: `${home}showcased-companies/?limit=6`,
   bestValue: `${home}best-value/?limit=10&page=1`,
@@ -40,7 +45,4 @@ export const swrKeys = {
     dropOffLocationId: string
   ) =>
     `${home}available-drop-off/${offer_id}/?dropOffLocationId=${dropOffLocationId}&pickUpDate=${pickUpDate}&pickUpLocationId=${pickUpLocationId}&pickUpTime=${pickUpTime}`,
-  rentOffer: (offer_id: string) => `${wallet}rentOffer/${offer_id}/`,
-  checkTransaction: (trans_id: string) =>
-    `${wallet}checkTransaction/${trans_id}/`,
 };
