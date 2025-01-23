@@ -1,41 +1,24 @@
 'use client';
 
-import React, { Suspense, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
   Flex,
   Heading,
-  Input,
   Select,
   Stack,
   Text,
   useBreakpointValue,
+  useToast,
 } from '@chakra-ui/react';
 import { FaCreditCard, FaWallet } from 'react-icons/fa';
-import { ExtraLocationInfo } from '@/typings/locations/locations';
 import useSWRMutation from 'swr/mutation';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { CustomGet } from '@/fetchers/get';
-import 'react-datepicker/dist/react-datepicker.css';
+import { CustomPost } from '@/fetchers/post'; // <--- your CustomPost code
 import CustomCalendar from '@/components/features/DropDownMenus/CustomCalendar/CustomCalendar';
-
-const disabledDates = [new Date('2025-01-10'), new Date('2025-01-15')];
-
-const rentalIntervals = [
-  {
-    dateTimeRented: '2025-02-02T15:27:13.009Z',
-    dateTimeReturned: '2025-02-10T15:27:13.009Z',
-  },
-];
-
-const workingHours = [
-  { dayOfTheWeek: 0, startTime: '09:00', endTime: '17:00' },
-  { dayOfTheWeek: 1, startTime: '09:00', endTime: '17:00' },
-];
-
-const minDate = new Date();
-const maxDate = new Date('2025-12-31');
+import { ExtraLocationInfo } from '@/typings/locations/locations';
 
 interface BookingFormProps {
   balance: number;
@@ -66,73 +49,46 @@ export interface AvailableDropOffResponse {
   workingHours: WorkingHour[];
 }
 
+// Reformat from "2025-01-24" to "24-01-2025"
+function reverseDateFormat(isoDate: string) {
+  // isoDate = "YYYY-MM-DD"
+  const [year, month, day] = isoDate.split('-');
+  return `${day}-${month}-${year}`; // "DD-MM-YYYY"
+}
+
 const BookingForm: React.FC<BookingFormProps> = ({
   balance,
   locations,
   offer_id,
 }) => {
+  const toast = useToast();
+
+  // State for pick-up
   const [pickupLocationId, setPickupLocationId] = useState('');
   const [pickupDate, setPickupDate] = useState('');
   const [pickupTime, setPickupTime] = useState('');
+  const [isPickupDateEnabled, setIsPickupDateEnabled] = useState(false);
+
+  // State for drop-off
   const [dropoffLocationId, setDropoffLocationId] = useState('');
   const [dropoffDate, setDropoffDate] = useState('');
   const [dropoffTime, setDropoffTime] = useState('');
-  const [vehicle_id, setVehicle_id] = useState('');
-  const [isPickupDateEnabled, setIsPickupDateEnabled] = useState(false);
   const [isDropOffDateTimeEnabled, setIsDropOffDateTimeEnabled] =
     useState(false);
+
+  // For available vehicle ID (the backend sets it once we pick up the date/time)
+  const [vehicle_id, setVehicle_id] = useState('');
+
+  // -- SWR for pickup intervals
   const [pickUpDateTimeAvaiable, setPickUpDateTimeAvaiable] = useState<
     UnavailablePickupResponse | undefined
   >(undefined);
-  const [dropOffDateTimeAvaiable, setDropOffDateTimeAvaiable] = useState<
-    AvailableDropOffResponse | undefined
-  >(undefined);
-
-  const handlePickUpDateTimeSelect = (dateTime: Date | null) => {
-    if (dateTime) {
-      const formattedDate = dateTime.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-      const formattedTime = dateTime.getHours(); // Extract hour (0-23)
-
-      setPickupDate(formattedDate);
-      setPickupTime(formattedTime.toString()); // Convert hour to string for consistency
-
-      console.log('Odabrano vrijeme:', formattedDate, formattedTime);
-    }
-    if (dateTime === null) {
-      setPickupDate('');
-      setPickupTime('');
-      setDropoffLocationId('');
-      setDropoffDate('');
-      setDropoffTime('');
-      setIsDropOffDateTimeEnabled(false);
-      console.log('vrijeme bi trebalo biti resetirano');
-    }
-  };
-
-  const handleDropoffDateTimeSelect = (dateTime: Date | null) => {
-    if (dateTime) {
-      const formattedDate = dateTime.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-      const formattedTime = dateTime.getHours(); // Extract hour (0-23)
-
-      setDropoffDate(formattedDate);
-      setDropoffTime(formattedTime.toString()); // Convert hour to string for consistency
-
-      console.log('Odabrano Drop-off vrijeme:', formattedDate, formattedTime);
-    }
-    if (dateTime === null) {
-      setDropoffDate('');
-      setDropoffTime('');
-      console.log('vrijeme bi trebalo biti resetirano');
-    }
-  };
 
   const { trigger } = useSWRMutation<UnavailablePickupResponse>(
     swrKeys.unavailable_pick_up(offer_id, pickupLocationId),
     CustomGet,
     {
       onSuccess: (data) => {
-        console.log('Unavailable pickup times:', data.intervals);
-        console.log('Working hours:', data.workingHours);
         setPickUpDateTimeAvaiable(data);
         setIsPickupDateEnabled(true);
       },
@@ -141,6 +97,11 @@ const BookingForm: React.FC<BookingFormProps> = ({
       },
     }
   );
+
+  // -- SWR for dropoff intervals
+  const [dropOffDateTimeAvaiable, setDropOffDateTimeAvaiable] = useState<
+    AvailableDropOffResponse | undefined
+  >(undefined);
 
   const { trigger: triggerDropOf } = useSWRMutation<AvailableDropOffResponse>(
     swrKeys.available_drop_off(
@@ -153,25 +114,88 @@ const BookingForm: React.FC<BookingFormProps> = ({
     CustomGet,
     {
       onSuccess: (data) => {
-        console.log('lastReturnDateTime:', data.lastReturnDateTime);
-        console.log('vehicle_id:', data.vehicle_id);
-        console.log('Working hours:', data.workingHours);
         setDropOffDateTimeAvaiable(data);
         setIsDropOffDateTimeEnabled(true);
         setVehicle_id(data.vehicle_id.toString());
       },
       onError: (error) => {
-        console.error('Error fetching pickup data:', error);
+        console.error('Error fetching drop-off data:', error);
       },
     }
   );
 
+  // ** 1) Add a new SWR key for the rentOffer endpoint:
+  // in swrKeys.ts:
+  // rentOffer: (offerId: string) => `${wallet}rentOffer/${offerId}/`
+
+  // ** 2) Create the SWR mutation for rentOffer
+  const { trigger: rentOfferTrigger } = useSWRMutation(
+    swrKeys.rentOffer(offer_id),
+    CustomPost,
+    {
+      onSuccess: (data: any) => {
+        /**
+         * The backend might return something like:
+         *   { "detail": "https://checkout.stripe.com/..." }
+         * or
+         *   { "detail": "Some success message" }
+         */
+        if (data?.detail) {
+          // If the detail is a Stripe link, redirect:
+          if (data.detail.includes('stripe.com')) {
+            window.location.href = data.detail;
+          } else {
+            // Otherwise, just show success in a toast (or do something else):
+            toast({
+              title: 'Success',
+              description: data.detail,
+              status: 'success',
+              duration: 5000,
+              isClosable: true,
+            });
+          }
+        }
+      },
+      onError: (error: any) => {
+        // If the backend returns "Insufficient funds." or some other 4xx
+        if (error?.message?.includes('Insufficient funds')) {
+          toast({
+            title: 'Error',
+            description: 'Insufficient funds. Please add more balance.',
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+          });
+        } else {
+          toast({
+            title: 'Error',
+            description: 'Something went wrong with the booking.',
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+          });
+        }
+      },
+    }
+  );
+
+  // Whenever pickupLocationId changes, fetch pickup intervals
+  useEffect(() => {
+    if (pickupLocationId) {
+      trigger();
+    }
+  }, [pickupLocationId, trigger]);
+
+  // Whenever dropoffLocationId changes, fetch dropoff intervals
+  useEffect(() => {
+    if (dropoffLocationId) {
+      triggerDropOf();
+    }
+  }, [dropoffLocationId, triggerDropOf]);
+
   const handlePickupLocationChange = (locationId: string) => {
-    console.log('e je: ', locationId);
-
-    setPickupLocationId(locationId); // Set state first
-
-    // Reset fields to ensure a clean state
+    setPickupLocationId(locationId);
+    // Reset everything else
     setPickupDate('');
     setPickupTime('');
     setDropoffLocationId('');
@@ -182,46 +206,64 @@ const BookingForm: React.FC<BookingFormProps> = ({
   };
 
   const handleDropOffLocationChange = (locationId: string) => {
-    console.log('e za drop off je: ', locationId);
-
-    setDropoffLocationId(locationId); // Set state first
-
-    // Reset fields to ensure a clean state
+    setDropoffLocationId(locationId);
     setDropoffDate('');
     setDropoffTime('');
     setIsDropOffDateTimeEnabled(false);
   };
 
-  // React to state update
-  React.useEffect(() => {
-    if (pickupLocationId) {
-      trigger();
+  const handlePickUpDateTimeSelect = (dateTime: Date | null) => {
+    if (dateTime) {
+      const formattedDate = dateTime.toISOString().split('T')[0];
+      const hour = dateTime.getHours();
+      setPickupDate(formattedDate);
+      setPickupTime(hour.toString());
+    } else {
+      setPickupDate('');
+      setPickupTime('');
+      setDropoffLocationId('');
+      setDropoffDate('');
+      setDropoffTime('');
+      setIsDropOffDateTimeEnabled(false);
     }
-  }, [pickupLocationId, trigger]);
+  };
 
-  // React to state update
-  React.useEffect(() => {
-    if (dropoffLocationId) {
-      triggerDropOf();
+  const handleDropoffDateTimeSelect = (dateTime: Date | null) => {
+    if (dateTime) {
+      const formattedDate = dateTime.toISOString().split('T')[0];
+      const hour = dateTime.getHours();
+      setDropoffDate(formattedDate);
+      setDropoffTime(hour.toString());
+    } else {
+      setDropoffDate('');
+      setDropoffTime('');
     }
-  }, [dropoffLocationId, triggerDropOf]);
+  };
 
   const isDropoffLocationEnabled = pickupLocationId && pickupDate && pickupTime;
   const isTransactionEnabled =
     isDropoffLocationEnabled && dropoffLocationId && dropoffDate && dropoffTime;
 
-  const handleRent = (paymentMethod: string) => {
-    console.log({
-      pickupLocationId,
-      pickupDate,
-      pickupTime,
-      dropoffLocationId,
-      dropoffDate,
-      dropoffTime,
-      paymentMethod,
-      offer_id,
-      vehicle_id,
-    });
+  // ** 3) Actually call the rentOffer endpoint
+  const handleRent = async (paymentMethod: string) => {
+    try {
+      const body = {
+        paymentMethod: paymentMethod, // "wallet" or "card"
+        dateFrom: reverseDateFormat(pickupDate), // "DD-MM-YYYY"
+        dateTo: reverseDateFormat(dropoffDate), // "DD-MM-YYYY"
+        pickLocId: Number(pickupLocationId),
+        dropLocId: Number(dropoffLocationId),
+        pickUpTime: Number(pickupTime),
+        dropOffTime: Number(dropoffTime),
+      };
+      console.log(body);
+      // Fire the SWR POST mutation
+      await rentOfferTrigger({ arg: body });
+      // If successful, onSuccess handles the rest (redirect or toast).
+    } catch (error) {
+      // onError handles it, but you can also do extra logging here if needed.
+      console.error('Rent offer failed:', error);
+    }
   };
 
   const formWidth = useBreakpointValue({
@@ -244,6 +286,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
         Book this car
       </Heading>
       <Stack spacing={4}>
+        {/* Pick-up location */}
         <Box>
           <Text fontSize="sm" fontWeight="bold" mb={1}>
             Pick-up location
@@ -256,13 +299,15 @@ const BookingForm: React.FC<BookingFormProps> = ({
             borderWidth="2px"
             borderRadius="md"
           >
-            {locations.map((location) => (
-              <option key={location.location_id} value={location.location_id}>
-                {`${location.streetName} ${location.streetNo}, ${location.cityName}`}
+            {locations.map((loc) => (
+              <option key={loc.location_id} value={loc.location_id}>
+                {`${loc.streetName} ${loc.streetNo}, ${loc.cityName}`}
               </option>
             ))}
           </Select>
         </Box>
+
+        {/* Pick-up date/time */}
         <CustomCalendar
           pickupLabel="Pick-up date"
           pickupTimeLabel="Pick-up time"
@@ -272,10 +317,12 @@ const BookingForm: React.FC<BookingFormProps> = ({
           workingHours={pickUpDateTimeAvaiable?.workingHours}
           onDateTimeChange={handlePickUpDateTimeSelect}
           initialDateTime={null}
-          minDate={new Date()} // Ne dopusti prošlost
+          minDate={new Date()}
           isDisabled={!isPickupDateEnabled}
           pickupLocationId={pickupLocationId}
         />
+
+        {/* Drop-off location */}
         <Box>
           <Text fontSize="sm" fontWeight="bold" mb={1}>
             Drop-off location
@@ -289,13 +336,15 @@ const BookingForm: React.FC<BookingFormProps> = ({
             borderRadius="md"
             isDisabled={!isDropoffLocationEnabled}
           >
-            {locations.map((location) => (
-              <option key={location.location_id} value={location.location_id}>
-                {`${location.streetName} ${location.streetNo}, ${location.cityName}`}
+            {locations.map((loc) => (
+              <option key={loc.location_id} value={loc.location_id}>
+                {`${loc.streetName} ${loc.streetNo}, ${loc.cityName}`}
               </option>
             ))}
           </Select>
         </Box>
+
+        {/* Drop-off date/time */}
         <CustomCalendar
           pickupLabel="Drop-off date"
           pickupTimeLabel="Drop-off time"
@@ -304,10 +353,8 @@ const BookingForm: React.FC<BookingFormProps> = ({
           workingHours={dropOffDateTimeAvaiable?.workingHours}
           onDateTimeChange={handleDropoffDateTimeSelect}
           initialDateTime={null}
-          minDate={new Date()} // Ne dopusti prošlost
+          minDate={new Date(pickupDate)}
           maxDate={
-            // potencijalno ce treabti miejnati logiku iz ovog ali neka za sada bude tako
-            // za sad je ukoliko lastDate psotoji daj mi dan prije da se nemorma muciti oko sati, ukoliko ne posojti moze se sve birati
             dropOffDateTimeAvaiable?.lastReturnDateTime
               ? new Date(
                   new Date(dropOffDateTimeAvaiable.lastReturnDateTime).setDate(
@@ -319,12 +366,14 @@ const BookingForm: React.FC<BookingFormProps> = ({
               : undefined
           }
           isDisabled={!isDropOffDateTimeEnabled}
-          pickupLocationId={pickupLocationId} // vidit jel treba dodat drop of lcoation id
+          pickupLocationId={pickupLocationId}
           dropoffLocationId={dropoffLocationId}
           pickupDate={pickupDate}
           pickupTime={pickupTime}
         />
       </Stack>
+
+      {/* Payment buttons */}
       <Flex
         justifyContent="center"
         alignItems="center"
@@ -339,7 +388,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
           _hover={{ bg: 'brandyellow', color: 'brandblack' }}
           size="lg"
           onClick={() => handleRent('wallet')}
-          isDisabled={!isTransactionEnabled} // promjenit to kasnije
+          isDisabled={!isTransactionEnabled}
           width={{ base: '100%', md: 'auto' }}
         >
           Pay with Wallet
@@ -350,8 +399,8 @@ const BookingForm: React.FC<BookingFormProps> = ({
           color="white"
           _hover={{ bg: 'brandyellow', color: 'brandblack' }}
           size="lg"
-          onClick={() => handleRent('card')}
-          isDisabled={!isTransactionEnabled} // promjenit to kasnije
+          onClick={() => handleRent('stripe')}
+          isDisabled={!isTransactionEnabled}
           width={{ base: '100%', md: 'auto' }}
         >
           Pay with Card
