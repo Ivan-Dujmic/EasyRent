@@ -72,8 +72,10 @@ function startOfDay(date: Date) {
   return d;
 }
 
-/** JS default: getDay() => 0=Sunday, 1=Monday, ... 
-    Transformiramo tako da 0=Ponedjeljak, 6=Nedjelja */
+/**
+ * getDay() => 0=Sunday, 1=Monday, ...
+ * Transformiramo tako da 0=Ponedjeljak, 6=Nedjelja
+ */
 function getCalendarDayOfWeek(date: Date) {
   return (date.getDay() + 6) % 7;
 }
@@ -117,9 +119,14 @@ function buildTimeSlots(
   while (current.getTime() <= end.getTime()) {
     const hh = String(current.getHours()).padStart(2, '0');
     slots.push(`${hh}:00`); // Samo puni sat
-    current.setHours(current.getHours() + 1); // Dodaj 1 sat umjesto minuta
+    current.setHours(current.getHours() + 1); // Dodaj 1 sat umjesto step u minutama
   }
   return slots;
+}
+
+// NEW: helper to check if two dates are the same 'calendar day'
+function isSameDay(d1: Date, d2: Date) {
+  return startOfDay(d1).getTime() === startOfDay(d2).getTime();
 }
 
 export default function CustomCalendar({
@@ -198,6 +205,34 @@ export default function CustomCalendar({
     return buildTimeSlots(startH, startM, endH, endM, 30);
   }, [selectedDate, workingHours]);
 
+  // NEW: now let's expand isTimeDisabled to also disable times in the past if today's date is selected
+  const isTimeDisabled = (slot: string) => {
+    // 1) If there's a minTime from the props, check that first
+    if (minTime) {
+      const [minH, minM] = minTime.split(':').map(Number);
+      const [curH, curM] = slot.split(':').map(Number);
+      // Onemogući ako je ispod minTime
+      if (curH < minH || (curH === minH && curM < minM)) {
+        return true;
+      }
+    }
+
+    // 2) If the selected date is "today," disable any slots that are already in the past
+    if (selectedDate && isSameDay(selectedDate, new Date())) {
+      const [slotH, slotM] = slot.split(':').map(Number);
+      const now = new Date();
+      const slotDateTime = new Date(selectedDate);
+      slotDateTime.setHours(slotH, slotM, 0, 0);
+
+      // If the slot time is earlier than "right now"
+      if (slotDateTime.getTime() < now.getTime()) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
   /** Odabir vremena iz dropdowna */
   const handleTimeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newTime = e.target.value;
@@ -256,18 +291,8 @@ export default function CustomCalendar({
     return false;
   };
 
-  /** Je li pojedini slot onemogućen zbog minTime? */
-  const isTimeDisabled = (slot: string) => {
-    if (!minTime) return false;
-    const [minH, minM] = minTime.split(':').map(Number);
-    const [curH, curM] = slot.split(':').map(Number);
-    // Onemogući ako je ispod minTime
-    return curH < minH || (curH === minH && curM < minM);
-  };
-
-  // trebalo bi ponisiti vrijednosti unutra svaki put kada se odaber eneka druga loakcija
+  // Poništi vrijednosti svaki put kada se odabere neka nova lokacija ili init
   useEffect(() => {
-    // Ako imaš neku početnu vrijednost (initialDateTime) i želiš je opet primijeniti:
     if (initialDateTime) {
       const initDate = new Date(initialDateTime);
       setSelectedDate(initDate);
@@ -275,7 +300,6 @@ export default function CustomCalendar({
       const mm = String(initDate.getMinutes()).padStart(2, '0');
       setSelectedTime(`${hh}:${mm}`);
     } else {
-      // Inače postavi sve na null
       setSelectedDate(null);
       setSelectedTime(null);
     }
