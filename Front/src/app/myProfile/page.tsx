@@ -73,7 +73,6 @@ const userProfileFooterLinks = {
 };
 
 export default function UserProfilePage() {
-
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { data: entries } = useSWR(
     swrKeys.userRentals,
@@ -93,37 +92,43 @@ export default function UserProfilePage() {
     return () => clearTimeout(timeout);
   }, []);
 
-  const [currentRentals, setCurrent] = useState([] as ICar[])
-  const [previouslyRented, setPrevious] = useState([] as ICar[])
+  const [currentRentals, setCurrent] = useState([] as ICar[]);
+  const [previouslyRented, setPrevious] = useState([] as ICar[]);
 
-  useEffect (() => {
-    console.log("logging", entries, Array.isArray(entries))
+  useEffect(() => {
+    console.log('logging', entries, Array.isArray(entries));
 
-    const prev = Array.isArray(entries) ? entries.filter((vehicle) => new Date(vehicle.dateTimeReturned) > new Date())
-      .map((vehicle) => {
-        let item = toOffer(vehicle) as IReviewable;
-        item.rated = !vehicle.canReview;
-        // console.log(item)
-        return item;
-      }).sort((v, _) => v.rated === undefined || v.rated ? 1 : -1) : [];
+    const curr = Array.isArray(entries)
+      ? entries
+          .filter((vehicle) => new Date(vehicle.dateTimeReturned) > new Date())
+          .map((vehicle) => {
+            let item = toOffer(vehicle) as IReviewable;
+            item.rated = !vehicle.canReview;
+            // console.log(item)
+            return item;
+          })
+          .sort((v, _) => (v.rated === undefined || v.rated ? 1 : -1))
+      : [];
 
-    const curr = Array.isArray(entries) ? entries.filter((vehicle) => new Date(vehicle.dateTimeReturned) <= new Date())
-    .map((vehicle) => {
-      // console.log(toOffer(vehicle))
-      return toOffer(vehicle);
-    }) : [];
+    const prev = Array.isArray(entries)
+      ? entries
+          .filter((vehicle) => new Date(vehicle.dateTimeReturned) <= new Date())
+          .map((vehicle) => {
+            // console.log(toOffer(vehicle))
+            return toOffer(vehicle);
+          })
+      : [];
 
     console.log(prev);
     console.log(curr);
 
     if (prev.length > 0) setPrevious(prev);
-    if (curr.length > 0) setCurrent(curr)
+    if (curr.length > 0) setCurrent(curr);
 
     console.log(previouslyRented);
-    console.log(currentRentals)
+    console.log(currentRentals);
+  }, [entries]);
 
-  }, [entries]) 
-  
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
   };
@@ -157,7 +162,7 @@ export default function UserProfilePage() {
   return (
     <Flex direction="column" grow={1} bg="brandlightgray" minH="100vh">
       {/* Add Funds Modal */}
-      <FundsModal onClose={onClose} isOpen={isOpen}/>
+      <FundsModal onClose={onClose} isOpen={isOpen} />
 
       {/* Header */}
       <Header>
@@ -215,22 +220,26 @@ export default function UserProfilePage() {
             </Heading>
             <Divider />
             {currentRentals && currentRentals.length > 0 ? (
-              <VehicleList 
-                justify={"flex-start"}
-                vehicles={previouslyRented} 
+              <VehicleList
+                justify={'flex-start'}
+                vehicles={currentRentals}
                 description="Ongoing rentals:"
               />
             ) : (
-              <Heading size = "md" color = "brandblue" opacity={0.5} >No ongoing rentals</Heading>
+              <Heading size="md" color="brandblue" opacity={0.5}>
+                No ongoing rentals
+              </Heading>
             )}
             {previouslyRented && previouslyRented.length > 0 ? (
               <VehicleList
-                justify={"flex-start"}
+                justify={'flex-start'}
                 vehicles={previouslyRented}
                 description="Previously rented:"
               />
             ) : (
-              <Heading size="md" color = "brandblue" opacity={0.5} >No previous rentals</Heading>
+              <Heading size="md" color="brandblue" opacity={0.5}>
+                No previous rentals
+              </Heading>
             )}
           </Flex>
 
@@ -262,14 +271,11 @@ export default function UserProfilePage() {
 }
 
 interface FundsModalProps {
-  isOpen : boolean,
-  onClose : () => void,
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-function FundsModal ({
-  isOpen,
-  onClose,
-}:FundsModalProps) {
+function FundsModal({ isOpen, onClose }: FundsModalProps) {
   const {
     handleSubmit,
     formState: { errors },
@@ -283,7 +289,7 @@ function FundsModal ({
     await walletTrigger(data);
   };
 
-  const {user} = useUserContext()
+  const { user } = useUserContext();
 
   const { trigger: walletTrigger } = useSWRMutation(
     swrKeys.addBalance(user.user_id),
@@ -300,41 +306,41 @@ function FundsModal ({
 
   return (
     <Modal isCentered isOpen={isOpen} onClose={onClose}>
-    <Overlay />
-    <ModalContent>
-      <chakra.form onSubmit={handleSubmit(onAddFunds)}>
-        <ModalHeader>Add Funds</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <Text mb={4}>Enter the amount you want to add:</Text>
-          <CustomInput
-            {...register('amount', {
-              required: 'Must enter valid amout',
-            })}
-            label="Amount (€)"
-            type="number"
-            placeholder="Enter amount to add"
-            error={errors.amount?.message}
-          />
-        </ModalBody>
-        <ModalFooter>
-          <Button onClick={onClose} mr={3}>
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            color="white"
-            bg="brandblue"
-            _hover={{
-              color: 'brandblack',
-              bg: 'brandyellow',
-            }}
-          >
-            Add Funds
-          </Button>
-        </ModalFooter>
-      </chakra.form>
-    </ModalContent>
-  </Modal>
-  )
+      <Overlay />
+      <ModalContent>
+        <chakra.form onSubmit={handleSubmit(onAddFunds)}>
+          <ModalHeader>Add Funds</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text mb={4}>Enter the amount you want to add:</Text>
+            <CustomInput
+              {...register('amount', {
+                required: 'Must enter valid amout',
+              })}
+              label="Amount (€)"
+              type="number"
+              placeholder="Enter amount to add"
+              error={errors.amount?.message}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={onClose} mr={3}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              color="white"
+              bg="brandblue"
+              _hover={{
+                color: 'brandblack',
+                bg: 'brandyellow',
+              }}
+            >
+              Add Funds
+            </Button>
+          </ModalFooter>
+        </chakra.form>
+      </ModalContent>
+    </Modal>
+  );
 }

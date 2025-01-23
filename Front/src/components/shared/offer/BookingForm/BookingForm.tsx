@@ -19,6 +19,7 @@ import { CustomGet } from '@/fetchers/get';
 import { CustomPost } from '@/fetchers/post'; // <--- your CustomPost code
 import CustomCalendar from '@/components/features/DropDownMenus/CustomCalendar/CustomCalendar';
 import { ExtraLocationInfo } from '@/typings/locations/locations';
+import { useRouter } from 'next/navigation';
 
 interface BookingFormProps {
   balance: number;
@@ -62,6 +63,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
   offer_id,
 }) => {
   const toast = useToast();
+  const router = useRouter();
 
   // State for pick-up
   const [pickupLocationId, setPickupLocationId] = useState('');
@@ -144,8 +146,8 @@ const BookingForm: React.FC<BookingFormProps> = ({
             window.location.href = data.detail;
           } else {
             toast({
-              title: 'Success',
-              description: data.detail,
+              title: 'Transaction Successful! 🎉',
+              description: 'Check your profile to view your reservations.',
               status: 'success',
               duration: 5000,
               isClosable: true,
@@ -350,7 +352,11 @@ const BookingForm: React.FC<BookingFormProps> = ({
           workingHours={dropOffDateTimeAvaiable?.workingHours}
           onDateTimeChange={handleDropoffDateTimeSelect}
           initialDateTime={null}
-          minDate={new Date(pickupDate)}
+          minDate={
+            new Date(
+              new Date(pickupDate).setDate(new Date(pickupDate).getDate() + 1)
+            )
+          }
           maxDate={
             dropOffDateTimeAvaiable?.lastReturnDateTime
               ? new Date(
