@@ -66,7 +66,11 @@ def userRentals(request):
             rentalData = []
             for rental in rentals:
                 vehicle = rental.vehicle
-                dealer = vehicle.location.dealership
+                dealer = None
+                try:
+                    dealer = rental.dealer
+                except:
+                    pass
 
                 # Get the first matching offer
                 offer = next(
@@ -82,7 +86,7 @@ def userRentals(request):
                     item = {
                         "makeName": model.makeName,
                         "modelName": model.modelName,
-                        "companyName": dealer.user.first_name,
+                        "companyName": dealer.user.first_name if dealer else '',
                         "noOfSeats": model.noOfSeats,
                         "automatic": model.automatic,
                         "price": offer.price,
