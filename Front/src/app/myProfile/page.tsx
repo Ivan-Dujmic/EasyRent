@@ -23,6 +23,7 @@ import {
   ModalBody,
   chakra,
   ModalProps,
+  useToast,
 } from '@chakra-ui/react';
 import {
   FaFacebookF,
@@ -50,6 +51,7 @@ import { CustomPost } from '@/fetchers/post';
 import CustomInput from '@/components/shared/auth/CustomInput';
 import { useForm } from 'react-hook-form';
 import { Overlay } from '@/components/shared/filter/overlay/Overlay';
+import ChatbotWidget from '@/components/shared/ChatbotWidget/ChatbotWidget';
 
 const userProfileFooterLinks = {
   quickLinks: [
@@ -80,6 +82,8 @@ export default function UserProfilePage() {
   );
   const { user } = useUserContext();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  
+  const {data: balance} = useSWR(swrKeys.getBalance, CustomGet<{Balance: number}>)
 
   const [isStylesLoaded, setIsStylesLoaded] = useState(false);
 
@@ -160,14 +164,19 @@ export default function UserProfilePage() {
   }
 
   return (
-    <Flex direction="column" grow={1} bg="brandlightgray" minH="100vh">
+    <Flex direction="column" grow={1} bg="brandlightgray" minH="100vh" justify={"space-between"}>
       {/* Add Funds Modal */}
       <FundsModal onClose={onClose} isOpen={isOpen} />
+<<<<<<< HEAD
+=======
+
+      <ChatbotWidget></ChatbotWidget>
+>>>>>>> origin/main
 
       {/* Header */}
       <Header>
         <Text fontSize="md" fontWeight="bold" color="brandblue">
-          {`Balance: ${user.balance ? user.balance : 0}€`}
+          {`Balance: ${balance?.Balance || 0}💎`}
         </Text>
 
         <Button
@@ -184,7 +193,7 @@ export default function UserProfilePage() {
             transition: 'transform 0.2s ease, box-shadow 0.3s ease',
           }}
         >
-          Add funds
+          Buy Gems
         </Button>
 
         <HeaderButton href="/editProfile">Edit profile</HeaderButton>
@@ -265,17 +274,30 @@ export default function UserProfilePage() {
           )}
         </Flex>
       </Box>
-      <Footer links={userProfileFooterLinks} />
+      <Footer links={userProfileFooterLinks}/>
     </Flex>
   );
 }
 
 interface FundsModalProps {
+<<<<<<< HEAD
   isOpen: boolean;
   onClose: () => void;
 }
 
 function FundsModal({ isOpen, onClose }: FundsModalProps) {
+=======
+  isOpen : boolean,
+  onClose : () => void,
+  setBalance?: React.Dispatch<React.SetStateAction<number | undefined>>
+}
+
+function FundsModal ({
+  isOpen,
+  onClose,
+  setBalance
+}:FundsModalProps) {
+>>>>>>> origin/main
   const {
     handleSubmit,
     formState: { errors },
@@ -288,24 +310,57 @@ function FundsModal({ isOpen, onClose }: FundsModalProps) {
     clearErrors();
     await walletTrigger(data);
   };
+<<<<<<< HEAD
 
   const { user } = useUserContext();
+=======
+  const toast = useToast();
+>>>>>>> origin/main
 
   const { trigger: walletTrigger } = useSWRMutation(
-    swrKeys.addBalance(user.user_id),
-    CustomPost<{ amount: number }>,
+    swrKeys.buyGems,
+    CustomPost,
     {
-      onSuccess: () => {
-        console.log('Saved changes');
+      onSuccess: (data: any) => {
+        if (data?.detail) {
+          console.log(data?.trans_id);
+          if (typeof window !== 'undefined' && window.localStorage) {
+            try {
+              localStorage.setItem('trans_id', data.trans_id);
+              console.log('Transaction ID saved:', data.trans_id);
+            } catch (error) {
+              console.error('Error saving to localStorage:', error);
+            }
+          }
+          if (data.detail.includes('stripe.com')) {
+            window.location.href = data.detail;
+          } else {
+            toast({
+              title: 'Success',
+              description: data.detail,
+              status: 'success',
+              duration: 5000,
+              isClosable: true,
+            });
+          }
+        }
       },
-      onError: () => {
-        console.log('Something went wrong!');
+      onError: (error: any) => {
+        // If the backend returns "Insufficient funds." or some other 4x
+        toast({
+          title: 'Error',
+          description: `Something went wrong with the transaction. ${error}`,
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
       },
     }
   );
 
   return (
     <Modal isCentered isOpen={isOpen} onClose={onClose}>
+<<<<<<< HEAD
       <Overlay />
       <ModalContent>
         <chakra.form onSubmit={handleSubmit(onAddFunds)}>
@@ -344,3 +399,43 @@ function FundsModal({ isOpen, onClose }: FundsModalProps) {
     </Modal>
   );
 }
+=======
+    <Overlay />
+    <ModalContent>
+      <chakra.form onSubmit={handleSubmit(onAddFunds)}>
+        <ModalHeader>Buy Gems</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <Text mb={4}></Text>
+          <CustomInput
+            {...register('amount', {
+              required: 'Must enter valid amout',
+            })}
+            label="Enter Number of Gems"
+            type="number"
+            placeholder="100💎 = 1€"
+            error={errors.amount?.message}
+          />
+        </ModalBody>
+        <ModalFooter>
+          <Button onClick={onClose} mr={3}>
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            color="white"
+            bg="brandblue"
+            _hover={{
+              color: 'brandblack',
+              bg: 'brandyellow',
+            }}
+          >
+            Buy
+          </Button>
+        </ModalFooter>
+      </chakra.form>
+    </ModalContent>
+  </Modal>
+  )
+}
+>>>>>>> origin/main
