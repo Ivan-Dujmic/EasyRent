@@ -29,4 +29,22 @@ export const swrKeys = {
     `${home}reviews/${queryString}/?limit=16&page=1`,
   carModels: `${home}models/`,
   review: (id: string) => `${home}addReview/${id}`, // TODO    !!!! potenicjalno promejnit ime u addReview ili nesot lsicno
+
+  companyInfo: `${profile}/company/info`,
+  companyLocations: `${profile}/company/locations`,
+  companyLocationInfo: `${profile}/company/location/`, // + locationId
+  companyVehicles: `${profile}/company/vehicles`,
+  companyOffers: `${profile}/company/offers`,
+  companyVehicleVisi: `${profile}/company/toggle-vehicle-visibility/`, // + vehicleId
+  companyVehicleDelete: `${profile}/company/vehicles/edit-vehicle/`, // + vehicleId
+  companyOfferVisi: `${profile}/company/toggle-offer-visibility/`, // + offerId
+  companyOfferDelete: `${profile}/company/offer/`, // + offerId
+  companyLogsComplete: `${profile}/company/log/completed`, 
+  companyLogsOngoing: `${profile}/company/log/ongoing`, 
+  companyLogsUpcoming: `${profile}/company/log/upcoming`, 
+  
+
+
+
+
 };

@@ -47,3 +47,17 @@ export interface IRentalEntry {
   offer_id: number;
   image: string;
 }
+
+export interface IVehicle {
+  image: string;
+  modelName: string;
+  makeName: string;
+  price: string;
+  rating: string;
+  noOfReviews: string;
+  registration: string;
+  isVisible: boolean;
+  vehicleId: number;
+  offerId: number
+}
+

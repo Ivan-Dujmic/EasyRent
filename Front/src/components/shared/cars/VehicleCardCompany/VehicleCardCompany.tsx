@@ -1,4 +1,3 @@
-import { Vehicle } from '@/typings/vehicles/vehicles';
 import { StarIcon } from '@chakra-ui/icons';
 import {
   Card,
@@ -9,59 +8,50 @@ import {
   Text,
   Image,
   Flex,
-  Link,
-  Menu,
-  MenuButton,
-  MenuList,
-  IconButton,
   MenuItem,
   Divider,
-  
 } from '@chakra-ui/react';
-import { IoPersonSharp } from 'react-icons/io5';
-import { TbManualGearboxFilled } from 'react-icons/tb';
-import { TbAutomaticGearbox } from 'react-icons/tb';
 import NextLink from 'next/link';
 import { useState } from 'react';
-import { BsThreeDotsVertical } from 'react-icons/bs';
 import CardMenuDot from '../cardMenu/CardMenuDot';
 import { useRouter } from 'next/navigation';
+import { IVehicle } from "@/typings/vehicles/vehicles.type";
+import { CustomPost } from '@/fetchers/post';
+import { swrKeys } from '@/fetchers/swrKeys';
 
-interface ICar {
-  image: string;
-  companyName: string;
-  modelName: string;
-  makeName: string;
-  noOfSeats: string;
-  automatic: string;
-  price: string;
-  rating: string;
-  noOfReviews: string;
-  registration: string;
-}
-
-export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
+export default function VehicleCard({ vehicle, handleDelete }: { 
+  vehicle: IVehicle,
+  handleDelete : (id: number) => void
+}) {
   const router = useRouter();
-  const [isDimmed, setIsDimmed] = useState(false);
+  const [isDimmed, setIsDimmed] = useState(vehicle.isVisible);
   const [isHovered, setIsHovered] = useState(false);
 
   const handleHide = () => {
+    CustomPost<void>(swrKeys.companyVehicleVisi + vehicle.vehicleId)
     setIsDimmed(!isDimmed);
   };
   const handleOfferClick = () => {
-    router.push("/offerDetails/${offer.id}"); 
+    router.push(`/offerDetails/${vehicle.offerId}`); 
   };
   const handleEditClick = () => {
-    router.push("edit/vehicle"); 
+    router.push({
+      pathname: "edit/vehicle",
+      query: { id : vehicle.vehicleId.toString(),
+          registration : vehicle.registration,
+          make : vehicle.makeName,
+          model : vehicle.modelName
+       },
+    } as any);
   };
-  const handleDelete = () => {
-    setIsDimmed(!isDimmed);
-  };
+  const handleDeleteClick = () => {
+    handleDelete(vehicle.vehicleId);
+  }
 
   return (
     <Card
       as={NextLink}
-      href={`${vehicle.modelName}`}
+      href={`${vehicle.registration}`}
       maxW="210px"
       minW="180px"
       borderWidth="2px"
@@ -82,7 +72,7 @@ export default function VehicleCard({ vehicle }: { vehicle: ICar }) {
         <CardMenuDot>
               <MenuItem onClick={handleOfferClick}>View offer</MenuItem>
               <MenuItem onClick={handleEditClick}>Edit vehicle</MenuItem>
-              <MenuItem onClick={handleDelete}>Delete</MenuItem>
+              <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
               <MenuItem onClick={handleHide}>{isDimmed && (<Text>Show</Text>)} {!isDimmed && (<Text>Hide</Text>)}</MenuItem>
         </CardMenuDot>
       )}

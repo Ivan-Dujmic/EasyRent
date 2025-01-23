@@ -1,4 +1,3 @@
-import { Vehicle } from '@/typings/vehicles/vehicles';
 import { StarIcon } from '@chakra-ui/icons';
 import {
   Card,
@@ -23,39 +22,36 @@ import { useState } from 'react';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import CardMenuDot from '../cardMenu/CardMenuDot';
 import { useRouter } from 'next/navigation';
+import { IOffer } from '@/typings/offers/offers.type';
+import { CustomPost } from '@/fetchers/post';
+import { swrKeys } from '@/fetchers/swrKeys';
 
-interface IOffer {
-  image: string;
-  companyName: string;
-  modelName: string;
-  makeName: string;
-  noOfSeats: string;
-  automatic: string;
-  price: string;
-  rating: string;
-  noOfReviews: string;
-  registration: string;
-}
-
-export default function OfferCard({ offer }: { offer: IOffer }) {
+export default function OfferCard({ offer, handleDelete }: { 
+  offer: IOffer, 
+  handleDelete : (id: number) => void
+}) {
   const router = useRouter();
   const [isDimmed, setIsDimmed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
   const handleHide = () => {
+    CustomPost<void>(swrKeys.companyOfferVisi + offer.offerId)
     setIsDimmed(!isDimmed);
   };
   const handleEdit = () => {
-    router.push("profile/${company}/edit/offer")
+    router.push({
+      pathname: "edit/offer",
+      query: { id : offer.offerId.toString()},
+    } as any);
   };
-  const handleDelete = () => {
-    setIsDimmed(!isDimmed);
-  };
+  const handleDeleteClick = () => {
+    handleDelete(offer.offerId);
+  }
 
   return (
     <Card
       as={NextLink}
-      href={`/offer/${offer.modelName}`}
+      href={`/offer/${offer.offerId}`}
       maxW="210px"
       minW="180px"
       borderWidth="2px"
@@ -75,7 +71,7 @@ export default function OfferCard({ offer }: { offer: IOffer }) {
       {isHovered && (
         <CardMenuDot>
               <MenuItem onClick={handleEdit}>Edit offer</MenuItem>
-              <MenuItem onClick={handleDelete}>Delete</MenuItem>
+              <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
               <MenuItem onClick={handleHide}>Hide</MenuItem>
         </CardMenuDot>
       )}

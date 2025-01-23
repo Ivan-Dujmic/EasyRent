@@ -24,6 +24,44 @@ export interface IRegisterCompany {
   logo: string;
 }
 
+export interface ICompanyInfo
+{
+  companyName: string;
+  image: string;
+  description: string; 
+  phoneNo: string;
+}
+
+export interface IEditInfo {
+  companyName: string;
+  companyLogo: string;
+  description: string; 
+  phoneNo: string;
+}
+
+export interface IEditPassword {
+  password: string; // Lozinka korisnika
+  confirmPassword: string; // Potvrda lozinke
+  oldPassword: string; // Stara lozinka
+}
+
+export interface IEditLocations {
+  location: string;
+  workingHours: {
+    mon: { from: number; to: number };
+    tue: { from: number; to: number };
+    wen: { from: number; to: number };
+    thu: { from: number; to: number };
+    fri: { from: number; to: number };
+    sat: { from: number; to: number };
+    sun: { from: number; to: number };
+  };
+}
+
+export interface ISetHQ {
+  location: string;
+}
+
 export interface Company {
   companyName: string;
   companyLogo: string;

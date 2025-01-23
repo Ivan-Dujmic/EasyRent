@@ -5,7 +5,7 @@ import { FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import React, { useState } from 'react';
 import LogCard from '../LogCard/LogCard';
 import { useBreakpointValue } from '@chakra-ui/react';
-import { ILog } from '@/fetchers/homeData';
+import { ILog } from '@/typings/logs/logs.type';
 
 interface LogListProps {
   logs: Array<ILog> | undefined;

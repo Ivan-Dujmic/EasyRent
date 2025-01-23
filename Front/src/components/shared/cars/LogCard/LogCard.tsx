@@ -1,4 +1,4 @@
-import { Vehicle } from '@/typings/vehicles/vehicles';
+import { ILog } from '@/typings/logs/logs.type';
 import { StarIcon } from '@chakra-ui/icons';
 import {
   Card,
@@ -12,7 +12,6 @@ import {
   Link,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
-import { ILog } from '@/fetchers/homeData';
 
 export default function LogCard({ log }: { log: ILog }) {
   return (
@@ -45,16 +44,15 @@ export default function LogCard({ log }: { log: ILog }) {
               <Text fontSize="xs">
                 {log.makeName} {log.modelName}
               </Text>
-              <Text fontSize="xs">€{log.price}/day</Text>
             </Flex>
 
             <Flex gap={1} align={'baseline'} justify={'space-between'}>
               <Text fontSize="xs">
                 {log.registration}
               </Text>
-              <Text fontSize="xs">{log.customerName} {log.customerSurname}</Text>
+              <Text fontSize="xs">{log.firstName} {log.lastName}</Text>
             </Flex>
-            <Text fontSize="xs">{log.pickupp} - {log.dropoff}</Text>
+            <Text fontSize="xs">{log.dateTimePickup} - {log.dateTimeReturned}</Text>
           </Flex>
         </Stack>
       </CardBody>
