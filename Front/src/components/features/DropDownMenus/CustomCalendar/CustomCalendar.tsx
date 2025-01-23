@@ -54,6 +54,7 @@ interface PickupDateTimeProps {
   /** Kad god se promijeni datum/vrijeme ili se briše, javimo roditelju */
   onDateTimeChange?: (dateTime: Date | null) => void;
   isDisabled?: boolean;
+  pickupLocationId?: string;
 }
 
 /* --- Pomoćne funkcije za rad s vremenom i radnim satima --- */
@@ -133,6 +134,7 @@ export default function CustomCalendar({
   workingHours,
   onDateTimeChange,
   isDisabled,
+  pickupLocationId,
 }: PickupDateTimeProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -171,9 +173,6 @@ export default function CustomCalendar({
         const newDate = new Date(value);
         newDate.setHours(h, m, 0, 0);
         onDateTimeChange?.(newDate);
-      } else {
-        // ako još nema vremena, barem javi roditelju da je datum postavljen
-        onDateTimeChange?.(new Date(value));
       }
       setIsCalendarOpen(false);
     }
@@ -275,7 +274,7 @@ export default function CustomCalendar({
       setSelectedDate(null);
       setSelectedTime(null);
     }
-  }, [intervals, workingHours, initialDateTime]);
+  }, [intervals, workingHours, initialDateTime, pickupLocationId]);
 
   return (
     <Flex gap={4} direction={{ base: 'column', md: 'row' }}>

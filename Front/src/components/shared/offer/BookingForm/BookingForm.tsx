@@ -102,9 +102,24 @@ const BookingForm: React.FC<BookingFormProps> = ({
     { dayOfTheWeek: 6, startTime: '10:00:00', endTime: '14:00:00' },
   ];
 
-  const handleDateTimeSelect = (dateTime: Date | null) => {
-    setSelectedDateTime(dateTime);
-    console.log('Odabrano vrijeme:', dateTime);
+  const handlePickUpDateTimeSelect = (dateTime: Date | null) => {
+    if (dateTime) {
+      const formattedDate = dateTime.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+      const formattedTime = dateTime.getHours(); // Extract hour (0-23)
+
+      setPickupDate(formattedDate);
+      setPickupTime(formattedTime.toString()); // Convert hour to string for consistency
+
+      console.log('Odabrano vrijeme:', formattedDate, formattedTime);
+    }
+    if (dateTime === null) {
+      setPickupDate('');
+      setPickupTime('');
+      setDropoffLocationId('');
+      setDropoffDate('');
+      setDropoffTime('');
+      console.log('vrijeme bi trebalo biti resetirano');
+    }
   };
 
   const { trigger } = useSWRMutation<UnavailablePickupResponse>(
@@ -144,7 +159,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
     }
   }, [pickupLocationId, trigger]);
 
-  const isDropoffEnabled = pickupLocationId && pickupDate && pickupTime;
+  const isDropoffLocationEnabled = pickupLocationId && pickupDate && pickupTime;
 
   const handleRent = (paymentMethod: string) => {
     console.log({
@@ -204,10 +219,11 @@ const BookingForm: React.FC<BookingFormProps> = ({
           placeholderTime="--:--"
           intervals={pickUpDateTimeAvaiable?.intervals}
           workingHours={pickUpDateTimeAvaiable?.workingHours}
-          onDateTimeChange={handleDateTimeSelect}
+          onDateTimeChange={handlePickUpDateTimeSelect}
           initialDateTime={null}
           minDate={new Date()} // Ne dopusti prošlost
           isDisabled={!isPickupDateEnabled}
+          pickupLocationId={pickupLocationId}
         />
         <Box>
           <Text fontSize="sm" fontWeight="bold" mb={1}>
@@ -218,7 +234,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
             value={dropoffLocationId}
             onChange={(e) => setDropoffLocationId(e.target.value)}
             borderColor="brandblue"
-            isDisabled={!isDropoffEnabled}
+            isDisabled={!isDropoffLocationEnabled}
           >
             {locations.map((location) => (
               <option key={location.location_id} value={location.location_id}>
@@ -237,7 +253,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
               value={dropoffDate}
               onChange={(e) => setDropoffDate(e.target.value)}
               borderColor="brandblue"
-              isDisabled={!isDropoffEnabled}
+              isDisabled={!isDropoffLocationEnabled} // promjneit to kasnije
             />
           </Box>
           <Box flex="1">
@@ -249,7 +265,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
               value={dropoffTime}
               onChange={(e) => setDropoffTime(e.target.value)}
               borderColor="brandblue"
-              isDisabled={!isDropoffEnabled}
+              isDisabled={!isDropoffLocationEnabled} // promejnit to kasnije
             />
           </Box>
         </Flex>
@@ -268,7 +284,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
           _hover={{ bg: 'brandyellow', color: 'brandblack' }}
           size="lg"
           onClick={() => handleRent('wallet')}
-          isDisabled={!isDropoffEnabled}
+          isDisabled={!isDropoffLocationEnabled} // promjenit to kasnije
           width={{ base: '100%', md: 'auto' }}
         >
           Pay with Wallet
@@ -280,7 +296,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
           _hover={{ bg: 'brandyellow', color: 'brandblack' }}
           size="lg"
           onClick={() => handleRent('card')}
-          isDisabled={!isDropoffEnabled}
+          isDisabled={!isDropoffLocationEnabled} // promjenit to kasnije
           width={{ base: '100%', md: 'auto' }}
         >
           Pay with Card
