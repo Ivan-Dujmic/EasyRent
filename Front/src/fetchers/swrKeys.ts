@@ -31,4 +31,12 @@ export const swrKeys = {
   review: (id: string) => `${home}addReview/${id}`, // TODO    !!!! potenicjalno promejnit ime u addReview ili nesot lsicno
   unavailable_pick_up: (offer_id: string, location_id: string) =>
     `${home}unavailable-pick-up/${offer_id}/?pickUpLocationId=${location_id}`,
+  available_drop_off: (
+    offer_id: string,
+    pickUpLocationId: string,
+    pickUpDate: string,
+    pickUpTime: string,
+    dropOffLocationId: string
+  ) =>
+    `${home}available-drop-off/${offer_id}/?dropOffLocationId=${dropOffLocationId}&pickUpDate=${pickUpDate}&pickUpLocationId=${pickUpLocationId}&pickUpTime=${pickUpTime}`,
 };
