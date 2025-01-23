@@ -297,7 +297,7 @@ def offerRent(request, offer_id):
             )
             # Return the checkout_url to frontend to initiate immediate redirect
             return Response(
-                {"detail": checkout_session.url, "transaction_id": trans.id},
+                {"detail": checkout_session.url, "trans_id": trans.id},
                 status=status.HTTP_200_OK,
             )
 
@@ -361,7 +361,7 @@ def buyGems(request):
         )
         # Return the checkout_url to frontend to initiate immediate redirect
         return Response(
-            {"detail": checkout_session.url, "transaction_id": trans.id},
+            {"detail": checkout_session.url, "trans_id": trans.id},
             status=status.HTTP_200_OK,
         )
 
@@ -483,8 +483,8 @@ def stripe_webhook(request):
     tags=["wallet"],  # Group under "wallet" tag
 )
 @api_view(["GET"])
-def check_transaction(request, transaction_id):
-    trans = get_object_or_404(Transactions, id=transaction_id)
+def check_transaction(request, trans_id):
+    trans = get_object_or_404(Transactions, id=trans_id)
     if trans.status == "finished":
         return Response({"paymentStatus": "successful payment"})
     else:
