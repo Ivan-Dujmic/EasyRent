@@ -271,7 +271,7 @@ def offerRent(request, offer_id):
                             "currency": "eur",
                             "product_data": {
                                 "name": f"{model.makeName} {model.modelName}",
-                                "description": f"Rent from {pickupDate}\nthrough {dropoffDate}"
+                                "description": f"Rent from {pickupDate} through {dropoffDate}"
                             },
                             "unit_amount": int(totalPrice * 100),
                         },
@@ -341,9 +341,9 @@ def buyGems(request):
             line_items=[
             {
                 "price_data": {
-                "currency": "eur",
-                "product_data": {"name": f"Buying {amount} gems"},
-                "unit_amount": buy,
+                    "currency": "eur",
+                    "product_data": {"name": f"Buying {amount} gems"},
+                    "unit_amount": buy,
                 },
                 "quantity": 1,
             }
@@ -353,10 +353,10 @@ def buyGems(request):
             cancel_url="https://easy-rent-ashy.vercel.app/home",
             expires_at=int(time.time()) + 1800,
             metadata={
-            "payment": "buyGems",
-            "rentoid_id": rentoid_id,
-            "gems": amount,
-            "trans_id": trans.id,
+                "payment": "buyGems",
+                "rentoid_id": rentoid_id,
+                "gems": amount,
+                "trans_id": trans.id,
             },
         )
         # Return the checkout_url to frontend to initiate immediate redirect
