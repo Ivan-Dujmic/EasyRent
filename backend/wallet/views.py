@@ -297,7 +297,7 @@ def offerRent(request, offer_id):
             )
             # Return the checkout_url to frontend to initiate immediate redirect
             return Response(
-                {"detail": checkout_session.url, "trans_id": trans.id},
+                {"detail": checkout_session.url, "transaction_id": trans.id},
                 status=status.HTTP_200_OK,
             )
 
