@@ -94,7 +94,7 @@ def userRentals(request):
                         "canReview": canUserReview(rental),
                         "offer_id": offer.offer_id,
                         "rent_id": rental.rent_id,
-                        "image": offer.image.url if offer.image else None,
+                        "image": request.build_absolute_uri(offer.image.url) if offer.image else None,
                     }
 
                     rentalData.append(item)
