@@ -3,7 +3,7 @@
 import VehicleOfferCard from '@/components/shared/cars/VehicleOfferCard/VehicleOfferCard';
 import Footer from '@/components/shared/Footer/Footer';
 import AuthUserHeader from '@/components/shared/Header/AuthUserHeader/AuthUserHeader';
-import Header from '@/components/shared/Header/Header';
+import Header, { HeaderButton } from '@/components/shared/Header/Header';
 import CustomMap from '@/components/shared/Map/CustomMap/CustomMap';
 import BookingForm from '@/components/shared/offer/BookingForm/BookingForm';
 import BookingLoginPrompt from '@/components/shared/offer/BookingLoginPrompt/BookingLoginPrompt';
@@ -17,6 +17,7 @@ import { mockReviews } from '@/mockData/mockReviews';
 import { use } from 'react';
 import {
   Box,
+  Button,
   Flex,
   Heading,
   Spinner,
@@ -24,7 +25,7 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react';
 import useSWR from 'swr';
-import { CustomGet, IOffer } from '@/fetchers/homeData'; // Your fetcher function
+import { CustomGet } from '@/fetchers/homeData'; // Your fetcher function
 import {
   FaCcMastercard,
   FaCcStripe,
@@ -36,6 +37,11 @@ import {
 } from 'react-icons/fa';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { LocationsResponse } from '@/typings/locations/locations';
+import { CustomHeader as Header2 } from '@/components/shared/Header/CustomHeader/CustomHeader';
+import LogOutButton from '@/components/shared/auth/LogOutButton/LogOutButton';
+import { AnimatedMyProfile } from '@/components/shared/user/AnimatedMyProfile/AnimatedMyProfile';
+import NextLink from 'next/link';
+import { IOffer } from '@/typings/vehicles/vehicles.type';
 
 const FooterLinks = {
   quickLinks: [
@@ -181,7 +187,21 @@ export default function OfferPage({
       gap={5}
       justifyContent={'flex-start'}
     >
-      {user.role === 'user' && <AuthUserHeader UserData={user} />}
+      {user.role === 'user' && (
+        <Header2>
+          <Text fontSize="md" fontWeight="bold" color="brandblue">
+            {`Balance: ${user.balance ? user.balance : 0}€`}
+          </Text>
+
+          {/* User Profile Info */}
+          <Flex align="center" gap={4}>
+            <Box height="4" borderLeft="1px" borderColor="brandgray" />
+            <AnimatedMyProfile />
+          </Flex>
+
+          <LogOutButton useAlt={false} />
+        </Header2>
+      )}
       {user.role !== 'user' && <Header />}
 
       <Flex
@@ -205,7 +225,11 @@ export default function OfferPage({
         >
           {offer && <VehicleOfferCard vehicle={offer} />}
           {user.role === 'user' && (
-            <BookingForm balance={Number(offer ? offer.price : 0)} />
+            <BookingForm
+              balance={Number(offer ? offer.price : 0)}
+              locations={offerLocations.locations}
+              offer_id={offer_id}
+            />
           )}
           {user.role !== 'user' && <BookingLoginPrompt />}
         </Flex>
@@ -226,6 +250,7 @@ export default function OfferPage({
           <CustomMap
             locations={offerLocations.locations}
             showInfoWindow={true}
+            focusOnClosestLocation={true}
           />
         </Box>
 

@@ -160,6 +160,9 @@ class GetCompanyVehicleEdit(serializers.Serializer):
     cityName = serializers.CharField()
     locationId = serializers.IntegerField()
 
+class CompanyEditVehicleSerializer(serializers.Serializer):
+    registration = serializers.CharField()
+    location_id = serializers.IntegerField()
 
 class GetCompanyOffer(serializers.Serializer):
     price = serializers.FloatField(default=0.1)

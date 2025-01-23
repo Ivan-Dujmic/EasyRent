@@ -1,0 +1,165 @@
+/* custom-calendar-booking.css */
+/* Custom Calendar Styling */
+.react-calendar {
+  width: 335px; /* POVEĆANO sa 335px na 370px */
+  max-width: 100%;
+  background-color: var(--chakra-colors-brandwhite);
+  color: var(--chakra-colors-brandblack);
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.6;
+  padding: 1rem;
+  border: none; /* Uklanja vanjski obrub */
+}
+
+.react-calendar__navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.react-calendar__navigation button {
+  color: var(--chakra-colors-brandblue);
+  background: none;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+.react-calendar__navigation button:enabled:hover,
+.react-calendar__navigation button:enabled:focus {
+  background-color: var(--chakra-colors-brandlightgray);
+  color: var(--chakra-colors-brandblack);
+}
+
+/* Naslovi dana u tjednu */
+.react-calendar__month-view__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 0.85rem;
+  color: var(--chakra-colors-brandblack);
+  padding-bottom: 0.5rem;
+  text-align: center;
+  border-bottom: 1px solid var(--chakra-colors-brandlightgray);
+}
+
+.react-calendar__month-view__weekdays abbr {
+  text-decoration: none !important; /* Uklanja podcrtavanje */
+  border-bottom: none !important;
+}
+
+/* Dani u mjesecu */
+.react-calendar__month-view__days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+/* Najvažnija promjena: nema margin: auto; 
+   Umjesto toga koristimo flex za centriranje sadržaja */
+.react-calendar__tile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--chakra-colors-brandwhite);
+  color: var(--chakra-colors-brandblack);
+  border-radius: 50%;
+  padding: 0.6rem;
+  text-align: center;
+  font-weight: 500;
+  line-height: 1;
+  height: 40px;
+  width: 40px;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    transform 0.2s ease;
+}
+
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus {
+  background: var(--chakra-colors-brandlightgray);
+  color: var(--chakra-colors-brandblue);
+}
+
+.react-calendar__tile--now {
+  background: var(--chakra-colors-brandlightblue);
+  color: var(--chakra-colors-brandblue);
+  font-weight: bold;
+  border: 2px solid var(--chakra-colors-brandblue);
+}
+
+.react-calendar__tile--now:enabled:hover,
+.react-calendar__tile--now:enabled:focus {
+  background: var(--chakra-colors-brandblue);
+  color: var(--chakra-colors-brandwhite);
+}
+
+.react-calendar__tile--active {
+  background: var(--chakra-colors-brandblue);
+  color: var(--chakra-colors-brandwhite);
+  font-weight: bold;
+}
+
+.react-calendar__tile--active:enabled:hover,
+.react-calendar__tile--active:enabled:focus {
+  background: var(--chakra-colors-brandblue);
+  color: var(--chakra-colors-brandwhite);
+}
+
+.react-calendar__tile--disabled {
+  background: var(--chakra-colors-brandlightgray);
+  color: var(--chakra-colors-brandgray);
+  cursor: not-allowed;
+}
+
+.react-calendar--selectRange .react-calendar__tile--hover {
+  background-color: var(--chakra-colors-brandlightblue);
+  color: var(--chakra-colors-brandblue);
+}
+
+.react-calendar__tile--range {
+  background: var(--chakra-colors-brandlightblue);
+  color: var(--chakra-colors-brandblue);
+  border-radius: 50%;
+  height: 40px;
+  width: 40px;
+}
+
+.react-calendar__tile--rangeStart,
+.react-calendar__tile--rangeEnd {
+  background: var(--chakra-colors-brandblue);
+  color: var(--chakra-colors-brandwhite);
+  border-radius: 50%;
+}
+
+.react-calendar__tile--rangeStart {
+  margin-right: auto;
+}
+
+.react-calendar__tile--rangeEnd {
+  margin-left: auto;
+}
+
+/* Pravokutni stil za mjesece */
+.react-calendar__month-view__months {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.react-calendar__month-view__months .react-calendar__tile {
+  border-radius: 8px; /* Pravokutni stil za mjesece */
+  height: auto;
+  padding: 0.5rem 0;
+}

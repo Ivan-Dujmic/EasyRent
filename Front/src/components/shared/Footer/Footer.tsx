@@ -24,7 +24,7 @@ interface FooterProps {
 
 export default function Footer({ links }: FooterProps) {
   return (
-    <Box
+    <Box 
       as="footer"
       bg="brandblack"
       color="brandwhite"

@@ -1,11 +1,11 @@
 'use client';
 
-import "./style.css"
+import './style.css';
 import VehicleList from '@/components/shared/cars/VechileList/VechileList';
 import useSWR from 'swr';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { CustomGet } from '@/fetchers/get';
-import React, { useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Flex,
   useDisclosure,
@@ -21,7 +21,9 @@ import {
   Modal,
   ModalCloseButton,
   ModalBody,
-  chakra
+  chakra,
+  ModalProps,
+  useToast,
 } from '@chakra-ui/react';
 import {
   FaFacebookF,
@@ -32,18 +34,24 @@ import {
   FaCcMastercard,
   FaCcStripe,
 } from 'react-icons/fa';
-import {CustomHeader as Header} from '@/components/shared/Header/CustomHeader/CustomHeader';
-import {HeaderButton} from '@/components/shared/Header/Header';
+import { CustomHeader as Header } from '@/components/shared/Header/CustomHeader/CustomHeader';
+import { HeaderButton } from '@/components/shared/Header/Header';
 import Footer from '@/components/shared/Footer/Footer';
-import { useUserContext } from "@/context/UserContext/UserContext";
-import LogOutButton from "@/components/shared/auth/LogOutButton/LogOutButton";
-import { IRentalEntry, IRentals, IReviewable, toOffer } from "@/typings/vehicles/vehicles.type"
-import ChatMenu, {ChatIcon} from "@/components/shared/chat/ChatMenu";
-import useSWRMutation from "swr/mutation";
-import { CustomPost } from "@/fetchers/post";
-import CustomInput from "@/components/shared/auth/CustomInput";
-import { useForm } from "react-hook-form";
-import { Overlay } from "@/components/shared/filter/overlay/Overlay";
+import { useUserContext } from '@/context/UserContext/UserContext';
+import LogOutButton from '@/components/shared/auth/LogOutButton/LogOutButton';
+import {
+  ICar,
+  IRentalEntry,
+  IReviewable,
+  toOffer,
+} from '@/typings/vehicles/vehicles.type';
+import ChatMenu, { ChatIcon } from '@/components/shared/chat/ChatMenu';
+import useSWRMutation from 'swr/mutation';
+import { CustomPost } from '@/fetchers/post';
+import CustomInput from '@/components/shared/auth/CustomInput';
+import { useForm } from 'react-hook-form';
+import { Overlay } from '@/components/shared/filter/overlay/Overlay';
+import ChatbotWidget from '@/components/shared/ChatbotWidget/ChatbotWidget';
 
 const userProfileFooterLinks = {
   quickLinks: [
@@ -67,52 +75,69 @@ const userProfileFooterLinks = {
 };
 
 export default function UserProfilePage() {
-
-  const {
-    handleSubmit,
-    formState: { errors },
-    clearErrors,
-    register,
-  } = useForm<{amount: number}>();
-
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const { data: entries } = useSWR(swrKeys.userRentals, CustomGet<IRentalEntry[]>);
+  const { data: entries } = useSWR(
+    swrKeys.userRentals,
+    CustomGet<IRentalEntry[]>
+  );
   const { user } = useUserContext();
-  const { isOpen, onOpen, onClose } = useDisclosure()
- 
-  const { trigger: walletTrigger } = useSWRMutation(swrKeys.addBalance(user.user_id), CustomPost<{amount: number}>, {
-    onSuccess: () => {
-      console.log("Saved changes")
-    },
-    onError: () => {
-      console.log("Something went wrong!")
-    },
-  });
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const previouslyRented = 
-    entries?.filter(vehicle => vehicle.dateTimeReturned !== undefined)
-    .map(vehicle => {
-      console.log(`rented: ${!vehicle.canReview}`, vehicle)
-      let item = toOffer(vehicle) as IReviewable
-      item.rated = !(vehicle.canReview)
-      return item
-    })
-  
-  const currentRentals = 
-    entries?.filter(vehicle => vehicle.dateTimeReturned === undefined)
-    .map(vehicle => {
-      console.log("current", vehicle)
-      return toOffer(vehicle)
-    })
+  const { data: balance } = useSWR(
+    swrKeys.getBalance,
+    CustomGet<{ Balance: number }>
+  );
+
+  const [isStylesLoaded, setIsStylesLoaded] = useState(false);
+
+  useEffect(() => {
+    // Simulating style loading completion with a short delay
+    const timeout = setTimeout(() => {
+      setIsStylesLoaded(true);
+    }, 100); // Adjust timing as needed
+
+    return () => clearTimeout(timeout);
+  }, []);
+
+  const [currentRentals, setCurrent] = useState([] as ICar[]);
+  const [previouslyRented, setPrevious] = useState([] as ICar[]);
+
+  useEffect(() => {
+    console.log('logging', entries, Array.isArray(entries));
+
+    const curr = Array.isArray(entries)
+      ? entries
+          .filter((vehicle) => new Date(vehicle.dateTimeReturned) > new Date())
+          .map((vehicle) => {
+            let item = toOffer(vehicle) as IReviewable;
+            item.rated = !vehicle.canReview;
+            // console.log(item)
+            return item;
+          })
+          .sort((v, _) => (v.rated === undefined || v.rated ? 1 : -1))
+      : [];
+
+    const prev = Array.isArray(entries)
+      ? entries
+          .filter((vehicle) => new Date(vehicle.dateTimeReturned) <= new Date())
+          .map((vehicle) => {
+            // console.log(toOffer(vehicle))
+            return toOffer(vehicle);
+          })
+      : [];
+
+    console.log(prev);
+    console.log(curr);
+
+    if (prev.length > 0) setPrevious(prev);
+    if (curr.length > 0) setCurrent(curr);
+
+    console.log(previouslyRented);
+    console.log(currentRentals);
+  }, [entries]);
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
-  };
-
-  const onAddFunds = async (data: {amount: number}) => {
-    onClose();
-    clearErrors()
-    await walletTrigger(data);
   };
 
   const gapSize = useBreakpointValue({
@@ -121,100 +146,78 @@ export default function UserProfilePage() {
     lg: 10, // Largest gap for large screens (desktop)
     xl: 10,
   });
-  
-  const headingSize = useBreakpointValue({ 
+
+  const headingSize = useBreakpointValue({
     base: '2xl',
     lg: '2xl',
   });
-  
+
   const rentalswidth = useBreakpointValue({
     base: '100%',
     lg: '88%',
   });
-  
+
   const rentalAllignment = useBreakpointValue({
     base: 'center',
-    lg: 'space-between'
-  })
+    lg: 'space-between',
+  });
+
+  if (!isStylesLoaded) {
+    return null; // Do not render anything until styles are loaded
+  }
 
   return (
-    <Flex direction="column" grow={1} bg="brandlightgray" minH="100vh">
+    <Flex
+      direction="column"
+      grow={1}
+      bg="brandlightgray"
+      minH="100vh"
+      justify={'space-between'}
+    >
       {/* Add Funds Modal */}
-      <Modal isCentered isOpen={isOpen} onClose={onClose}>
-        <Overlay/>
-        <ModalContent>
-          <chakra.form onSubmit={handleSubmit(onAddFunds)}>
-            <ModalHeader>Add Funds</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <Text mb={4}>Enter the amount you want to add:</Text>
-              <CustomInput
-                {...register('amount', {
-                  required: 'Must enter valid amout',
-                })}
-                label="Amount (€)"
-                type="number"
-                placeholder="Enter amount to add"
-                error={errors.amount?.message}
-              />
-            </ModalBody>
-            <ModalFooter>
-              <Button onClick={onClose} mr={3}>
-                Cancel
-              </Button>
-              <Button 
-                type="submit" color = "white" bg = "brandblue" 
-                  _hover = {{
-                    color: "brandblack",
-                    bg: "brandyellow"
-                  }}
-                >
-                Add Funds
-              </Button>
-            </ModalFooter>
-          </chakra.form>
-        </ModalContent>
-      </Modal>
+      <FundsModal onClose={onClose} isOpen={isOpen} />
+
+      <ChatbotWidget></ChatbotWidget>
 
       {/* Header */}
       <Header>
         <Text fontSize="md" fontWeight="bold" color="brandblue">
-          {`Balance: ${user.balance? user.balance : 0}€`}
+          {`Balance: ${balance?.Balance || 0}💎`}
         </Text>
 
         <Button
           onClick={() => {
-            onOpen()
+            onOpen();
           }}
           bgColor={'brandblue'}
           color={'brandwhite'}
           size="sm"
-          _hover={{ bg: 'brandyellow', color: 'brandblack',
+          _hover={{
+            bg: 'brandyellow',
+            color: 'brandblack',
             transform: 'translateY(-2px)',
             transition: 'transform 0.2s ease, box-shadow 0.3s ease',
           }}
         >
-          Add funds
+          Buy Gems
         </Button>
 
-        <HeaderButton href = "/editProfile"> 
-          Edit profile 
-        </HeaderButton>
+        <HeaderButton href="/editProfile">Edit profile</HeaderButton>
 
-        <LogOutButton useAlt = {false}/>
+        <LogOutButton useAlt={false} />
       </Header>
 
       {/* Main Content */}
-      <Box position = "relative" width = "100%">
+      <Box position="relative" width="100%">
         {/* Rentals */}
         <Flex
           mx="auto"
-          justify={isChatOpen ? {rentalAllignment} : "center"}
+          justify={isChatOpen ? { rentalAllignment } : 'center'}
           align="stretch"
           width={'100%'}
           p={gapSize}
           gap={gapSize}
-          wrap={"nowrap"}
+          wrap={'nowrap'}
           direction={{ base: 'column', lg: 'row' }}
         >
           {/* Rentals Section */}
@@ -228,34 +231,159 @@ export default function UserProfilePage() {
             gap={gapSize}
           >
             <Heading size={headingSize} color="brandblue">
-              {`${user.firstName? `${user.firstName}'s` : "Your"} Profile`}
+              {`${user.firstName ? `${user.firstName}'s` : 'Your'} Profile`}
             </Heading>
             <Divider />
-            <VehicleList vehicles={currentRentals} description="Ongoing rentals:" />
-            <VehicleList vehicles={previouslyRented} description="Previously rented:" />
+            {currentRentals && currentRentals.length > 0 ? (
+              <VehicleList
+                justify={'flex-start'}
+                vehicles={currentRentals}
+                description="Ongoing rentals:"
+              />
+            ) : (
+              <Heading size="md" color="brandblue" opacity={0.5}>
+                No ongoing rentals
+              </Heading>
+            )}
+            {previouslyRented && previouslyRented.length > 0 ? (
+              <VehicleList
+                justify={'flex-start'}
+                vehicles={previouslyRented}
+                description="Previously rented:"
+              />
+            ) : (
+              <Heading size="md" color="brandblue" opacity={0.5}>
+                No previous rentals
+              </Heading>
+            )}
           </Flex>
 
           {/* Chats Section (UNIMPLEMENTED) */}
           {isChatOpen ? (
-            <ChatMenu onClose={toggleChat} isOpen={isChatOpen} chats={
-              [
-                {name:"Admin"}, 
-                {name:"Company 1"}, 
-                {name:"Company 2"}, 
-                {name:"Company 3"}
-              ]
-            } />
+            <ChatMenu
+              onClose={toggleChat}
+              isOpen={isChatOpen}
+              chats={[
+                { name: 'Admin' },
+                { name: 'Company 1' },
+                { name: 'Company 2' },
+                { name: 'Company 3' },
+              ]}
+            />
           ) : (
-            <ChatIcon 
+            <ChatIcon
               onClick={toggleChat}
               position="absolute"
-              right={{base: 5, lg: gapSize}}
-              top={gapSize}/>
+              right={{ base: 5, lg: gapSize }}
+              top={gapSize}
+            />
           )}
         </Flex>
       </Box>
-      <Footer links={userProfileFooterLinks}/>
+      <Footer links={userProfileFooterLinks} />
     </Flex>
   );
 }
 
+interface FundsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  setBalance?: React.Dispatch<React.SetStateAction<number | undefined>>;
+}
+
+function FundsModal({ isOpen, onClose, setBalance }: FundsModalProps) {
+  const {
+    handleSubmit,
+    formState: { errors },
+    clearErrors,
+    register,
+  } = useForm<{ amount: number }>();
+
+  const onAddFunds = async (data: { amount: number }) => {
+    onClose();
+    clearErrors();
+    await walletTrigger(data);
+  };
+  const toast = useToast();
+
+  const { trigger: walletTrigger } = useSWRMutation(
+    swrKeys.buyGems,
+    CustomPost,
+    {
+      onSuccess: (data: any) => {
+        if (data?.detail) {
+          console.log(data?.trans_id);
+          if (typeof window !== 'undefined' && window.localStorage) {
+            try {
+              localStorage.setItem('trans_id', data.trans_id);
+              console.log('Transaction ID saved:', data.trans_id);
+            } catch (error) {
+              console.error('Error saving to localStorage:', error);
+            }
+          }
+          if (data.detail.includes('stripe.com')) {
+            window.location.href = data.detail;
+          } else {
+            toast({
+              title: 'Success',
+              description: data.detail,
+              status: 'success',
+              duration: 5000,
+              isClosable: true,
+            });
+          }
+        }
+      },
+      onError: (error: any) => {
+        // If the backend returns "Insufficient funds." or some other 4x
+        toast({
+          title: 'Error',
+          description: `Something went wrong with the transaction. ${error}`,
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      },
+    }
+  );
+
+  return (
+    <Modal isCentered isOpen={isOpen} onClose={onClose}>
+      <Overlay />
+      <ModalContent>
+        <chakra.form onSubmit={handleSubmit(onAddFunds)}>
+          <ModalHeader>Buy Gems</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text mb={4}></Text>
+            <CustomInput
+              {...register('amount', {
+                required: 'Must enter valid amout',
+              })}
+              label="Enter Number of Gems"
+              type="number"
+              placeholder="100💎 = 1€"
+              error={errors.amount?.message}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={onClose} mr={3}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              color="white"
+              bg="brandblue"
+              _hover={{
+                color: 'brandblack',
+                bg: 'brandyellow',
+              }}
+            >
+              Buy
+            </Button>
+          </ModalFooter>
+        </chakra.form>
+      </ModalContent>
+    </Modal>
+  );
+}

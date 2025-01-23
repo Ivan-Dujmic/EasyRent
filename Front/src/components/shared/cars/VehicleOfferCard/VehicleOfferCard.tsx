@@ -1,4 +1,5 @@
-import { IOffer } from '@/fetchers/homeData';
+
+import { IOffer } from '@/typings/vehicles/vehicles.type';
 import { StarIcon } from '@chakra-ui/icons';
 import { Box, Flex, Heading, Text, Image, Stack } from '@chakra-ui/react';
 import { IoPersonSharp } from 'react-icons/io5';
@@ -13,7 +14,7 @@ export default function VehicleOfferCard({ vehicle }: { vehicle: IOffer }) {
       borderRadius="lg"
       overflow="hidden"
       boxShadow="md"
-      bg="brandwhite"
+      bg="#ffffff"
       p={4}
     >
       <Flex direction={{ base: 'column', md: 'row' }} gap={4}>
@@ -81,7 +82,7 @@ export default function VehicleOfferCard({ vehicle }: { vehicle: IOffer }) {
             <Flex align="center" gap={1}>
               <StarIcon boxSize="4" />
               <Text fontSize="sm">
-                {vehicle.rating} ({vehicle.noOfReviews} reviews)
+                {vehicle.rating?.toFixed(2)} ({vehicle.noOfReviews} reviews)
               </Text>
             </Flex>
           </Flex>
