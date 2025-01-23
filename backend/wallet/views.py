@@ -339,24 +339,24 @@ def buyGems(request):
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=["card"],
             line_items=[
-                {
-                    "price_data": {
-                        "currency": "eur",
-                        "product_data": {"name": "Buying Gems"},
-                        "unit_amount": buy,
-                    },
-                    "quantity": 1,
-                }
+            {
+                "price_data": {
+                "currency": "eur",
+                "product_data": {"name": f"Buying {amount} gems"},
+                "unit_amount": buy,
+                },
+                "quantity": 1,
+            }
             ],
             mode="payment",
-            success_url="http://localhost:3000/success/",
-            cancel_url="http://localhost:3000/cancel/",
+            success_url="https://easy-rent-ashy.vercel.app/success",
+            cancel_url="https://easy-rent-ashy.vercel.app/home",
             expires_at=int(time.time()) + 1800,
             metadata={
-                "payment": "buyGems",
-                "rentoid_id": rentoid_id,
-                "gems": amount,
-                "trans_id": trans.id,
+            "payment": "buyGems",
+            "rentoid_id": rentoid_id,
+            "gems": amount,
+            "trans_id": trans.id,
             },
         )
         # Return the checkout_url to frontend to initiate immediate redirect
