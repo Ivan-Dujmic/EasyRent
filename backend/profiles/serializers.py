@@ -1,7 +1,14 @@
+from django.core.serializers.base import Serializer
 from rest_framework import serializers
 from .models import *
 from src.models import *
 from home.models import *
+
+
+class WorkingHoursSer(serializers.Serializer):
+    dayOfTheWeek = serializers.IntegerField()
+    startTime = serializers.TimeField()
+    endTime = serializers.TimeField()
 
 
 class GetUserRentalsSerializer(serializers.Serializer):
@@ -44,9 +51,11 @@ class PutUserPasswordSerializer(serializers.Serializer):
 class DeleteUserSerializer(serializers.Serializer):
     password = serializers.CharField()
 
+
 class PutCompanyPassword(serializers.Serializer):
     oldPassword = serializers.CharField()
     newPassword = serializers.CharField()
+
 
 class GetCompanyVehicles(serializers.Serializer):
     image = serializers.FileField()
@@ -111,20 +120,13 @@ class PutCompanyInfo(serializers.Serializer):
     description = serializers.CharField()
     password = serializers.CharField()
     logo = serializers.FileField()
-    
 
 
 class GetCompanyLocations(serializers.Serializer):
     cityName = serializers.CharField()
     streetName = serializers.CharField()
     streetNo = serializers.CharField()
-    locationId = serializers.IntegerField()
-
-
-class GetCompanyLocations(serializers.Serializer):
-    cityName = serializers.CharField()
-    streetName = serializers.CharField()
-    streetNo = serializers.CharField()
+    countryName = serializers.CharField()
     locationId = serializers.IntegerField()
 
 
@@ -134,9 +136,21 @@ class GetCompanyLocation(serializers.Serializer):
     streetName = serializers.CharField()
     streetNo = serializers.CharField()
     cityName = serializers.CharField()
-    workingHours = serializers.ListField(
-        child=serializers.DictField(child=serializers.CharField())
-    )
+    workingHours = WorkingHoursSer(many=True)
+
+
+class PutCompanyLocation(serializers.Serializer):
+    workingHours = WorkingHoursSer(many=True)
+
+
+class PostCompanyLocation(serializers.Serializer):
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()
+    streetName = serializers.CharField()
+    streetNo = serializers.CharField()
+    cityName = serializers.CharField()
+    countryName = serializers.CharField()
+    workingHours = WorkingHoursSer(many=True)
 
 
 class GetCompanyVehicleEdit(serializers.Serializer):
@@ -146,6 +160,9 @@ class GetCompanyVehicleEdit(serializers.Serializer):
     cityName = serializers.CharField()
     locationId = serializers.IntegerField()
 
+class CompanyEditVehicleSerializer(serializers.Serializer):
+    registration = serializers.CharField()
+    location_id = serializers.IntegerField()
 
 class GetCompanyOffer(serializers.Serializer):
     price = serializers.FloatField(default=0.1)
@@ -206,15 +223,24 @@ class CompanyVehicleSerializer(serializers.Serializer):
     model_id = serializers.IntegerField()
     location_id = serializers.IntegerField()
 
+
 class CompanyOfferPostSerializer(serializers.Serializer):
     price = serializers.FloatField()
     image = serializers.FileField()
     description = serializers.CharField()
     model_id = serializers.IntegerField()
 
+
+class CompanyOfferPutSerializer(serializers.Serializer):
+    price = serializers.FloatField()
+    image = serializers.FileField()
+    description = serializers.CharField()
+
+
 class PostReviewSerializer(serializers.Serializer):
     rating = serializers.FloatField()
     description = serializers.CharField()
+
 
 class DeleteCompanySerializer(serializers.Serializer):
     password = serializers.CharField()

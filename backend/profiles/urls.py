@@ -6,16 +6,17 @@ from . import views
 app_name = "profiles"
 urlpatterns = [
     path("user/rentals/", views.userRentals, name="userRentals"),
-    path("user/leave-review/<rent_id>", views.postReview, name="postReview"),
+    path("user/leave-review/<rent_id>/", views.postReview, name="postReview"),
     path("user/info/", views.userInfo, name="userInfo"),
     path("user/pass/", views.userPass, name="userPass"),
     path("user/delete/", views.userDelete, name="userDelete"),
     path("company/vehicles/", views.companyVehicles, name="companyVehicles"),
     path(
-        "company/toggle-vehicle-visibility/",
+        "company/toggle-vehicle-visibility/<int:vehicle_id>/",
         views.toogleVehicleVisibility,
         name="toggleVehicleVisibility",
     ),
+    path("company/toggle-offer-visibility/<int:offer_id>/", views.toggleOfferVisibility, name="toggleOfferVisibility"),
     path(
         "company/log/upcoming/", views.upcomingCompanyRents, name="upcomingCompanyRents"
     ),
@@ -25,25 +26,49 @@ urlpatterns = [
         views.completedCompanyRents,
         name="completedCompanyRents",
     ),
-    path("company/offers", views.companyOffers, name="companyOffers"),
+    path("company/offers/", views.companyOffers, name="companyOffers"),
+    path("company/offer/<offerId>/", views.getCompanyOffer, name="getCompanyOffer"),
     path("company/reviews/", views.companyReviews, name="companyReviews"),
     path("company/earnings/", views.companyEarnings, name="companyEarnings"),
     path("company/info/", views.companyInfo, name="companyInfo"),
     path("company/pass/", views.companyPasswordChange, name="companyPasswordChange"),
     path("company/locations/", views.companyLocations, name="companyLocations"),
-    path("company/setHQ/", views.companySetHQ, name="companySetHQ"),
-    path("company/location/", views.companyLocations, name="companyLocations"),
+    path("company/setHQ/<int:location_id>/", views.companySetHQ, name="companySetHQ"),
+    path(
+        "company/location/<int:location_id>/",
+        views.companyLocation,
+        name="companyLocations",
+    ),
+    path(
+        "company/location/",
+        views.postCompanyLocation,
+        name="postCompanyLocations",
+    ),
     path("company/delete/", views.deleteCompany, name="companyDelete"),
     path(
-        "company/vehicles/edit-vehicle/", views.companyVehicleEdit, name="editVehicle"
+        "company/vehicles/edit-vehicle/<int:vehicle_id>/", views.companyVehicleEdit, name="editVehicle"
     ),
     path("company/vehicle/", views.companyVehicle, name="companyVehicle"),
     path("company/offer/", views.companyOffer, name="companyOffer"),
-    path("company/vehicle-log/", views.companyVehicleLog, name="companyVehicleLog"),
-    path("company/log-upcoming/", views.companyLogUpcoming, name="companyLogUpcoming"),
-    path("company/log-ongoing/", views.companyLogOngoing, name="companyLogOngoing"),
+    path("company/vehicle-log/<int:vehicle_id>/", views.companyVehicleLog, name="companyVehicleLog"),
     path(
-        "company/log-completed/", views.companyLogCompleted, name="companyLogCompleted"
+        "company/log-upcoming/<int:vehicle_id>/",
+        views.companyLogUpcoming,
+        name="companyLogUpcoming",
     ),
-    path("company/log-reviews/", views.companyLogReviews, name="companyLogReviews"),
+    path(
+        "company/log-completed/<int:vehicle_id>/",
+        views.companyLogCompleted,
+        name="companyLogCompleted",
+    ),
+    path(
+        "company/log-reviews/<int:vehicle_id>/",
+        views.companyLogReviews,
+        name="companyLogReviews",
+    ),
+    path(
+        "company/calculate-all-reviews/",
+        views.calculateAllReviews,
+        name="calculateAllReviews",
+    ),
 ]

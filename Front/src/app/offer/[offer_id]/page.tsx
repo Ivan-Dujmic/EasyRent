@@ -25,7 +25,7 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react';
 import useSWR from 'swr';
-import { CustomGet, IOffer } from '@/fetchers/homeData'; // Your fetcher function
+import { CustomGet } from '@/fetchers/homeData'; // Your fetcher function
 import {
   FaCcMastercard,
   FaCcStripe,
@@ -41,6 +41,7 @@ import { CustomHeader as Header2 } from '@/components/shared/Header/CustomHeader
 import LogOutButton from '@/components/shared/auth/LogOutButton/LogOutButton';
 import { AnimatedMyProfile } from '@/components/shared/user/AnimatedMyProfile/AnimatedMyProfile';
 import NextLink from 'next/link';
+import { IOffer } from '@/typings/vehicles/vehicles.type';
 
 const FooterLinks = {
   quickLinks: [

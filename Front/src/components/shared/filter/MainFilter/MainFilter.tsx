@@ -27,7 +27,7 @@ import LocationDDM from '@/components/features/DropDownMenus/LocationDDM/Locatio
 import { useCarContext } from '@/context/CarContext';
 import { usePathname, useRouter } from 'next/navigation';
 import useSWRMutation from 'swr/mutation';
-import { CustomGet, ICar, OffersResponse } from '@/fetchers/homeData';
+import { CustomGet, OffersResponse } from '@/fetchers/homeData';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { useFilterContext } from '@/context/FilterContext/FilterContext';
 import useSWR from 'swr';

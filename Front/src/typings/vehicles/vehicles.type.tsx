@@ -1,4 +1,4 @@
-import { ICar } from '@/fetchers/homeData';
+
 import { IDealership } from '../company/company';
 
 export interface IReviewable extends ICar {
@@ -17,7 +17,31 @@ export function toOffer(car: IRentalEntry): ICar {
     rating: car.rating,
     noOfReviews: car.noOfReviews,
     offer_id: car.offer_id.toString(),
+    rent_id: car.rent_id.toString(),
   };
+}
+
+export interface ICar {
+  // dode isto kao i I offer prije koji je nasljedi IVechile
+  image: string;
+  companyName: string;
+  makeName: string;
+  modelName: string;
+  noOfSeats?: number; // Number of seats
+  automatic?: boolean; // Automatic or manual
+  price?: string; // Price as a string
+  rating?: number; // Rating value
+  noOfReviews?: number; // Number of reviews
+  offer_id?: string;
+  rent_id?: string
+}
+
+// Extended interface for offers
+export interface IOffer extends ICar {
+  dealership_id: number; // ID of the dealership
+  modelType: string; // Model type (e.g., SUV)
+  description?: string; // Description of the offer
+  companyLogo?: string;
 }
 
 export interface IShowcased {
@@ -46,4 +70,10 @@ export interface IRentalEntry {
   canReview: boolean;
   offer_id: number;
   image: string;
+  rent_id: number;
+}
+
+export interface IPage {
+  page: number;
+  data: IRentalEntry;
 }

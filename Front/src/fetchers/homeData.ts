@@ -1,3 +1,4 @@
+import { ICar, IShowcased } from '@/typings/vehicles/vehicles.type';
 import { fetcher } from './fetcher';
 
 export interface OffersResponse {
@@ -5,44 +6,6 @@ export interface OffersResponse {
   last?: boolean;
 }
 
-export interface IDealership {
-  companyName: string;
-  image: string;
-}
-
-export interface ICar {
-  // dode isto kao i I offer prije koji je nasljedi IVechile
-  image: string;
-  companyName: string;
-  makeName: string;
-  modelName: string;
-  noOfSeats?: number; // Number of seats
-  automatic?: boolean; // Automatic or manual
-  price?: string; // Price as a string
-  rating?: number; // Rating value
-  noOfReviews?: number; // Number of reviews
-  offer_id?: string;
-}
-
-// Extended interface for offers
-export interface IOffer extends ICar {
-  dealership_id: number; // ID of the dealership
-  modelType: string; // Model type (e.g., SUV)
-  description?: string; // Description of the offer
-  companyLogo?: string;
-}
-
-export interface IShowcased {
-  showcased_dealerships: Array<IDealership>;
-  most_popular: Array<ICar>;
-  best_value: Array<ICar>;
-}
-
-export interface IRentals {
-  ongoing_rentals: Array<ICar>;
-  previously_rented: Array<ICar>;
-  unreviewed_rentals: Array<ICar>;
-}
 
 export async function getShowCaseds(
   url: string,

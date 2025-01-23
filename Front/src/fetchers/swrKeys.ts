@@ -13,10 +13,11 @@ export const swrKeys = {
     `${home}search?${queryString}&limit=198&page=1`, // search sa tipovima
   userinfo: `${auth}user-info/`,
   logout: `${auth}logout/`,
-  profileUser: `${profile}/user/info`,
-  deleteUser: `${profile}user/delete`,
-  userRentals: `${profile}user/rentals`,
-  addBalance: (amount: number) => `${wallet}addMoney/${amount}`,
+  profileUser: `${profile}user/info/`,
+  deleteUser: `${profile}user/delete/`,
+  userPass: `${profile}user/pass/`,
+  userRentals: `${profile}user/rentals/`,
+  addBalance: (amount: number) => `${wallet}addMoney/${amount}/`,
   cities: `${home}cities/`,
   companies: `${home}showcased-companies/?limit=6`,
   bestValue: `${home}best-value/?limit=10&page=1`,
@@ -28,7 +29,7 @@ export const swrKeys = {
   reviews: (queryString: string = ''): string =>
     `${home}reviews/${queryString}/?limit=16&page=1`,
   carModels: `${home}models/`,
-  review: (id: string) => `${home}addReview/${id}`, // TODO    !!!! potenicjalno promejnit ime u addReview ili nesot lsicno
+  addReview: (id: string) => `${profile}user/leave-review/${id}/`,
   unavailable_pick_up: (offer_id: string, location_id: string) =>
     `${home}unavailable-pick-up/${offer_id}/?pickUpLocationId=${location_id}`,
   available_drop_off: (
