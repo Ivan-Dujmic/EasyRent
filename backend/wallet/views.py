@@ -269,7 +269,10 @@ def offerRent(request, offer_id):
                     {
                         "price_data": {
                             "currency": "eur",
-                            "product_data": {"name": model.makeName + " " + model.modelName + "\n" + str(pickup_datetime) + " - " + str(dropoff_datetime) + "\n€" + str(totalPrice)},
+                            "product_data": {
+                                "name": f"{model.makeName} {model.modelName}",
+                                "description": f"Rent from {pickupDate}\nthrough {dropoffDate}"
+                            },
                             "unit_amount": int(totalPrice * 100),
                         },
                         "quantity": 1,
