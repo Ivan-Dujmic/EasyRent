@@ -32,4 +32,15 @@ export const swrKeys = {
   addReview: (id: string) => `${profile}user/leave-review/${id}/`,
   unavailable_pick_up: (offer_id: string, location_id: string) =>
     `${home}unavailable-pick-up/${offer_id}/?pickUpLocationId=${location_id}`,
+  available_drop_off: (
+    offer_id: string,
+    pickUpLocationId: string,
+    pickUpDate: string,
+    pickUpTime: string,
+    dropOffLocationId: string
+  ) =>
+    `${home}available-drop-off/${offer_id}/?dropOffLocationId=${dropOffLocationId}&pickUpDate=${pickUpDate}&pickUpLocationId=${pickUpLocationId}&pickUpTime=${pickUpTime}`,
+  rentOffer: (offer_id: string) => `${wallet}rentOffer/${offer_id}/`,
+  checkTransaction: (trans_id: string) =>
+    `${wallet}checkTransaction/${trans_id}/`,
 };
