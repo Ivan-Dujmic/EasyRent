@@ -102,23 +102,22 @@ function getWorkingHoursForDay(
   return workingHours.find((wh) => wh.dayOfTheWeek === dayOfWeek) || null;
 }
 
-/** Generira polusatne slotove [startTime, endTime]. */
+/** Generira satne slotove [startTime, endTime]. */
 function buildTimeSlots(
   startH: number,
   startM: number,
   endH: number,
   endM: number,
-  step = 30
+  step = 60 // Promjena koraka na 60 minuta za pune sate
 ) {
   const slots: string[] = [];
-  let current = new Date(2000, 0, 1, startH, startM);
-  const end = new Date(2000, 0, 1, endH, endM);
+  let current = new Date(2000, 0, 1, startH, 0); // Postavi minute na 0
+  const end = new Date(2000, 0, 1, endH, 0); // Postavi end minute na 0
 
   while (current.getTime() <= end.getTime()) {
     const hh = String(current.getHours()).padStart(2, '0');
-    const mm = String(current.getMinutes()).padStart(2, '0');
-    slots.push(`${hh}:${mm}`);
-    current.setMinutes(current.getMinutes() + step);
+    slots.push(`${hh}:00`); // Samo puni sat
+    current.setHours(current.getHours() + 1); // Dodaj 1 sat umjesto minuta
   }
   return slots;
 }

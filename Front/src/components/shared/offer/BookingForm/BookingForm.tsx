@@ -88,32 +88,6 @@ const BookingForm: React.FC<BookingFormProps> = ({
     AvailableDropOffResponse | undefined
   >(undefined);
 
-  // testrianje za dateTime
-  const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);
-  const intervals = [
-    {
-      dateTimeRented: '2025-01-21T16:52:11.243Z',
-      dateTimeReturned: '2025-01-24T10:15:00.000Z',
-    },
-    {
-      dateTimeRented: '2025-01-26T16:52:11.243Z',
-      dateTimeReturned: '2025-01-28T10:15:00.000Z',
-    },
-    {
-      dateTimeRented: '2025-02-05T16:52:11.243Z',
-      dateTimeReturned: '2025-02-10T10:15:00.000Z',
-    },
-  ];
-
-  const workingHours = [
-    { dayOfTheWeek: 0, startTime: '09:00:00', endTime: '17:00:00' },
-    { dayOfTheWeek: 1, startTime: '09:00:00', endTime: '17:00:00' },
-    { dayOfTheWeek: 2, startTime: '09:00:00', endTime: '17:00:00' },
-    { dayOfTheWeek: 3, startTime: '09:00:00', endTime: '17:00:00' },
-    { dayOfTheWeek: 4, startTime: '09:00:00', endTime: '17:00:00' },
-    { dayOfTheWeek: 6, startTime: '10:00:00', endTime: '14:00:00' },
-  ];
-
   const handlePickUpDateTimeSelect = (dateTime: Date | null) => {
     if (dateTime) {
       const formattedDate = dateTime.toISOString().split('T')[0]; // Format: YYYY-MM-DD
@@ -245,6 +219,8 @@ const BookingForm: React.FC<BookingFormProps> = ({
       dropoffDate,
       dropoffTime,
       paymentMethod,
+      offer_id,
+      vehicle_id,
     });
   };
 
@@ -282,7 +258,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
           >
             {locations.map((location) => (
               <option key={location.location_id} value={location.location_id}>
-                {`${location.streetName} ${location.streetNo}, ${location.cityName} ${location.location_id}`}
+                {`${location.streetName} ${location.streetNo}, ${location.cityName}`}
               </option>
             ))}
           </Select>
@@ -330,6 +306,8 @@ const BookingForm: React.FC<BookingFormProps> = ({
           initialDateTime={null}
           minDate={new Date()} // Ne dopusti prošlost
           maxDate={
+            // potencijalno ce treabti miejnati logiku iz ovog ali neka za sada bude tako
+            // za sad je ukoliko lastDate psotoji daj mi dan prije da se nemorma muciti oko sati, ukoliko ne posojti moze se sve birati
             dropOffDateTimeAvaiable?.lastReturnDateTime
               ? new Date(
                   new Date(dropOffDateTimeAvaiable.lastReturnDateTime).setDate(
