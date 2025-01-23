@@ -82,8 +82,11 @@ export default function UserProfilePage() {
   );
   const { user } = useUserContext();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  
-  const {data: balance} = useSWR(swrKeys.getBalance, CustomGet<{Balance: number}>)
+
+  const { data: balance } = useSWR(
+    swrKeys.getBalance,
+    CustomGet<{ Balance: number }>
+  );
 
   const [isStylesLoaded, setIsStylesLoaded] = useState(false);
 
@@ -164,14 +167,17 @@ export default function UserProfilePage() {
   }
 
   return (
-    <Flex direction="column" grow={1} bg="brandlightgray" minH="100vh" justify={"space-between"}>
+    <Flex
+      direction="column"
+      grow={1}
+      bg="brandlightgray"
+      minH="100vh"
+      justify={'space-between'}
+    >
       {/* Add Funds Modal */}
       <FundsModal onClose={onClose} isOpen={isOpen} />
-<<<<<<< HEAD
-=======
 
       <ChatbotWidget></ChatbotWidget>
->>>>>>> origin/main
 
       {/* Header */}
       <Header>
@@ -274,30 +280,18 @@ export default function UserProfilePage() {
           )}
         </Flex>
       </Box>
-      <Footer links={userProfileFooterLinks}/>
+      <Footer links={userProfileFooterLinks} />
     </Flex>
   );
 }
 
 interface FundsModalProps {
-<<<<<<< HEAD
   isOpen: boolean;
   onClose: () => void;
+  setBalance?: React.Dispatch<React.SetStateAction<number | undefined>>;
 }
 
-function FundsModal({ isOpen, onClose }: FundsModalProps) {
-=======
-  isOpen : boolean,
-  onClose : () => void,
-  setBalance?: React.Dispatch<React.SetStateAction<number | undefined>>
-}
-
-function FundsModal ({
-  isOpen,
-  onClose,
-  setBalance
-}:FundsModalProps) {
->>>>>>> origin/main
+function FundsModal({ isOpen, onClose, setBalance }: FundsModalProps) {
   const {
     handleSubmit,
     formState: { errors },
@@ -310,12 +304,7 @@ function FundsModal ({
     clearErrors();
     await walletTrigger(data);
   };
-<<<<<<< HEAD
-
-  const { user } = useUserContext();
-=======
   const toast = useToast();
->>>>>>> origin/main
 
   const { trigger: walletTrigger } = useSWRMutation(
     swrKeys.buyGems,
@@ -360,21 +349,20 @@ function FundsModal ({
 
   return (
     <Modal isCentered isOpen={isOpen} onClose={onClose}>
-<<<<<<< HEAD
       <Overlay />
       <ModalContent>
         <chakra.form onSubmit={handleSubmit(onAddFunds)}>
-          <ModalHeader>Add Funds</ModalHeader>
+          <ModalHeader>Buy Gems</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Text mb={4}>Enter the amount you want to add:</Text>
+            <Text mb={4}></Text>
             <CustomInput
               {...register('amount', {
                 required: 'Must enter valid amout',
               })}
-              label="Amount (€)"
+              label="Enter Number of Gems"
               type="number"
-              placeholder="Enter amount to add"
+              placeholder="100💎 = 1€"
               error={errors.amount?.message}
             />
           </ModalBody>
@@ -391,7 +379,7 @@ function FundsModal ({
                 bg: 'brandyellow',
               }}
             >
-              Add Funds
+              Buy
             </Button>
           </ModalFooter>
         </chakra.form>
@@ -399,43 +387,3 @@ function FundsModal ({
     </Modal>
   );
 }
-=======
-    <Overlay />
-    <ModalContent>
-      <chakra.form onSubmit={handleSubmit(onAddFunds)}>
-        <ModalHeader>Buy Gems</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <Text mb={4}></Text>
-          <CustomInput
-            {...register('amount', {
-              required: 'Must enter valid amout',
-            })}
-            label="Enter Number of Gems"
-            type="number"
-            placeholder="100💎 = 1€"
-            error={errors.amount?.message}
-          />
-        </ModalBody>
-        <ModalFooter>
-          <Button onClick={onClose} mr={3}>
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            color="white"
-            bg="brandblue"
-            _hover={{
-              color: 'brandblack',
-              bg: 'brandyellow',
-            }}
-          >
-            Buy
-          </Button>
-        </ModalFooter>
-      </chakra.form>
-    </ModalContent>
-  </Modal>
-  )
-}
->>>>>>> origin/main
