@@ -1726,12 +1726,12 @@ paths:
       responses:
         '200':
           description: No response body
-  /api/wallet/checkTransaction/{transaction_id}/:
+  /api/wallet/checkTransaction/{trans_id}/:
     get:
       operationId: api_wallet_checkTransaction_retrieve
       parameters:
       - in: path
-        name: transaction_id
+        name: trans_id
         schema:
           type: string
         required: true
