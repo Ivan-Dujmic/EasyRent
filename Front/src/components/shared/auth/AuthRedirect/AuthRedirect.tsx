@@ -29,14 +29,14 @@ export const AuthRedirect = ({
         router.push('/YourHomePage');
       }
       if (user.role === 'company' && RedIfRole == 'company') {
-        router.push('/CompanyHomePage');
+        router.push('/companyProfile');
       }
 
       if (!RedIfRole) {
         if (user.role === 'user') {
           router.push('/YourHomePage');
         } else if (user.role === 'company') {
-          router.push('/CompanyHomePage');
+          router.push('/companyProfile');
         }
       }
     }
