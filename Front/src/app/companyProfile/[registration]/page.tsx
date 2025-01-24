@@ -76,7 +76,7 @@ export default function CompanyVehiclePage () {
           vehicleId: id,
           firstName: logReview.firstName,
           lastName: logReview.lastName,
-          rating: logReview.rating,
+          rating: logReview.ratings,
           descriptions: logReview.description,
         }));
       }
