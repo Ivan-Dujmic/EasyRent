@@ -1,5 +1,8 @@
 "use client";
 
+import { CustomGet } from "@/fetchers/get";
+import { swrKeys } from "@/fetchers/swrKeys";
+import { IEarnings } from "@/typings/company/company";
 import { Container, Flex, VStack, Text, Heading, Box, Select } from "@chakra-ui/react";
 import { ReactNode, useState } from "react";
 import {
@@ -12,60 +15,40 @@ import {
     ResponsiveContainer,
     LabelList,
 } from 'recharts';
+import useSWR, { mutate } from "swr";
 
-const mockData = [
-    {
-      year: 2024,
-      months: [
-        { month: 'January', price: 1200 },
-        { month: 'February', price: 1300 },
-        { month: 'March', price: 1250 },
-        { month: 'April', price: 1400 },
-        { month: 'May', price: 1350 },
-        { month: 'June', price: 1500 },
-        { month: 'July', price: 1450 },
-        { month: 'August', price: 1600 },
-        { month: 'September', price: 1550 },
-        { month: 'October', price: 1700 },
-        { month: 'November', price: 1650 },
-        { month: 'December', price: 1800 },
-      ],
-    },
-    {
-      year: 2025,
-      months: [
-        { month: 'January', price: 1250 },
-        { month: 'February', price: 1350 },
-        { month: 'March', price: 1300 },
-        { month: 'April', price: 1450 },
-        { month: 'May', price: 1400 },
-        { month: 'June', price: 1550 },
-        { month: 'July', price: 1500 },
-        { month: 'August', price: 1650 },
-        { month: 'September', price: 1600 },
-        { month: 'October', price: 1750 },
-        { month: 'November', price: 1700 },
-        { month: 'December', price: 1850 },
-      ],
-    },
-  ];
-
+const yearsOptions = [
+  2024, 2025
+]
 export default function CompanyProfileEarnings() {
-    const [selectedYear, setSelectedYear] = useState(mockData[0].year);
+    const { data: earnings } = useSWR(swrKeys.companyEarnings + "?year=2025", CustomGet<IEarnings>);
+    const [selectedYear, setSelectedYear] = useState(2025);
     const handleYearChange = (e : any) => {
         setSelectedYear(Number(e.target.value)); // Convert the selected value to a number
+        mutate(swrKeys.companyEarnings + `?year=${selectedYear}`)
     };
-    const getMonthsForYear = (year: Number) => {
-        const yearData = mockData.find((entry) => entry.year === year);
-        return yearData ? yearData.months : [];
-    };
+    function getMonthsForYear(months?: number[]): { month: string; price: number }[] {
+      const monthNames = [
+          "January", "February", "March", "April", "May", "June",
+          "July", "August", "September", "October", "November", "December"
+      ];
+  
+      // If months is undefined, create a list of 12 months with value 0
+      if (!months) {
+          months = Array(12).fill(0);
+      }
+      return monthNames.map((name, i) => ({
+          month: name,
+          price: months?.[i] ?? 0,
+      }));
+  }
     return(
     <VStack w="100%" h="100%" justifyContent="space-evenly" alignItems="center">
         <Box w="-moz-fit-content">
           <Select value={selectedYear} onChange={handleYearChange}>
-            {mockData.map((data) => (
-              <option key={data.year} value={data.year}>
-                {data.year}
+            {yearsOptions.map((year) => (
+              <option key={year} value={year}>
+                {year}
               </option>
             ))}
           </Select>
@@ -74,18 +57,18 @@ export default function CompanyProfileEarnings() {
         <Flex justifyContent="space-evenly" w="80%">
             <VStack gap={4} alignItems="start">
                 <Heading fontSize="xl">Earnings:</Heading>
-                <Text>Total:</Text>
-                <Text>Selected year:</Text>
+                <Text>Total: {earnings?.totalEarnings}</Text>
+                <Text>Selected year: {earnings?.yearEarnings}</Text>
             </VStack>
             <VStack gap={4} alignItems="start">
                 <Heading fontSize="xl">Rentals:</Heading>
-                <Text>Total:</Text>
-                <Text>Selected year:</Text>
+                <Text>Total: {earnings?.totalRentals}</Text>
+                <Text>Selected year: {earnings?.yearRentals}</Text>
             </VStack>
         </Flex>
 
         <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={getMonthsForYear(selectedYear)} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <BarChart data={getMonthsForYear(earnings?.monthlyEarnings)} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
             <XAxis dataKey="month" />
             <YAxis />
             <Tooltip formatter={(value) => `€${value}`} />

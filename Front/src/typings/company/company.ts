@@ -33,15 +33,15 @@ export interface ICompanyInfo
 }
 
 export interface IEditInfo {
-  companyName: string;
-  companyLogo: string;
+  name: string;
+  logo: string;
+  password: string;
   description: string; 
   phoneNo: string;
 }
 
 export interface IEditPassword {
-  password: string; // Lozinka korisnika
-  confirmPassword: string; // Potvrda lozinke
+  newPassword: string; // Lozinka korisnika
   oldPassword: string; // Stara lozinka
 }
 
@@ -70,4 +70,14 @@ export interface Company {
 
 export interface CompaniesResponse {
   companies: Company[];
+}
+
+export interface IEarnings {
+  totalEarnings: number,
+  yearEarnings: number,
+  totalRentals: number,
+  yearRentals: number,
+  monthlyEarnings: [
+    number
+  ]
 }

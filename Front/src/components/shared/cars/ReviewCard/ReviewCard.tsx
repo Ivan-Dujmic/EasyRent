@@ -1,26 +1,16 @@
 "use client";
 
-import { Vehicle } from '@/typings/vehicles/vehicles';
+import { IReview } from '@/typings/reviews/reviews.type';
 import { StarIcon } from '@chakra-ui/icons';
 import {
   Card,
   CardBody,
   Stack,
-  Heading,
   Box,
   Text,
-  Image,
   Flex,
-  Link,
-  CardHeader,
   Divider,
-  VStack,
-  HStack,
-  Badge,
-  CardFooter,
 } from '@chakra-ui/react';
-import NextLink from 'next/link';
-import { IReview } from '@/fetchers/homeData';
 
 export default function ReviewCard({ review }: { review: IReview }) {
   return (
@@ -46,8 +36,6 @@ export default function ReviewCard({ review }: { review: IReview }) {
               <Text>
                 {review.makeName} {review.modelName}
               </Text>
-
-              <Text>{review.date}</Text>
             </Flex>
 
             <Flex gap={1} align={'baseline'} justify={'space-between'}>
@@ -64,7 +52,7 @@ export default function ReviewCard({ review }: { review: IReview }) {
                 <StarIcon boxSize="3" />{' '}
                 {/* Adjusts the star icon to be slightly smaller */}
                 <Box mr="5px">{review.rating}</Box>
-                <Text fontSize="md">{review.customerName} {review.customerSurname}</Text>
+                <Text fontSize="md">{review.firstName} {review.lastName}</Text>
               </Flex>
             </Flex>
             <Divider
@@ -73,7 +61,7 @@ export default function ReviewCard({ review }: { review: IReview }) {
               background="linear-gradient(to right, blue, lightblue)"
               height="1px"
             />
-            <Text>{review.description}</Text>
+            <Text>{review.descriptions}</Text>
         </Stack>
       </CardBody>
     </Card>

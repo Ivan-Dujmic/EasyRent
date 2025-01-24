@@ -17,7 +17,6 @@ import { useUserContext } from '@/context/UserContext/UserContext';
 
 interface DeleteButtonProps extends ButtonProps {
   label?: string;
-  password?: string
 }
 
 export default function DeleteButton({

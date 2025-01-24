@@ -20,23 +20,30 @@ import {
   Input,
   Button,
   Image,
-  Divider,
 } from '@chakra-ui/react';
 import { ReactElement, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import useSWRMutation from 'swr/mutation';
 import DeleteButton from '@/components/shared/auth/DeleteButton/DeleteButton';
 import { CustomGet } from '@/fetchers/get';
-import useSWR from 'swr';
-import { CustomPost } from '@/fetchers/post';
-import { IEditInfo, IEditPassword, IGetCompany, ISetHQ } from '@/typings/company/company';
+import useSWR, { mutate } from 'swr';
+import { CustomPut } from '@/fetchers/post';
+import { ICompanyInfo, IEditInfo, IEditPassword, ISetHQ } from '@/typings/company/company';
 import { AdressElem } from '@/components/shared/profile/company/AdressElem';
+import { ILocation } from '@/typings/locations/locations';
+import { CustomDelete } from '@/fetchers/delete';
 
 const mokData = {
   HQ : "Ilijaška ulica 23, Zagreb",
   locations : ["Savska ulica 14, Zagreb",
     "Unska ulica 1, Zagreb",
     "Ulica grada Vukovara 59, Zagreb"]
+}
+
+interface IPasswords {
+  password: string; // Lozinka korisnika
+  confirmPassword: string; // Potvrda lozinke
+  oldPassword: string; // Stara lozinka
 }
 
 export default function EditPage() {
@@ -55,7 +62,7 @@ export default function EditPage() {
     clearErrors: clearErrPass,
     getValues: getValPass,
     register: registerPass,
-  } = useForm<IEditPassword>();
+  } = useForm<IPasswords>();
 
   const {
     handleSubmit: handleHQ,
@@ -67,13 +74,10 @@ export default function EditPage() {
   } = useForm<ISetHQ>();
 
   let [success, setSuccess] = useState(false);
-  const {
-    data: dataGet,
-    error,
-    isLoading,
-  } = useSWR(swrKeys.profileUser, CustomGet<IGetCompany>);
+  const { data: companyInfo } = useSWR(swrKeys.companyInfo, CustomGet<ICompanyInfo>);
+  const { data: locations } = useSWR(swrKeys.companyLocations, CustomGet<ILocation[]>);
 
-  const [preview, setPreview] = useState(dataGet?.companyLogo);
+  const [preview, setPreview] = useState(companyInfo?.image);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]; // Get the selected file
@@ -81,19 +85,24 @@ export default function EditPage() {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onloadend = () => {
-        setValueUser('companyLogo', reader.result as string); // Store in React Hook Form
+        setValueUser('logo', reader.result as string); // Store in React Hook Form
         setPreview(reader.result as string); // Show preview
       };
     }
   };
 
-  const handleAddressDel =  () => {
-
-  }
+  const handleAddressDel = async (id : number) => {
+    try {
+        CustomDelete<void>(swrKeys.companyLocationInfo + id)
+        mutate(swrKeys.companyLocations); // Re-fetch the data from the server        
+      } catch (error) {
+        console.error('Delete failed', error);
+      }
+};
 
   const { trigger: updateTrigger } = useSWRMutation(
-    swrKeys.profileUser,
-    CustomPost<IEditInfo>,
+    swrKeys.companyInfo,
+    CustomPut<IEditInfo>,
     {
       onSuccess: () => {
         setSuccess(true);
@@ -106,8 +115,8 @@ export default function EditPage() {
   );
 
   const { trigger: passTrigger } = useSWRMutation(
-    swrKeys.profileUser,
-    CustomPost<IEditPassword>,
+    swrKeys.companySetPass,
+    CustomPut<IEditPassword>,
     {
       onSuccess: () => {
         setSuccess(true);
@@ -124,19 +133,7 @@ export default function EditPage() {
     await updateTrigger(data);
   };
 
-  const onNewHQ = async (data: ISetHQ) => {
-    clearErrUser();
-    await updateTrigger(data);
-  };
-
-  const onResetPassword = async (data: IEditPassword) => {
-    if (dataGet?.password !== data.oldPassword) {
-      setErrPass('oldPassword', {
-        type: 'manual',
-        message: 'Wrong Password, make sure to enter your original password',
-      });
-      return;
-    }
+  const onResetPassword = async (data: IPasswords) => {
     if (data.password.length < 8) {
       setErrPass('password', {
         type: 'manual',
@@ -152,7 +149,10 @@ export default function EditPage() {
       return;
     }
     clearErrPass();
-    await passTrigger(data);
+    await passTrigger({
+      oldPassword : data.oldPassword,
+      newPassword : data.password
+    });
   };
 
   const boxWidth = useBreakpointValue({
@@ -165,6 +165,7 @@ export default function EditPage() {
     base: '100%', // Full width on small screens
     md: '48%', // Two columns on medium and large screens
   });
+  if (!companyInfo || !locations) return <div>Loading...</div>
 
   return success ? (
     <SuccessWindow />
@@ -206,7 +207,7 @@ export default function EditPage() {
                         hidden
                         required
                         id="fileInput"
-                        {...registerUser("companyLogo")}
+                        {...registerUser("logo")}
                         onChange={handleImageUpload}
                       />
                       <Button as="label" htmlFor="fileInput" color="brandwhite" bgColor="brandblue" cursor="pointer"
@@ -228,14 +229,14 @@ export default function EditPage() {
                       )}
                     </Flex>
                     <CustomInput
-                      {...registerUser('companyName', {
+                      {...registerUser('name', {
                         required: 'Must enter company name',
                       })}
                       label="Company name"
                       type="text"
-                      defaultValue={dataGet?.companyName}
+                      defaultValue={companyInfo?.companyName}
                       placeholder="Enter company name"
-                      error={errUser.companyName?.message}
+                      error={errUser.name?.message}
                     />
                     <CustomInput
                       {...registerUser('phoneNo', {
@@ -243,7 +244,7 @@ export default function EditPage() {
                       })}
                       label="Phone number"
                       type="tel"
-                      defaultValue={dataGet?.phoneNo}
+                      defaultValue={companyInfo?.phoneNo}
                       placeholder="Enter company phone number"
                       error={errUser.phoneNo?.message}
                     />
@@ -255,7 +256,7 @@ export default function EditPage() {
                       })}
                       label="Description"
                       type="text"
-                      defaultValue={dataGet?.description}
+                      defaultValue={companyInfo?.description}
                       placeholder="Enter company description"
                       error={errUser.description?.message}
                       h="30vh"
@@ -336,15 +337,13 @@ export default function EditPage() {
               </chakra.form>
             </TabPanel>
             <TabPanel>
-              <chakra.form onSubmit={handleHQ(onNewHQ)}>
-                    <SupportButton href='/location' m="15px" >Add location</SupportButton>
-                    <VStack gap="5">
-                      <AdressElem adress={mokData.HQ} HQ onConfirm={handleAddressDel}/>
-                      {mokData.locations.map((location, indx) => (
-                        <AdressElem adress={location} key={indx} onConfirm={handleAddressDel}/>
-                      ))}
-                    </VStack>
-              </chakra.form>
+                <SupportButton href='/location' m="15px" >Add location</SupportButton>
+                <VStack gap="5">
+                  <AdressElem adress={locations[0]} HQ onConfirm={handleAddressDel}/>
+                  {locations.slice(1).map((location, indx) => (
+                    <AdressElem adress={location} key={indx} onConfirm={handleAddressDel}/>
+                  ))}
+                </VStack>
             </TabPanel>
             <TabPanel>
               <Flex direction={'column'} align={'center'} width={'100%'}>
@@ -367,7 +366,6 @@ export default function EditPage() {
               <DeleteButton
                 label="Delete Account"
                 mt="10"
-                password={dataGet?.password}
                 float={'right'}
               />
             </TabPanel>

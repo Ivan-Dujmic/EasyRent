@@ -1,18 +1,27 @@
+import { CustomPut } from "@/fetchers/post";
+import { swrKeys } from "@/fetchers/swrKeys";
+import { ILocation } from "@/typings/locations/locations";
 import { EditIcon, DeleteIcon } from "@chakra-ui/icons";
 import { Box, Flex, IconButton, Text, Button, useDisclosure, AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useRef } from "react";
+import useSWRMutation from "swr/mutation";
 interface IAdressElemProps {
-    adress : string | undefined;
+    adress : ILocation;
     HQ?: boolean;
-    onConfirm: () => void;
+    onConfirm: (id : number) => void;
 }
 
 export function AdressElem ({adress, HQ = false, onConfirm}: IAdressElemProps)
 {
     const router = useRouter()
+    const { trigger: HQTrigger } = useSWRMutation(
+        swrKeys.companySetHQ + adress.locationId,
+        CustomPut<void>
+    );
     const handleSetHQ = () => {
-        router.push(``);
+      HQTrigger();
+      router.push(``);
     }
     const handleEdit = () => {
         router.push("edit/location");
@@ -28,7 +37,7 @@ export function AdressElem ({adress, HQ = false, onConfirm}: IAdressElemProps)
         bg="brandwhite"
         p="10px"
         >    
-            <Text>{adress}</Text>
+            <Text>{adress.streetName} {adress.streetNo}, {adress.cityName}</Text>
             <Flex justifyContent="space-evenly" alignItems="center" w="40%">
                 {HQ ? (
                     <Text w="108px" textAlign="center">HQ</Text>
@@ -69,7 +78,7 @@ export function AdressElem ({adress, HQ = false, onConfirm}: IAdressElemProps)
               <Button ref={cancelRef} onClick={onClose}>
                 Cancel
               </Button>
-              <Button colorScheme="red" onClick={() => { onConfirm(); onClose(); }} ml={3}>
+              <Button colorScheme="red" onClick={() => { onConfirm(adress.locationId); onClose(); }} ml={3}>
                 Delete
               </Button>
             </AlertDialogFooter>

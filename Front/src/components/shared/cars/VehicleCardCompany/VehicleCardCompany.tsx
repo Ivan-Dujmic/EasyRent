@@ -51,7 +51,7 @@ export default function VehicleCard({ vehicle, handleDelete }: {
   return (
     <Card
       as={NextLink}
-      href={`${vehicle.registration}`}
+      href={`${vehicle.registration}?id=${vehicle.vehicleId}`}
       maxW="210px"
       minW="180px"
       borderWidth="2px"

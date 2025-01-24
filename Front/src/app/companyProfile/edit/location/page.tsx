@@ -1,7 +1,5 @@
 "use client"
 
-import CustomInput from "@/components/shared/auth/CustomInput";
-import CustomMap from "@/components/shared/Map/CustomMap/CustomMap";
 import { IEditLocations } from "@/typings/company/company";
 import { Box, Flex, VStack, useBreakpointValue,  } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";

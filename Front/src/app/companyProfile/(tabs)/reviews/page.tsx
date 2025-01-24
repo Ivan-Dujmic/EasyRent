@@ -1,123 +1,13 @@
 import ReviewCard from "@/components/shared/cars/ReviewCard/ReviewCard";
+import { CustomGet } from "@/fetchers/get";
+import { swrKeys } from "@/fetchers/swrKeys";
+import { IReview } from "@/typings/reviews/reviews.type";
 import { Box, Container, Grid } from "@chakra-ui/react";
-
-const mokReviews = [
-    {
-        companyName: "companyName",
-        modelName: "modelName",
-        makeName: "makeName",
-        customerName: "Pero",
-        customerSurname: "Pero",
-        date: "01.01.2001.",
-        rating: "4.0",
-        registration: "registration",
-        description: "Lorem ipsum odor amet, consectetuer adipiscing elit. Egestas interdum dolor blandit vivamus convallis pellentesque. Massa justo volutpat interdum congue placerat semper."
-        
-
-    },
-    {
-        companyName: "companyName",
-        modelName: "modelName",
-        makeName: "makeName",
-        customerName: "Pero",
-        customerSurname: "Pero",
-        date: "01.01.2001.",
-        rating: "4.0",
-        registration: "registration",
-        description: "Lorem ipsum odor amet, consectetuer adipiscing elit. Egestas interdum dolor blandit vivamus convallis pellentesque. Massa justo volutpat interdum congue placerat semper."
-    },
-    {
-        companyName: "companyName",
-        modelName: "modelName",
-        makeName: "makeName",
-        customerName: "Pero",
-        customerSurname: "Pero",
-        date: "01.01.2001.",
-        rating: "4.0",
-        registration: "registration",
-        description: "Lorem ipsum odor amet, consectetuer adipiscing elit. Egestas interdum dolor blandit vivamus convallis pellentesque. Massa justo volutpat interdum congue placerat semper."
-    },
-    {
-        companyName: "companyName",
-        modelName: "modelName",
-        makeName: "makeName",
-        customerName: "Pero",
-        customerSurname: "Pero",
-        date: "01.01.2001.",
-        rating: "4.0",
-        registration: "registration",
-        description: "Lorem ipsum odor amet, consectetuer adipiscing elit. Egestas interdum dolor blandit vivamus convallis pellentesque. Massa justo volutpat interdum congue placerat semper."
-    },
-    {
-        companyName: "companyName",
-        modelName: "modelName",
-        makeName: "makeName",
-        customerName: "Pero",
-        customerSurname: "Pero",
-        date: "01.01.2001.",
-        rating: "4.0",
-        registration: "registration",
-        description: "Lorem ipsum odor amet, consectetuer adipiscing elit. Egestas interdum dolor blandit vivamus convallis pellentesque. Massa justo volutpat interdum congue placerat semper."
-    },
-    {
-        companyName: "companyName",
-        modelName: "modelName",
-        makeName: "makeName",
-        customerName: "Pero",
-        customerSurname: "Pero",
-        date: "01.01.2001.",
-        rating: "4.0",
-        registration: "registration",
-        description: "Lorem ipsum odor amet, consectetuer adipiscing elit. Egestas interdum dolor blandit vivamus convallis pellentesque. Massa justo volutpat interdum congue placerat semper."
-    },
-    {
-        companyName: "companyName",
-        modelName: "modelName",
-        makeName: "makeName",
-        customerName: "Pero",
-        customerSurname: "Pero",
-        date: "01.01.2001.",
-        rating: "4.0",
-        registration: "registration",
-        description: "Lorem ipsum odor amet, consectetuer adipiscing elit. Egestas interdum dolor blandit vivamus convallis pellentesque. Massa justo volutpat interdum congue placerat semper."
-    },
-    {
-        companyName: "companyName",
-        modelName: "modelName",
-        makeName: "makeName",
-        customerName: "Pero",
-        customerSurname: "Pero",
-        date: "01.01.2001.",
-        rating: "4.0",
-        registration: "registration",
-        description: "Lorem ipsum odor amet, consectetuer adipiscing elit. Egestas interdum dolor blandit vivamus convallis pellentesque. Massa justo volutpat interdum congue placerat semper."
-    },
-    {
-        companyName: "companyName",
-        modelName: "modelName",
-        makeName: "makeName",
-        customerName: "Pero",
-        customerSurname: "Pero",
-        date: "01.01.2001.",
-        rating: "4.0",
-        registration: "registration",
-        description: "Lorem ipsum odor amet, consectetuer adipiscing elit. Egestas interdum dolor blandit vivamus convallis pellentesque. Massa justo volutpat interdum congue placerat semper."
-    },
-];
-
-export interface IReview{  
-    companyName: string;
-    modelName: string;
-    makeName: string;
-    customerName: string;
-    customerSurname: string;
-    registration: string;
-    date: string;
-    description: string;
-    rating: string;
-  }
+import useSWR from "swr";
 
 export default function CompanyProfileReviews() {
+  const { data: reviews } = useSWR(swrKeys.companyReviews + "?limit=40&page=1", CustomGet<IReview[]>);
+
     return(
         <Container maxW="container.2xl" px={10}>
           <Grid
@@ -126,7 +16,7 @@ export default function CompanyProfileReviews() {
             justifyContent="center"
             alignItems="center" 
           >
-            {mokReviews.map((review, indx) =>(
+            {reviews?.map((review, indx) =>(
                 <ReviewCard key={indx} review={review}/>
             ))
             }

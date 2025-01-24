@@ -47,6 +47,8 @@ export const swrKeys = {
     `${home}available-drop-off/${offer_id}/?dropOffLocationId=${dropOffLocationId}&pickUpDate=${pickUpDate}&pickUpLocationId=${pickUpLocationId}&pickUpTime=${pickUpTime}`,
 
   companyInfo: `${profile}/company/info`,
+  companySetPass: `${profile}/company/pass`,
+  companySetHQ: `${profile}/company/setHQ/`, // + locationid
   companyLocations: `${profile}/company/locations`,
   companyLocationInfo: `${profile}/company/location/`, // + locationId
   companyVehicles: `${profile}/company/vehicles`,
@@ -58,6 +60,15 @@ export const swrKeys = {
   companyLogsComplete: `${profile}/company/log/completed`, 
   companyLogsOngoing: `${profile}/company/log/ongoing`, 
   companyLogsUpcoming: `${profile}/company/log/upcoming`, 
+  companyReviews: `${profile}/company/reviews`,
+  companyEarnings: `${profile}/company/earnings`,
+  companyVehicleLog: `${profile}/company/vehicle-log/`, // + vehicleId
+  companyVehicleLogCompleted: `${profile}/company/log-completed/`, // + vehicleId
+  companyVehicleLogUpcoming: `${profile}/company/log-upcoming/`, // + vehicleId
+  companyVehicleReviews: `${profile}/company/log-reviews/`, // + vehicleId
+
+
+
   
 
 

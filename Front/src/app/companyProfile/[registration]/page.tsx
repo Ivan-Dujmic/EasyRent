@@ -1,7 +1,14 @@
 "use client"
+import ReviewCard from "@/components/shared/cars/ReviewCard/ReviewCard";
 import DynamicRows from "@/components/shared/company/CompanyList/DynamicRows";
-import { VStack, Flex, Text, Heading, Divider, TableContainer, Table, Thead, Tr, Th, Tbody, Td, Button } from "@chakra-ui/react";
+import { CustomGet } from "@/fetchers/get";
+import { swrKeys } from "@/fetchers/swrKeys";
+import { IVehicleLog, IVehicleLogs } from "@/typings/logs/logs.type";
+import { ILogReview, IReview } from "@/typings/reviews/reviews.type";
+import { VStack, Flex, Text, Heading, Divider, TableContainer, Table, Thead, Tr, Th, Tbody, Td, Button, Container, Grid } from "@chakra-ui/react";
+import { useRouter } from "next/router";
 import { useState } from "react";
+import useSWR from "swr";
 const complatedRents = [
     { from: "2024-02-01", to: "2024-02-10", who: "John Doe", price: "€500", pickup: "New York", dropoff: "Los Angeles" },
     { from: "2024-03-15", to: "2024-03-20", who: "Jane Smith", price: "€300", pickup: "Berlin", dropoff: "Paris" },
@@ -49,19 +56,45 @@ const mokData = {
 }
 
 export default function CompanyVehiclePage () {
+    const router = useRouter()
+    const {id} = router.query
+    const { data: vehicleLog } = useSWR(swrKeys.companyVehicleLog + id, CustomGet<IVehicleLog>);
+    const { data: logUpcoming } = useSWR(swrKeys.companyVehicleLogUpcoming + id + "?limit=20&page=1", CustomGet<IVehicleLogs[]>);
+    const { data: logCompleted } = useSWR(swrKeys.companyVehicleLogCompleted + id + "?limit=20&page=1", CustomGet<IVehicleLogs[]>);
+    const { data: reviews } = useSWR(swrKeys.companyVehicleReviews + id, CustomGet<ILogReview[]>);
     const [tab, setTab] = useState<boolean>(false);
+
+
+    function transformLogReviews(
+        logReviews: ILogReview[],
+      ): any {
+        return logReviews?.map(logReview => ({
+          image: "image",
+          makeName: vehicleLog?.makeName,
+          modelName: vehicleLog?.modelName,
+          registration: vehicleLog?.registration,
+          vehicleId: id,
+          firstName: logReview.firstName,
+          lastName: logReview.lastName,
+          rating: logReview.rating,
+          descriptions: logReview.description,
+        }));
+      }
+    if (!vehicleLog || !logCompleted || !logUpcoming || !reviews) return <div>Loading...</div>;
+
+
     return (
       <VStack gap={5} mt="10px"  w="100%">
             <Flex justifyContent="space-evenly" w="100%" alignItems="center">
                 <VStack alignItems="start">
-                    <Heading>{mokData.registration}</Heading>
-                    <Text mb="5px">{mokData.modelMake} {mokData.modelName}</Text>
-                    <Text>{mokData.address}</Text>
+                    <Heading>{vehicleLog?.registration}</Heading>
+                    <Text mb="5px">{vehicleLog?.makeName} {vehicleLog?.modelName}</Text>
+                    <Text>{vehicleLog?.streetName} {vehicleLog?.streetNo}, {vehicleLog?.cityName}</Text>
                 </VStack>
                 <VStack alignItems="start">
-                    <Text>Times rented: {mokData.numRented}</Text>
-                    <Text>Time rented: {mokData.timeRented}</Text>
-                    <Text>Earnings: {mokData.earnings}</Text>
+                    <Text>Times rented: {vehicleLog?.timesRented}</Text>
+                    <Text>Time rented: {vehicleLog?.rentedTime}</Text>
+                    <Text>Earnings: {vehicleLog?.moneyMade}</Text>
                 </VStack>
             </Flex>
             <Divider borderColor="brandgray"/>
@@ -82,15 +115,15 @@ export default function CompanyVehiclePage () {
                   {/* Table Body */}
                   <Tbody>
                     <Tr h="10px"/>
-                    {mokData.currRent && (
+                    {vehicleLog.onGoing && (
                     <>
                         <Tr bg="blue.300" my={10}>
-                            <Td>{mokData.currRent.fromDate}</Td>
-                            <Td>{mokData.currRent.toDate}</Td>
-                            <Td>{mokData.currRent.customerName} {mokData.currRent.customerSurname}</Td>
-                            <Td>{mokData.currRent.price}</Td>
-                            <Td>{mokData.currRent.pickupAdress}</Td>
-                            <Td>{mokData.currRent.dropoffAddress}</Td>
+                            <Td>{vehicleLog.onGoing[0].pickUpDateTime}</Td>
+                            <Td>{vehicleLog.onGoing[0].dropOffDateTime}</Td>
+                            <Td>{vehicleLog.onGoing[0].firstName} {vehicleLog.onGoing[0].lastName}</Td>
+                            <Td>{vehicleLog.onGoing[0].price}</Td>
+                            <Td>{vehicleLog.onGoing[0].pickUpLocation}</Td>
+                            <Td>{vehicleLog.onGoing[0].dropOffLocation}</Td>
                         </Tr>
                         <Tr h="25px" />
                     </>
@@ -114,14 +147,28 @@ export default function CompanyVehiclePage () {
                         </Td>
                     </Tr>
                     {tab ? (
-                        <DynamicRows n={5} data={complatedRents}/>
+                        <DynamicRows n={5} data={logCompleted}/>
                     )  : (    
-                        <DynamicRows n={5} data={upcomingRents}/>
+                        <DynamicRows n={5} data={logUpcoming}/>
                     )}
                   </Tbody>
                 </Table>
             </TableContainer>
-
+            <Divider borderColor="brandgray"/>
+            <Container maxW="container.2xl" px={10}>
+              <Grid
+                templateColumns="repeat(auto-fit, minmax(250px, 1fr))"
+                gap={6}
+                justifyContent="center"
+                alignItems="center" 
+              >
+                {transformLogReviews(reviews).map((review : IReview, indx : number) =>(
+                    <ReviewCard key={indx} review={review}/>
+                ))
+                }
+              </Grid>
+            </Container>
         </VStack>
+
     )
 }

@@ -54,7 +54,7 @@ export default function CompanyProfileInfo() {
                 <Text m="10px">
                 {info?.description}
                 </Text>
-                <SupportButton href={`/profile/${user.firstName}/edit`} m="5px" maxWidth="180px">
+                <SupportButton href={`/companyProfile/edit`} m="5px" maxWidth="180px">
                     <EditIcon marginRight="10px"/>
                     Edit profile
                 </SupportButton>
