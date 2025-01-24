@@ -60,6 +60,7 @@ AUTH_USER_MODEL = "auth.User"
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     # "django.middleware.csrf.CsrfViewMiddleware",
     "backend.middleware.DisableCSRFMiddleware",
     "corsheaders.middleware.CorsMiddleware",
@@ -115,7 +116,7 @@ DATABASES = {
     }
 }
 DATABASES["default"] = dj_database_url.parse(os.getenv("DATABASE"))
-STATIC_ROOT = ""
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATIC_URL = "/static/"
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -151,7 +152,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -220,11 +220,7 @@ REST_FRAMEWORK = {
 # python manage.py spectacular --file schema.yml
 # http://127.0.0.1:8000/api/schema/docs
 
-SPECTACULAR_SETTINGS = {
-    "TITLE": "EasyRent API",
-    'COMPONENT_SPLIT_REQUEST': True
-
-}
+SPECTACULAR_SETTINGS = {"TITLE": "EasyRent API", "COMPONENT_SPLIT_REQUEST": True}
 
 # SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_LOGIN_ON_GET = True
@@ -233,3 +229,4 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 # Images (using Pillow)
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"

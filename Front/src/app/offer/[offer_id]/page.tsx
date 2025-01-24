@@ -78,6 +78,11 @@ export default function OfferPage({
     CustomGet
   );
 
+  const { data: balance } = useSWR(
+    swrKeys.getBalance,
+    CustomGet<{ Balance: number }>
+  );
+
   const { data: offerLocations = { locations: [] } } =
     useSWR<LocationsResponse>(
       offer_id ? swrKeys.offerLocations(offer_id) : null,
@@ -190,7 +195,7 @@ export default function OfferPage({
       {user.role === 'user' && (
         <Header2>
           <Text fontSize="md" fontWeight="bold" color="brandblue">
-            {`Balance: ${user.balance ? user.balance : 0}€`}
+            {`Balance: ${balance?.Balance || 0}💎`}
           </Text>
 
           {/* User Profile Info */}
@@ -229,6 +234,7 @@ export default function OfferPage({
               balance={Number(offer ? offer.price : 0)}
               locations={offerLocations.locations}
               offer_id={offer_id}
+              dailyPrice={Number(offer?.price)}
             />
           )}
           {user.role !== 'user' && <BookingLoginPrompt />}

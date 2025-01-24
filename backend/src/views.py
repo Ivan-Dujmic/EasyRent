@@ -676,7 +676,7 @@ def userInfo(request):
                         "role": "user",
                         "firstName": request.user.first_name,
                         "lastName": request.user.last_name,
-                        "balance": Wallet.objects.get(rentoid=rentoid).gems,
+                        "balance": Wallet.objects.get(rentoid_id=rentoid.rentoid_id).gems,
                     },
                     status=200,
                 )

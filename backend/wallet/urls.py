@@ -12,7 +12,7 @@ urlpatterns = [
     path("webhook", views.stripe_webhook, name="webhook"),
     path("buyGems/", views.buyGems, name="buyGems"),
     path(
-        "checkTransaction/<transaction_id>/",
+        "checkTransaction/<trans_id>/",
         views.check_transaction,
         name="checkTransaction",
     ),

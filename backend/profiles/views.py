@@ -60,12 +60,14 @@ def userRentals(request):
                 .prefetch_related(
                     'vehicle__location__dealership__offer_set',  # Offers for the dealer
                 )
-                .order_by('-dateTimeReturned')[:10]  # Limit to latest 10 by dateTimeReturned
+                .order_by('-dateTimeReturned')[:20]  # Limit to latest 10 by dateTimeReturned
             )
 
             rentalData = []
             for rental in rentals:
                 vehicle = rental.vehicle
+                pickupLocation = rental.rentedLocation
+                dropoffLocation = rental.returnLocation
                 dealer = None
                 try:
                     dealer = rental.dealer
@@ -94,6 +96,8 @@ def userRentals(request):
                         "noOfReviews": offer.noOfReviews,
                         "dateTimeRented": rental.dateTimeRented,
                         "dateTimeReturned": rental.dateTimeReturned,
+                        "pickupLocation": pickupLocation.streetName + " " + pickupLocation.streetNo + ", " + pickupLocation.cityName,
+                        "dropoffLocation": dropoffLocation.streetName + " " + dropoffLocation.streetNo + ", " + dropoffLocation.cityName,
                         "expired": isUserRentalExpired(rental),
                         "canReview": canUserReview(rental),
                         "offer_id": offer.offer_id,

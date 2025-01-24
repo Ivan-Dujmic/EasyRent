@@ -22,7 +22,6 @@ import {
   ModalCloseButton,
   ModalBody,
   chakra,
-  ModalProps,
   useToast,
 } from '@chakra-ui/react';
 import {
@@ -53,6 +52,7 @@ import { useForm } from 'react-hook-form';
 import { Overlay } from '@/components/shared/filter/overlay/Overlay';
 import ChatbotWidget from '@/components/shared/ChatbotWidget/ChatbotWidget';
 
+// Footer links (unchanged)
 const userProfileFooterLinks = {
   quickLinks: [
     { label: 'Home', href: '/home' },
@@ -76,88 +76,109 @@ const userProfileFooterLinks = {
 
 export default function UserProfilePage() {
   const [isChatOpen, setIsChatOpen] = useState(false);
+
+  // Fetch user rentals
   const { data: entries } = useSWR(
     swrKeys.userRentals,
     CustomGet<IRentalEntry[]>
   );
+
+  // Current user
   const { user } = useUserContext();
+
+  // Modal for buying gems
   const { isOpen, onOpen, onClose } = useDisclosure();
 
+  // Fetch user balance
   const { data: balance } = useSWR(
     swrKeys.getBalance,
     CustomGet<{ Balance: number }>
   );
 
+  // Fake "styles loaded" state
   const [isStylesLoaded, setIsStylesLoaded] = useState(false);
-
   useEffect(() => {
-    // Simulating style loading completion with a short delay
     const timeout = setTimeout(() => {
       setIsStylesLoaded(true);
-    }, 100); // Adjust timing as needed
-
+    }, 100); // short delay
     return () => clearTimeout(timeout);
   }, []);
 
-  const [currentRentals, setCurrent] = useState([] as ICar[]);
-  const [previouslyRented, setPrevious] = useState([] as ICar[]);
+  // State for grouping vehicles into "ongoing" vs. "previously rented"
+  const [currentRentals, setCurrentRentals] = useState<ICar[]>([]);
+  const [previouslyRented, setPreviouslyRented] = useState<ICar[]>([]);
 
+  // 1) Define a helper function (outside the component):
+  function sortRentalsByReturnDate(rentals: IRentalEntry[]): IRentalEntry[] {
+    // Create a copy so we don't mutate the original array
+    return [...rentals].sort(
+      (a, b) =>
+        new Date(a.dateTimeReturned).getTime() -
+        new Date(b.dateTimeReturned).getTime()
+    );
+  }
+
+  // 2) Use it in your useEffect:
   useEffect(() => {
-    console.log('logging', entries, Array.isArray(entries));
+    if (!Array.isArray(entries)) return;
+    console.log(entries);
+    // First, sort all rentals by their return date
+    const sorted = sortRentalsByReturnDate(entries);
+    console.log(sorted);
+    // Then split them after sorting
+    const curr = sorted
+      .filter((rental) => new Date(rental.dateTimeReturned) > new Date())
+      .map((rental) => {
+        const item = toOffer(rental) as IReviewable;
+        item.rated = !rental.canReview;
+        item.rentalFrom = rental.dateTimeRented;
+        item.rentalTo = rental.dateTimeReturned;
+        item.pickupLocation = rental.pickupLocation;
+        item.dropoffLocation = rental.dropoffLocation;
+        return item;
+      })
+      .sort((a, b) => {
+        // Keep the earlier logic: un-rated rentals (rated=false) at front
+        if (a.rated === false && b.rated !== false) return -1;
+        if (b.rated === false && a.rated !== false) return 1;
+        return 0;
+      });
 
-    const curr = Array.isArray(entries)
-      ? entries
-          .filter((vehicle) => new Date(vehicle.dateTimeReturned) > new Date())
-          .map((vehicle) => {
-            let item = toOffer(vehicle) as IReviewable;
-            item.rated = !vehicle.canReview;
-            // console.log(item)
-            return item;
-          })
-          .sort((v, _) => (v.rated === undefined || v.rated ? 1 : -1))
-      : [];
+    const prev = sorted
+      .filter((rental) => new Date(rental.dateTimeReturned) <= new Date())
+      .map((rental) => {
+        const item = toOffer(rental) as IReviewable;
+        item.rentalFrom = rental.dateTimeRented;
+        item.rentalTo = rental.dateTimeReturned;
+        item.pickupLocation = rental.pickupLocation;
+        item.dropoffLocation = rental.dropoffLocation;
+        return item;
+      });
 
-    const prev = Array.isArray(entries)
-      ? entries
-          .filter((vehicle) => new Date(vehicle.dateTimeReturned) <= new Date())
-          .map((vehicle) => {
-            // console.log(toOffer(vehicle))
-            return toOffer(vehicle);
-          })
-      : [];
-
-    console.log(prev);
     console.log(curr);
-
-    if (prev.length > 0) setPrevious(prev);
-    if (curr.length > 0) setCurrent(curr);
-
-    console.log(previouslyRented);
-    console.log(currentRentals);
+    console.log(prev);
+    setCurrentRentals(curr);
+    setPreviouslyRented(prev);
   }, [entries]);
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
   };
 
+  // Some responsive values
   const gapSize = useBreakpointValue({
-    base: 6, // Small gap for small screens (mobile)
-    md: 8, // Slightly larger gap for medium screens (laptop/tablet)
-    lg: 10, // Largest gap for large screens (desktop)
+    base: 6,
+    md: 8,
+    lg: 10,
     xl: 10,
   });
-
-  const headingSize = useBreakpointValue({
-    base: '2xl',
-    lg: '2xl',
-  });
-
+  const headingSize = useBreakpointValue({ base: '2xl', lg: '2xl' });
   const rentalswidth = useBreakpointValue({
-    base: '100%',
-    lg: '88%',
+    base: '90vw',
+    lg: '70vw',
+    '3xl': '70vw',
   });
-
-  const rentalAllignment = useBreakpointValue({
+  const rentalAlignment = useBreakpointValue({
     base: 'center',
     lg: 'space-between',
   });
@@ -172,12 +193,13 @@ export default function UserProfilePage() {
       grow={1}
       bg="brandlightgray"
       minH="100vh"
-      justify={'space-between'}
+      justify="space-between"
     >
-      {/* Add Funds Modal */}
+      {/* Buy Gems Modal */}
       <FundsModal onClose={onClose} isOpen={isOpen} />
 
-      <ChatbotWidget></ChatbotWidget>
+      {/* Chatbot Widget */}
+      <ChatbotWidget />
 
       {/* Header */}
       <Header>
@@ -186,11 +208,9 @@ export default function UserProfilePage() {
         </Text>
 
         <Button
-          onClick={() => {
-            onOpen();
-          }}
-          bgColor={'brandblue'}
-          color={'brandwhite'}
+          onClick={onOpen}
+          bgColor="brandblue"
+          color="brandwhite"
           size="sm"
           _hover={{
             bg: 'brandyellow',
@@ -203,21 +223,19 @@ export default function UserProfilePage() {
         </Button>
 
         <HeaderButton href="/editProfile">Edit profile</HeaderButton>
-
         <LogOutButton useAlt={false} />
       </Header>
 
       {/* Main Content */}
       <Box position="relative" width="100%">
-        {/* Rentals */}
         <Flex
           mx="auto"
-          justify={isChatOpen ? { rentalAllignment } : 'center'}
+          justify={isChatOpen ? { rentalAlignment } : 'center'}
           align="stretch"
-          width={'100%'}
+          width="100%"
           p={gapSize}
           gap={gapSize}
-          wrap={'nowrap'}
+          wrap="nowrap"
           direction={{ base: 'column', lg: 'row' }}
         >
           {/* Rentals Section */}
@@ -231,25 +249,34 @@ export default function UserProfilePage() {
             gap={gapSize}
           >
             <Heading size={headingSize} color="brandblue">
-              {`${user.firstName ? `${user.firstName}'s` : 'Your'} Profile`}
+              {user.firstName ? `${user.firstName}'s Profile` : 'Your Profile'}
             </Heading>
             <Divider />
+
             {currentRentals && currentRentals.length > 0 ? (
               <VehicleList
-                justify={'flex-start'}
+                justify="flex-start"
                 vehicles={currentRentals}
                 description="Ongoing rentals:"
+                /**
+                 * If we set showRentalDetailsOnClick to 'true',
+                 * each card with rentalFrom/rentalTo will open a modal
+                 * (unless it's reviewable).
+                 */
+                showRentalDetailsOnClick
               />
             ) : (
               <Heading size="md" color="brandblue" opacity={0.5}>
                 No ongoing rentals
               </Heading>
             )}
+
             {previouslyRented && previouslyRented.length > 0 ? (
               <VehicleList
-                justify={'flex-start'}
+                justify="flex-start"
                 vehicles={previouslyRented}
                 description="Previously rented:"
+                showRentalDetailsOnClick
               />
             ) : (
               <Heading size="md" color="brandblue" opacity={0.5}>
@@ -258,7 +285,7 @@ export default function UserProfilePage() {
             )}
           </Flex>
 
-          {/* Chats Section (UNIMPLEMENTED) */}
+          {/* Chat Section */}
           {isChatOpen ? (
             <ChatMenu
               onClose={toggleChat}
@@ -280,32 +307,31 @@ export default function UserProfilePage() {
           )}
         </Flex>
       </Box>
+
       <Footer links={userProfileFooterLinks} />
     </Flex>
   );
 }
 
+/**
+ * Modal for buying gems
+ */
 interface FundsModalProps {
   isOpen: boolean;
   onClose: () => void;
   setBalance?: React.Dispatch<React.SetStateAction<number | undefined>>;
 }
 
-function FundsModal({ isOpen, onClose, setBalance }: FundsModalProps) {
+function FundsModal({ isOpen, onClose }: FundsModalProps) {
   const {
     handleSubmit,
     formState: { errors },
     clearErrors,
     register,
   } = useForm<{ amount: number }>();
-
-  const onAddFunds = async (data: { amount: number }) => {
-    onClose();
-    clearErrors();
-    await walletTrigger(data);
-  };
   const toast = useToast();
 
+  // SWR Mutation for buying gems
   const { trigger: walletTrigger } = useSWRMutation(
     swrKeys.buyGems,
     CustomPost,
@@ -335,7 +361,7 @@ function FundsModal({ isOpen, onClose, setBalance }: FundsModalProps) {
         }
       },
       onError: (error: any) => {
-        // If the backend returns "Insufficient funds." or some other 4x
+        // If the backend returns "Insufficient funds." or some other error
         toast({
           title: 'Error',
           description: `Something went wrong with the transaction. ${error}`,
@@ -346,6 +372,13 @@ function FundsModal({ isOpen, onClose, setBalance }: FundsModalProps) {
       },
     }
   );
+
+  // Called when user submits the "Buy Gems" form
+  const onAddFunds = async (data: { amount: number }) => {
+    onClose();
+    clearErrors();
+    await walletTrigger(data);
+  };
 
   return (
     <Modal isCentered isOpen={isOpen} onClose={onClose}>
@@ -358,7 +391,7 @@ function FundsModal({ isOpen, onClose, setBalance }: FundsModalProps) {
             <Text mb={4}></Text>
             <CustomInput
               {...register('amount', {
-                required: 'Must enter valid amout',
+                required: 'Must enter valid amount',
               })}
               label="Enter Number of Gems"
               type="number"

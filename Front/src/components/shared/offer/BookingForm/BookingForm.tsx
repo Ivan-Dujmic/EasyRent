@@ -11,12 +11,20 @@ import {
   Text,
   useBreakpointValue,
   useToast,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
 } from '@chakra-ui/react';
 import { FaCreditCard, FaWallet } from 'react-icons/fa';
 import useSWRMutation from 'swr/mutation';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { CustomGet } from '@/fetchers/get';
-import { CustomPost } from '@/fetchers/post'; // <--- your CustomPost code
+import { CustomPost } from '@/fetchers/post';
 import CustomCalendar from '@/components/features/DropDownMenus/CustomCalendar/CustomCalendar';
 import { ExtraLocationInfo } from '@/typings/locations/locations';
 import { useRouter } from 'next/navigation';
@@ -25,18 +33,20 @@ interface BookingFormProps {
   balance: number;
   locations: ExtraLocationInfo[];
   offer_id: string;
+  /** Add this prop for daily price of the vehicle */
+  dailyPrice: number;
 }
 
 export interface Interval {
-  dateTimeRented: string; // npr. "2025-01-21T16:52:11.243Z"
-  dateTimeReturned: string; // npr. "2025-01-22T10:15:00.000Z"
+  dateTimeRented: string;
+  dateTimeReturned: string;
 }
 
 export interface WorkingHour {
-  /** 0 = Ponedjeljak, 1 = Utorak, …, 6 = Nedjelja */
+  /** 0 = Monday, 1 = Tuesday, …, 6 = Sunday */
   dayOfTheWeek: number;
-  startTime: string; // npr. "09:00:00"
-  endTime: string; // npr. "17:00:00"
+  startTime: string;
+  endTime: string;
 }
 
 export interface UnavailablePickupResponse {
@@ -45,7 +55,7 @@ export interface UnavailablePickupResponse {
 }
 
 export interface AvailableDropOffResponse {
-  lastReturnDateTime: string | null; // Može biti null ili string u ISO 8601 formatu
+  lastReturnDateTime: string | null;
   vehicle_id: number;
   workingHours: WorkingHour[];
 }
@@ -57,10 +67,24 @@ function reverseDateFormat(isoDate: string) {
   return `${day}-${month}-${year}`; // "DD-MM-YYYY"
 }
 
+// Format from "YYYY-MM-DD" to "DD.MM.YYYY" for display in the modal
+function reverseDateFormatDot(isoDate: string) {
+  if (!isoDate) return '';
+  const [year, month, day] = isoDate.split('-');
+  return `${day}.${month}.${year}`;
+}
+
+// Pads a single-digit hour with a leading zero (e.g., "3" -> "03")
+function padHour(hourString: string) {
+  const hour = parseInt(hourString, 10);
+  return hour < 10 ? `0${hour}` : `${hour}`;
+}
+
 const BookingForm: React.FC<BookingFormProps> = ({
   balance,
   locations,
   offer_id,
+  dailyPrice, // ← We receive the daily price here
 }) => {
   const toast = useToast();
   const router = useRouter();
@@ -78,8 +102,11 @@ const BookingForm: React.FC<BookingFormProps> = ({
   const [isDropOffDateTimeEnabled, setIsDropOffDateTimeEnabled] =
     useState(false);
 
-  // For available vehicle ID (the backend sets it once we pick up the date/time)
+  // For available vehicle ID
   const [vehicle_id, setVehicle_id] = useState('');
+
+  // Store computed total price for the rental
+  const [totalPrice, setTotalPrice] = useState<number | null>(null);
 
   // -- SWR for pickup intervals
   const [pickUpDateTimeAvaiable, setPickUpDateTimeAvaiable] = useState<
@@ -126,14 +153,14 @@ const BookingForm: React.FC<BookingFormProps> = ({
     }
   );
 
-  // ** 2) Create the SWR mutation for rentOffer
+  // ** SWR mutation for rentOffer
   const { trigger: rentOfferTrigger } = useSWRMutation(
     swrKeys.rentOffer(offer_id),
     CustomPost,
     {
       onSuccess: (data: any) => {
         if (data?.detail) {
-          console.log(data?.trans_id);
+          // If the server returns a Stripe link
           if (typeof window !== 'undefined' && window.localStorage) {
             try {
               localStorage.setItem('trans_id', data.trans_id);
@@ -156,7 +183,6 @@ const BookingForm: React.FC<BookingFormProps> = ({
         }
       },
       onError: (error: any) => {
-        // If the backend returns "Insufficient funds." or some other 4xx
         if (error?.message?.includes('Insufficient funds')) {
           toast({
             title: 'Error',
@@ -192,6 +218,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
     }
   }, [dropoffLocationId, triggerDropOf]);
 
+  // Reset dependent states if the user changes the pickup location
   const handlePickupLocationChange = (locationId: string) => {
     setPickupLocationId(locationId);
     // Reset everything else
@@ -202,15 +229,19 @@ const BookingForm: React.FC<BookingFormProps> = ({
     setDropoffTime('');
     setIsDropOffDateTimeEnabled(false);
     setIsPickupDateEnabled(false);
+    setTotalPrice(null);
   };
 
+  // Reset some states if the user changes the dropoff location
   const handleDropOffLocationChange = (locationId: string) => {
     setDropoffLocationId(locationId);
     setDropoffDate('');
     setDropoffTime('');
     setIsDropOffDateTimeEnabled(false);
+    setTotalPrice(null);
   };
 
+  // Handle pick up date/time
   const handlePickUpDateTimeSelect = (dateTime: Date | null) => {
     if (dateTime) {
       const formattedDate = dateTime.toISOString().split('T')[0];
@@ -224,9 +255,11 @@ const BookingForm: React.FC<BookingFormProps> = ({
       setDropoffDate('');
       setDropoffTime('');
       setIsDropOffDateTimeEnabled(false);
+      setTotalPrice(null);
     }
   };
 
+  // Handle drop off date/time
   const handleDropoffDateTimeSelect = (dateTime: Date | null) => {
     if (dateTime) {
       const formattedDate = dateTime.toISOString().split('T')[0];
@@ -236,6 +269,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
     } else {
       setDropoffDate('');
       setDropoffTime('');
+      setTotalPrice(null);
     }
   };
 
@@ -243,11 +277,41 @@ const BookingForm: React.FC<BookingFormProps> = ({
   const isTransactionEnabled =
     isDropoffLocationEnabled && dropoffLocationId && dropoffDate && dropoffTime;
 
-  // ** 3) Actually call the rentOffer endpoint
+  // Calculate total price whenever pickup/dropoff date or time changes
+  useEffect(() => {
+    if (
+      pickupDate &&
+      pickupTime &&
+      dropoffDate &&
+      dropoffTime &&
+      dailyPrice > 0
+    ) {
+      const pickupDateTime = new Date(
+        `${pickupDate}T${padHour(pickupTime)}:00`
+      );
+      const dropoffDateTime = new Date(
+        `${dropoffDate}T${padHour(dropoffTime)}:00`
+      );
+
+      const diffMs = dropoffDateTime.getTime() - pickupDateTime.getTime();
+      if (diffMs > 0) {
+        const diffInHours = diffMs / (1000 * 60 * 60);
+        const hourlyRate = dailyPrice / 24; // dailyPrice / 24 hours
+        const total = diffInHours * hourlyRate;
+        setTotalPrice(total);
+      } else {
+        setTotalPrice(null);
+      }
+    } else {
+      setTotalPrice(null);
+    }
+  }, [pickupDate, pickupTime, dropoffDate, dropoffTime, dailyPrice]);
+
+  // Actually call the rentOffer endpoint
   const handleRent = async (paymentMethod: string) => {
     try {
       const body = {
-        paymentMethod: paymentMethod, // "wallet" or "card"
+        paymentMethod, // "wallet" or "stripe"
         dateFrom: reverseDateFormat(pickupDate), // "DD-MM-YYYY"
         dateTo: reverseDateFormat(dropoffDate), // "DD-MM-YYYY"
         pickLocId: Number(pickupLocationId),
@@ -256,15 +320,26 @@ const BookingForm: React.FC<BookingFormProps> = ({
         dropoffTime: Number(dropoffTime),
       };
       console.log(body);
-      // Fire the SWR POST mutation
       await rentOfferTrigger(body);
-      // If successful, onSuccess handles the rest (redirect or toast).
     } catch (error) {
-      // onError handles it, but you can also do extra logging here if needed.
       console.error('Rent offer failed:', error);
     }
   };
 
+  // -------------
+  //  Modal logic
+  // -------------
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  // Construct a more detailed modal description (with date & time)
+  const pickupHourPadded = padHour(pickupTime);
+  const dropoffHourPadded = padHour(dropoffTime);
+
+  const modalDescription = `Rent this vehicle 
+    from ${reverseDateFormatDot(pickupDate)} at ${pickupHourPadded}:00 
+    to ${reverseDateFormatDot(dropoffDate)} at ${dropoffHourPadded}:00?`;
+
+  // For Chakra UI responsive widths
   const formWidth = useBreakpointValue({
     base: '100%',
     md: '80%',
@@ -284,6 +359,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
       <Heading size="md" mb={6} color="brandblue" textAlign="center">
         Book this car
       </Heading>
+
       <Stack spacing={4}>
         {/* Pick-up location */}
         <Box>
@@ -384,18 +460,21 @@ const BookingForm: React.FC<BookingFormProps> = ({
         gap={4}
         direction={{ base: 'column', md: 'row' }}
       >
+        {/* PAY WITH WALLET - Opens Modal */}
         <Button
           rightIcon={<FaWallet />}
           bg="brandblue"
           color="white"
           _hover={{ bg: 'brandyellow', color: 'brandblack' }}
           size="lg"
-          onClick={() => handleRent('wallet')}
+          onClick={onOpen}
           isDisabled={!isTransactionEnabled}
           width={{ base: '100%', md: 'auto' }}
         >
           Pay with Wallet
         </Button>
+
+        {/* PAY WITH CARD */}
         <Button
           rightIcon={<FaCreditCard />}
           bg="brandblue"
@@ -409,6 +488,40 @@ const BookingForm: React.FC<BookingFormProps> = ({
           Pay with Card
         </Button>
       </Flex>
+
+      {/* Confirmation Modal for "Pay with Wallet" */}
+      <Modal isOpen={isOpen} onClose={onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Confirm Wallet Payment</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text mb={3}>{modalDescription}</Text>
+            {totalPrice !== null && (
+                <Text fontWeight="bold">
+                Total rental price: {Math.round(totalPrice * 100)} 💎
+                </Text>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onClose} size="lg">
+              No
+            </Button>
+            <Button
+              bg="brandblue"
+              color="white"
+              _hover={{ bg: 'brandyellow', color: 'brandblack' }}
+              size="lg"
+              onClick={() => {
+                handleRent('wallet');
+                onClose();
+              }}
+            >
+              Yes
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 };
