@@ -33,13 +33,6 @@ import { AdressElem } from '@/components/shared/profile/company/AdressElem';
 import { ILocation } from '@/typings/locations/locations';
 import { CustomDelete } from '@/fetchers/delete';
 
-const mokData = {
-  HQ : "Ilijaška ulica 23, Zagreb",
-  locations : ["Savska ulica 14, Zagreb",
-    "Unska ulica 1, Zagreb",
-    "Ulica grada Vukovara 59, Zagreb"]
-}
-
 interface IPasswords {
   password: string; // Lozinka korisnika
   confirmPassword: string; // Potvrda lozinke
@@ -75,7 +68,8 @@ export default function EditPage() {
 
   let [success, setSuccess] = useState(false);
   const { data: companyInfo } = useSWR(swrKeys.companyInfo, CustomGet<ICompanyInfo>);
-  const { data: locations } = useSWR(swrKeys.companyLocations, CustomGet<ILocation[]>);
+  const { data: locationsData } = useSWR(swrKeys.companyLocations, CustomGet<any>);
+  const locations = locationsData?.results as ILocation[];
 
   const [preview, setPreview] = useState(companyInfo?.image);
 
@@ -274,7 +268,7 @@ export default function EditPage() {
                   align="center"
                 >
                   <SupportButton
-                    href="/profile/${company}/info"
+                    href="/companyProfile/info"
                     w={{ base: '100%', md: '30%' }}
                   >
                     Cancel
