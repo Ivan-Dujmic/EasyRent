@@ -59,3 +59,4 @@ typing_extensions==4.12.2
 uritemplate==3.0.1
 urllib3==2.2.3
 wheel==0.44.0
+whitenoise==6.8.2
