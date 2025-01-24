@@ -880,7 +880,10 @@ def upcomingCompanyRents(request):
                 rents = Rent.objects.filter(dealer=dealership)
                 res = []
                 for rent in rents:
-                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    try:
+                        rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    except:
+                        continue
                     rentUser = User.objects.get(id=rentoid.user_id)
                     vehicle = Vehicle.objects.get(vehicle_id=rent.vehicle_id)
                     offer = Offer.objects.get(dealer=rent.dealer, model=vehicle.model)
@@ -908,7 +911,8 @@ def upcomingCompanyRents(request):
                     "isLastPage": True if len(res) <= page * limit else False,
                 }
                 return Response(retObject, status=200)
-            except:
+            except Exception as e:
+                print(e)
                 return Response(
                     {
                         "success": 0,
@@ -961,7 +965,10 @@ def ongoingCompanyRents(request):
                 rents = Rent.objects.filter(dealer=dealership)
                 res = []
                 for rent in rents:
-                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    try:
+                        rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    except:
+                        continue
                     rentUser = User.objects.get(id=rentoid.user_id)
                     vehicle = Vehicle.objects.get(vehicle_id=rent.vehicle_id)
                     offer = Offer.objects.get(dealer=rent.dealer, model=vehicle.model)
@@ -1045,7 +1052,10 @@ def completedCompanyRents(request):
                 rents = Rent.objects.filter(dealer=dealership)
                 res = []
                 for rent in rents:
-                    rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    try:
+                        rentoid = Rentoid.objects.get(rentoid_id=rent.rentoid_id)
+                    except:
+                        continue
                     rentUser = User.objects.get(id=rentoid.user_id)
                     vehicle = Vehicle.objects.get(vehicle_id=rent.vehicle_id)
                     offer = Offer.objects.get(dealer=rent.dealer, model=vehicle.model)
@@ -1393,6 +1403,7 @@ def companyLocations(request):
                         res.append(current)
                 if hq_location:
                     res.insert(0, hq_location)
+                res = [item for item in res if item]  # Remove empty items
                 retObject = {"results": res, "isLastPage": True}
                 return JsonResponse(retObject, status=200)
             except:

@@ -1,3 +1,5 @@
+"use client";
+
 import ReviewCard from "@/components/shared/cars/ReviewCard/ReviewCard";
 import { CustomGet } from "@/fetchers/get";
 import { swrKeys } from "@/fetchers/swrKeys";
@@ -6,7 +8,8 @@ import { Box, Container, Grid } from "@chakra-ui/react";
 import useSWR from "swr";
 
 export default function CompanyProfileReviews() {
-  const { data: reviews } = useSWR(swrKeys.companyReviews + "?limit=40&page=1", CustomGet<IReview[]>);
+  const { data: reviewsData } = useSWR(swrKeys.companyReviews + "?limit=40&page=1", CustomGet<any>);
+  const reviews: IReview[] = reviewsData?.results;
 
     return(
         <Container maxW="container.2xl" px={10}>

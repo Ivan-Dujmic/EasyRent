@@ -30,7 +30,7 @@ export default function LogCard({ log }: { log: ILog }) {
       }}
     >
       <Image
-        src={`data:image/png;base64,${log.image}`} // mozda dodat onaj neki nastavak prije
+        src={log.image} // mozda dodat onaj neki nastavak prije
         alt={`${log.modelName} car`}
         objectFit="cover"
         width="100%"

@@ -11,12 +11,13 @@ import { useUserContext } from "@/context/UserContext/UserContext";
 import { CustomDelete } from "@/fetchers/delete";
   
 export default function CompanyProfileVehicles() {
-    const { data: cars } = useSWR(swrKeys.companyVehicles, CustomGet<IVehicle[]>);
+    const { data: carsAll } = useSWR(swrKeys.companyVehicles + '?limit=20', CustomGet<any>);
+    const cars = carsAll?.results as IVehicle[];
     const { user } = useUserContext();
     cars?.sort((a, b) => Number(b.isVisible) - Number(a.isVisible));
     const handleDelete = async (id : number) => {
         try {
-            CustomDelete<void>(swrKeys.companyVehicleDelete + id)
+            await CustomDelete<void>(swrKeys.companyVehicleDelete + id + '/')
             mutate(swrKeys.companyVehicles); // Re-fetch the data from the server
             cars?.sort((a, b) => Number(b.isVisible) - Number(a.isVisible));
             
@@ -26,7 +27,7 @@ export default function CompanyProfileVehicles() {
     };
     
     return(
-    <Box px={10} w="100%">
+    <Box px={40} w="100%">
     <SupportButton href={`profile/${user.firstName}/addvehicle`} mb="20px" ml="5%">Add Vehicle</SupportButton>
       <Grid
         templateColumns="repeat(auto-fit, minmax(200px, 1fr))"

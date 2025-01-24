@@ -11,12 +11,13 @@ import { Box, Grid } from "@chakra-ui/react";
 import useSWR, { mutate } from "swr";
   
 export default function CompanyProfileOffers() {
-    const { data: offers } = useSWR(swrKeys.companyOffers, CustomGet<IOffer[]>);
+    const { data: offersAll } = useSWR(swrKeys.companyOffers + '?limit=20', CustomGet<any>);
+    const offers: IOffer[] = offersAll?.results;
     const { user } = useUserContext();
     offers?.sort((a, b) => Number(b.isVisible) - Number(a.isVisible));
     const handleDelete = async (id : number) => {
         try {
-            CustomDelete<void>(swrKeys.companyOfferDelete + id)
+            await CustomDelete<void>(swrKeys.companyOfferDelete + id + '/');
             mutate(swrKeys.companyOffers); // Re-fetch the data from the server
             offers?.sort((a, b) => Number(b.isVisible) - Number(a.isVisible));
             
@@ -26,7 +27,7 @@ export default function CompanyProfileOffers() {
     };
 
     return(
-    <Box px={10} w="100%">
+    <Box px={40} w="100%">
     <SupportButton href={`profile/${user.firstName}/addoffer`} mb="20px" ml="5%">Add Offer</SupportButton>
       <Grid
         templateColumns="repeat(auto-fit, minmax(200px, 1fr))"

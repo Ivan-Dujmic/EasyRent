@@ -7,7 +7,7 @@ export interface IReview
     vehicleId: number,
     firstName: string,
     lastName: string,
-    rating: number,
+    ratings: number,
     descriptions: string
   }
 
@@ -16,5 +16,5 @@ export interface ILogReview {
     lastName: string,
     date: string,
     description: string,
-    rating: number
+    ratings: number
 }

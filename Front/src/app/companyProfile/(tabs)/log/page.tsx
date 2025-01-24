@@ -1,17 +1,21 @@
-
+"use client";
 
 import LogList from "@/components/shared/cars/LogList/LogList";
 import { CustomGet } from "@/fetchers/get";
 import { swrKeys } from "@/fetchers/swrKeys";
 import { ILog } from "@/typings/logs/logs.type";
 import { Flex } from "@chakra-ui/react";
+import { use } from "react";
 import useSWR from "swr";
 
 export default function CompanyProfileLog() {
-  const { data: completedLogs } = useSWR(swrKeys.companyLogsComplete + "?limit=10&page=1", CustomGet<ILog[]>);
-  const { data: ongoingLogs } = useSWR(swrKeys.companyLogsOngoing + "?limit=10&page=1", CustomGet<ILog[]>);
-  const { data: upcomingLogs } = useSWR(swrKeys.companyLogsUpcoming + "?limit=10&page=1", CustomGet<ILog[]>);
-
+  const { data: completedLogsData } = useSWR(swrKeys.companyLogsComplete + "?limit=10&page=1", CustomGet<any>);
+  const { data: ongoingLogsData } = useSWR(swrKeys.companyLogsOngoing + "?limit=10&page=1", CustomGet<any>);
+  const { data: upcomingLogsData } = useSWR(swrKeys.companyLogsUpcoming + "?limit=10&page=1", CustomGet<any>);
+  
+  const completedLogs = completedLogsData?.results as ILog[];
+  const ongoingLogs = ongoingLogsData?.results as ILog[];
+  const upcomingLogs = upcomingLogsData?.results as ILog[];
 
     return(
         <Flex

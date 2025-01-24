@@ -36,7 +36,7 @@ export default function SuccessfulLogin() {
     if (data) {
       setUser(data); // Sprema korisničke podatke u kontekst
       if (data.role === 'company') {
-        router.push('/companyProfile'); // Ako je guest, preusmerite ga na početnu stranicu
+        router.push('/companyProfile/info'); // Ako je guest, preusmerite ga na početnu stranicu
       } else {
         router.push('/home'); // Ili ga preusmerite na odgovarajuću stranicu
       }

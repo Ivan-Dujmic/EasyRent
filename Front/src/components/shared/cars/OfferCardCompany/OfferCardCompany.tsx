@@ -24,6 +24,7 @@ import CardMenuDot from '../cardMenu/CardMenuDot';
 import { useRouter } from 'next/navigation';
 import { IOffer } from '@/typings/offers/offers.type';
 import { CustomPost } from '@/fetchers/post';
+import { CustomPut } from '@/fetchers/post';
 import { swrKeys } from '@/fetchers/swrKeys';
 
 export default function OfferCard({ offer, handleDelete }: { 
@@ -31,11 +32,11 @@ export default function OfferCard({ offer, handleDelete }: {
   handleDelete : (id: number) => void
 }) {
   const router = useRouter();
-  const [isDimmed, setIsDimmed] = useState(false);
+  const [isDimmed, setIsDimmed] = useState(offer.isVisible);
   const [isHovered, setIsHovered] = useState(false);
 
   const handleHide = () => {
-    CustomPost<void>(swrKeys.companyOfferVisi + offer.offerId)
+    CustomPut<void>(swrKeys.companyOfferVisi + offer.offerId + '/')
     setIsDimmed(!isDimmed);
   };
   const handleEdit = () => {
@@ -66,18 +67,18 @@ export default function OfferCard({ offer, handleDelete }: {
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      opacity={isDimmed ? 0.5 : 1}
+      opacity={isDimmed ? 1 : 0.5}
     >
       {isHovered && (
         <CardMenuDot>
               <MenuItem onClick={handleEdit}>Edit offer</MenuItem>
               <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
-              <MenuItem onClick={handleHide}>Hide</MenuItem>
+              <MenuItem onClick={handleHide}>{isDimmed && (<Text>Hide</Text>)} {!isDimmed && (<Text>Show</Text>)}</MenuItem>
         </CardMenuDot>
       )}
 
       <Image
-        src={`data:image/png;base64,${offer.image}`} // mozda dodat onaj neki nastavak prije
+        src={offer.image} // mozda dodat onaj neki nastavak prije
         alt={`${offer.modelName} car`}
         objectFit="cover"
         width="100%"

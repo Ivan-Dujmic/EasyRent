@@ -51,7 +51,7 @@ export default function ReviewCard({ review }: { review: IReview }) {
               >
                 <StarIcon boxSize="3" />{' '}
                 {/* Adjusts the star icon to be slightly smaller */}
-                <Box mr="5px">{review.rating}</Box>
+                <Box mr="5px" fontSize="md">{review.ratings}</Box>
                 <Text fontSize="md">{review.firstName} {review.lastName}</Text>
               </Flex>
             </Flex>

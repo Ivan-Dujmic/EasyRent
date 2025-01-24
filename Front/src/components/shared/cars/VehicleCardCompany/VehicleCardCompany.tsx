@@ -16,7 +16,7 @@ import { useState } from 'react';
 import CardMenuDot from '../cardMenu/CardMenuDot';
 import { useRouter } from 'next/navigation';
 import { IVehicle } from "@/typings/vehicles/vehicles.type";
-import { CustomPost } from '@/fetchers/post';
+import { CustomPost, CustomPut } from '@/fetchers/post';
 import { swrKeys } from '@/fetchers/swrKeys';
 
 export default function VehicleCard({ vehicle, handleDelete }: { 
@@ -28,11 +28,11 @@ export default function VehicleCard({ vehicle, handleDelete }: {
   const [isHovered, setIsHovered] = useState(false);
 
   const handleHide = () => {
-    CustomPost<void>(swrKeys.companyVehicleVisi + vehicle.vehicleId)
+    CustomPut<void>(swrKeys.companyVehicleVisi + vehicle.vehicleId + '/')
     setIsDimmed(!isDimmed);
   };
   const handleOfferClick = () => {
-    router.push(`/offerDetails/${vehicle.offerId}`); 
+    router.push(`/offer/${vehicle.offerId}`); 
   };
   const handleEditClick = () => {
     router.push({
@@ -66,19 +66,19 @@ export default function VehicleCard({ vehicle, handleDelete }: {
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      opacity={isDimmed ? 0.5 : 1}
+      opacity={isDimmed ? 1 : 0.5}
     >
       {isHovered && (
         <CardMenuDot>
               <MenuItem onClick={handleOfferClick}>View offer</MenuItem>
               <MenuItem onClick={handleEditClick}>Edit vehicle</MenuItem>
               <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
-              <MenuItem onClick={handleHide}>{isDimmed && (<Text>Show</Text>)} {!isDimmed && (<Text>Hide</Text>)}</MenuItem>
+              <MenuItem onClick={handleHide}>{isDimmed && (<Text>Hide</Text>)} {!isDimmed && (<Text>Show</Text>)}</MenuItem>
         </CardMenuDot>
       )}
 
       <Image
-        src={`data:image/png;base64,${vehicle.image}`} // mozda dodat onaj neki nastavak prije
+        src={vehicle.image} // mozda dodat onaj neki nastavak prije
         alt={`${vehicle.modelName} car`}
         objectFit="cover"
         width="100%"

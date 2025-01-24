@@ -73,11 +73,14 @@ export interface CompaniesResponse {
 }
 
 export interface IEarnings {
-  totalEarnings: number,
-  yearEarnings: number,
-  totalRentals: number,
-  yearRentals: number,
-  monthlyEarnings: [
-    number
-  ]
+  isLastPage: boolean,
+  results: {
+    totalEarnings: number,
+    yearEarnings: number,
+    totalRentals: number,
+    yearRentals: number,
+    monthlyEarnings: [
+      number
+    ]
+  }
 }

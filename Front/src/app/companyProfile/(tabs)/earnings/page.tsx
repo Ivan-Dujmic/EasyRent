@@ -21,18 +21,17 @@ const yearsOptions = [
   2024, 2025
 ]
 export default function CompanyProfileEarnings() {
-    const { data: earnings } = useSWR(swrKeys.companyEarnings + "?year=2025", CustomGet<IEarnings>);
     const [selectedYear, setSelectedYear] = useState(2025);
+    const { data: earnings } = useSWR(swrKeys.companyEarnings + "?year=" + selectedYear, (url) => CustomGet<IEarnings>(url));
     const handleYearChange = (e : any) => {
         setSelectedYear(Number(e.target.value)); // Convert the selected value to a number
-        mutate(swrKeys.companyEarnings + `?year=${selectedYear}`)
     };
+
     function getMonthsForYear(months?: number[]): { month: string; price: number }[] {
       const monthNames = [
           "January", "February", "March", "April", "May", "June",
           "July", "August", "September", "October", "November", "December"
       ];
-  
       // If months is undefined, create a list of 12 months with value 0
       if (!months) {
           months = Array(12).fill(0);
@@ -57,18 +56,18 @@ export default function CompanyProfileEarnings() {
         <Flex justifyContent="space-evenly" w="80%">
             <VStack gap={4} alignItems="start">
                 <Heading fontSize="xl">Earnings:</Heading>
-                <Text>Total: {earnings?.totalEarnings}</Text>
-                <Text>Selected year: {earnings?.yearEarnings}</Text>
+                <Text>Total: {earnings?.results.totalEarnings}</Text>
+                <Text>Selected year: {earnings?.results.yearEarnings}</Text>
             </VStack>
             <VStack gap={4} alignItems="start">
                 <Heading fontSize="xl">Rentals:</Heading>
-                <Text>Total: {earnings?.totalRentals}</Text>
-                <Text>Selected year: {earnings?.yearRentals}</Text>
+                <Text>Total: {earnings?.results.totalRentals}</Text>
+                <Text>Selected year: {earnings?.results.yearRentals}</Text>
             </VStack>
         </Flex>
 
         <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={getMonthsForYear(earnings?.monthlyEarnings)} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <BarChart data={getMonthsForYear(earnings?.results.monthlyEarnings)} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
             <XAxis dataKey="month" />
             <YAxis />
             <Tooltip formatter={(value) => `€${value}`} />
