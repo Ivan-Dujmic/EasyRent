@@ -121,10 +121,10 @@ export default function UserProfilePage() {
   // 2) Use it in your useEffect:
   useEffect(() => {
     if (!Array.isArray(entries)) return;
-
+    console.log(entries);
     // First, sort all rentals by their return date
     const sorted = sortRentalsByReturnDate(entries);
-
+    console.log(sorted);
     // Then split them after sorting
     const curr = sorted
       .filter((rental) => new Date(rental.dateTimeReturned) > new Date())
@@ -133,6 +133,8 @@ export default function UserProfilePage() {
         item.rated = !rental.canReview;
         item.rentalFrom = rental.dateTimeRented;
         item.rentalTo = rental.dateTimeReturned;
+        item.pickupLocation = rental.pickupLocation;
+        item.dropoffLocation = rental.dropoffLocation;
         return item;
       })
       .sort((a, b) => {
@@ -148,9 +150,13 @@ export default function UserProfilePage() {
         const item = toOffer(rental) as IReviewable;
         item.rentalFrom = rental.dateTimeRented;
         item.rentalTo = rental.dateTimeReturned;
+        item.pickupLocation = rental.pickupLocation;
+        item.dropoffLocation = rental.dropoffLocation;
         return item;
       });
 
+    console.log(curr);
+    console.log(prev);
     setCurrentRentals(curr);
     setPreviouslyRented(prev);
   }, [entries]);
