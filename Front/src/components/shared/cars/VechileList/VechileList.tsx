@@ -11,6 +11,12 @@ interface VehicleListProps extends FlexProps {
   description?: string;
   numCards?: number;
   cardGap?: number;
+  /**
+   * If true, clicking a non-reviewable vehicle card (with rentalFrom/rentalTo)
+   * will open a "Rental Details" modal instead of navigating to /offer/[offer_id].
+   * Defaults to false.
+   */
+  showRentalDetailsOnClick?: boolean;
 }
 
 export default function VehicleList({
@@ -18,13 +24,15 @@ export default function VehicleList({
   description = '',
   numCards = 4,
   cardGap = 24,
-  justify = "center",
+  justify = 'center',
+  showRentalDetailsOnClick = false, // <-- new prop
   ...rest
 }: VehicleListProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
 
-  let [numCards_d, setNumCard] = useState(numCards);
+  const [numCards_d, setNumCard] = useState(numCards);
+  const [startIndex, setStartIndex] = useState(0);
 
   useEffect(() => {
     const current = containerRef.current;
@@ -37,6 +45,7 @@ export default function VehicleList({
 
     updateContainerWidth();
 
+    // Observe container size changes
     const resizeObserver = new ResizeObserver(() => {
       updateContainerWidth();
     });
@@ -50,27 +59,31 @@ export default function VehicleList({
         resizeObserver.unobserve(current);
       }
     };
-  });
+  }, []);
 
   const cardWidth = 260;
 
   useEffect(() => {
-    let neededLength = numCards_d * cardWidth + (numCards_d - 1) * cardGap + 120 + 1;
+    const neededLength =
+      numCards_d * cardWidth + (numCards_d - 1) * cardGap + 120 + 1;
 
-    if (numCards_d > 1 && neededLength > containerWidth)
+    // Decrease numCards_d if container is too small
+    if (numCards_d > 1 && neededLength > containerWidth) {
       setNumCard(numCards_d - 1);
+    }
+    // Increase numCards_d if there's still room
     else if (
       numCards_d < numCards &&
       neededLength + cardWidth + cardGap <= containerWidth
-    )
+    ) {
       setNumCard(numCards_d + 1);
+    }
 
-    if (vehicles.length - numCards_d <= startIndex && startIndex > 0)
-      setStartIndex(startIndex - 1)
-
-  }, [cardGap, containerWidth, numCards]);
-
-  const [startIndex, setStartIndex] = useState(0);
+    // Adjust startIndex if we've scrolled beyond the available items
+    if (vehicles.length - numCards_d <= startIndex && startIndex > 0) {
+      setStartIndex(startIndex - 1);
+    }
+  }, [cardGap, containerWidth, numCards, numCards_d, startIndex, vehicles]);
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (direction === 'right' && startIndex < vehicles.length - numCards_d) {
@@ -81,7 +94,7 @@ export default function VehicleList({
   };
 
   const visibleVehicles = vehicles.slice(startIndex, startIndex + numCards_d);
-  const justify_ = numCards > vehicles.length ? justify : "center"
+  const justify_ = numCards > vehicles.length ? justify : 'center';
 
   return (
     <Flex
@@ -96,18 +109,19 @@ export default function VehicleList({
           {description}
         </Heading>
       )}
-      <Flex 
-        position="relative" 
-        align="center" 
-        width="100%" mb={4} 
+
+      <Flex
+        position="relative"
+        align="center"
+        width="100%"
+        mb={4}
         justify={justify_}
       >
         {/* Left Scroll Button */}
-        <Flex width="60px" justify={'center'} align={'center'}>
+        <Flex width="60px" justify="center" align="center">
           {startIndex > 0 && (
             <IconButton
               mx="none"
-              // transform="translateX(-50%)"
               aria-label="Scroll left"
               icon={<FaChevronLeft />}
               onClick={() => handleScroll('left')}
@@ -124,20 +138,24 @@ export default function VehicleList({
           align="center"
           gap={`${cardGap}px`}
           minWidth={cardWidth + cardGap}
-          py={'2px'}
+          py="2px"
           {...rest}
         >
           {visibleVehicles.map((vehicle, index) => (
-            <VehicleCard vehicle={vehicle} key={index} />
+            <VehicleCard
+              key={index}
+              vehicle={vehicle}
+              // Pass the new prop to each card
+              showRentalDetailsOnClick={showRentalDetailsOnClick}
+            />
           ))}
         </Flex>
 
         {/* Right Scroll Button */}
-        <Flex width="60px" justify={'center'} align={'center'}>
+        <Flex width="60px" justify="center" align="center">
           {startIndex < vehicles.length - numCards_d && (
             <IconButton
               mx="none"
-              // transform="translateX(50%)"
               aria-label="Scroll right"
               icon={<FaChevronRight />}
               onClick={() => handleScroll('right')}
