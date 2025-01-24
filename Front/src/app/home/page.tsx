@@ -121,7 +121,7 @@ export default function HomePage() {
         direction={'column'}
         py={8}
         gap={2}
-        width={{ base: '80vw', lg: '80vw', '3xl': '65vw' }}
+        width={{ base: '80vw', lg: '85vw', '3xl': '65vw' }}
       >
         {most_popular ? (
           <VehicleList

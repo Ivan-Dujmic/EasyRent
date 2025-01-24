@@ -1,8 +1,9 @@
-
 import { IDealership } from '../company/company';
 
 export interface IReviewable extends ICar {
   rated: boolean;
+  rentalFrom: string;
+  rentalTo: string;
 }
 
 export function toOffer(car: IRentalEntry): ICar {
@@ -33,7 +34,7 @@ export interface ICar {
   rating?: number; // Rating value
   noOfReviews?: number; // Number of reviews
   offer_id?: string;
-  rent_id?: string
+  rent_id?: string;
 }
 
 // Extended interface for offers

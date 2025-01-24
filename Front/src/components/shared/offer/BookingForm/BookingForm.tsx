@@ -11,12 +11,20 @@ import {
   Text,
   useBreakpointValue,
   useToast,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
 } from '@chakra-ui/react';
 import { FaCreditCard, FaWallet } from 'react-icons/fa';
 import useSWRMutation from 'swr/mutation';
 import { swrKeys } from '@/fetchers/swrKeys';
 import { CustomGet } from '@/fetchers/get';
-import { CustomPost } from '@/fetchers/post'; // <--- your CustomPost code
+import { CustomPost } from '@/fetchers/post';
 import CustomCalendar from '@/components/features/DropDownMenus/CustomCalendar/CustomCalendar';
 import { ExtraLocationInfo } from '@/typings/locations/locations';
 import { useRouter } from 'next/navigation';
@@ -28,15 +36,15 @@ interface BookingFormProps {
 }
 
 export interface Interval {
-  dateTimeRented: string; // npr. "2025-01-21T16:52:11.243Z"
-  dateTimeReturned: string; // npr. "2025-01-22T10:15:00.000Z"
+  dateTimeRented: string;
+  dateTimeReturned: string;
 }
 
 export interface WorkingHour {
-  /** 0 = Ponedjeljak, 1 = Utorak, …, 6 = Nedjelja */
+  /** 0 = Monday, 1 = Tuesday, …, 6 = Sunday */
   dayOfTheWeek: number;
-  startTime: string; // npr. "09:00:00"
-  endTime: string; // npr. "17:00:00"
+  startTime: string;
+  endTime: string;
 }
 
 export interface UnavailablePickupResponse {
@@ -45,7 +53,7 @@ export interface UnavailablePickupResponse {
 }
 
 export interface AvailableDropOffResponse {
-  lastReturnDateTime: string | null; // Može biti null ili string u ISO 8601 formatu
+  lastReturnDateTime: string | null;
   vehicle_id: number;
   workingHours: WorkingHour[];
 }
@@ -133,7 +141,6 @@ const BookingForm: React.FC<BookingFormProps> = ({
     {
       onSuccess: (data: any) => {
         if (data?.detail) {
-          console.log(data?.trans_id);
           if (typeof window !== 'undefined' && window.localStorage) {
             try {
               localStorage.setItem('trans_id', data.trans_id);
@@ -247,7 +254,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
   const handleRent = async (paymentMethod: string) => {
     try {
       const body = {
-        paymentMethod: paymentMethod, // "wallet" or "card"
+        paymentMethod: paymentMethod, // "wallet" or "stripe"
         dateFrom: reverseDateFormat(pickupDate), // "DD-MM-YYYY"
         dateTo: reverseDateFormat(dropoffDate), // "DD-MM-YYYY"
         pickLocId: Number(pickupLocationId),
@@ -260,10 +267,35 @@ const BookingForm: React.FC<BookingFormProps> = ({
       await rentOfferTrigger(body);
       // If successful, onSuccess handles the rest (redirect or toast).
     } catch (error) {
-      // onError handles it, but you can also do extra logging here if needed.
       console.error('Rent offer failed:', error);
     }
   };
+
+  // -------------
+  //  Modal logic
+  // -------------
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  // Simple helper text for the modal
+  const padHour = (hourString: string) => {
+    const hour = parseInt(hourString, 10);
+    return hour < 10 ? `0${hour}` : `${hour}`;
+  };
+
+  // Example reverseDateFormat for "YYYY-MM-DD" → "DD.MM.YYYY"
+  function reverseDateFormatDot(isoDate: string) {
+    if (!isoDate) return '';
+    const [year, month, day] = isoDate.split('-');
+    return `${day}.${month}.${year}`;
+  }
+
+  // Construct a more detailed modal description (with date & time)
+  const pickupHourPadded = padHour(pickupTime);
+  const dropoffHourPadded = padHour(dropoffTime);
+
+  const modalDescription = `Rent this vehicle 
+    from ${reverseDateFormatDot(pickupDate)} at ${pickupHourPadded}:00 
+    to ${reverseDateFormatDot(dropoffDate)} at ${dropoffHourPadded}:00?`;
 
   const formWidth = useBreakpointValue({
     base: '100%',
@@ -384,18 +416,21 @@ const BookingForm: React.FC<BookingFormProps> = ({
         gap={4}
         direction={{ base: 'column', md: 'row' }}
       >
+        {/* PAY WITH WALLET - Open Modal instead of calling handleRent directly */}
         <Button
           rightIcon={<FaWallet />}
           bg="brandblue"
           color="white"
           _hover={{ bg: 'brandyellow', color: 'brandblack' }}
           size="lg"
-          onClick={() => handleRent('wallet')}
+          onClick={onOpen}
           isDisabled={!isTransactionEnabled}
           width={{ base: '100%', md: 'auto' }}
         >
           Pay with Wallet
         </Button>
+
+        {/* PAY WITH CARD - same as before */}
         <Button
           rightIcon={<FaCreditCard />}
           bg="brandblue"
@@ -409,6 +444,35 @@ const BookingForm: React.FC<BookingFormProps> = ({
           Pay with Card
         </Button>
       </Flex>
+
+      {/* Confirmation Modal for "Pay with Wallet" */}
+      <Modal isOpen={isOpen} onClose={onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Confirm Wallet Payment</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text>{modalDescription}</Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onClose} size="lg">
+              No
+            </Button>
+            <Button
+              bg="brandblue"
+              color="white"
+              _hover={{ bg: 'brandyellow', color: 'brandblack' }}
+              size="lg"
+              onClick={() => {
+                handleRent('wallet');
+                onClose();
+              }}
+            >
+              Yes
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 };

@@ -22,10 +22,18 @@ import EasyRentLogo from '@/components/core/EasyRentLogo/EasyRentLogo';
 import { AnimatedMyProfile } from '../../user/AnimatedMyProfile/AnimatedMyProfile';
 import LogOutButton from '../../auth/LogOutButton/LogOutButton';
 import { IUser } from '@/typings/users/user.type';
+import { CustomGet } from '@/fetchers/get';
+import { swrKeys } from '@/fetchers/swrKeys';
+import useSWR from 'swr';
 
 export default function AuthUserHeader({ UserData }: { UserData?: IUser }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   console.log(UserData);
+
+  const { data: balance } = useSWR(
+    swrKeys.getBalance,
+    CustomGet<{ Balance: number }>
+  );
 
   return (
     <Box
@@ -64,8 +72,8 @@ export default function AuthUserHeader({ UserData }: { UserData?: IUser }) {
 
           {/* Account Balance */}
           {UserData?.balance !== undefined && (
-            <Text fontWeight="semibold" color="brandblue">
-              Balance: €{Number(UserData.balance).toFixed(2)}
+            <Text fontSize="md" fontWeight="bold" color="brandblue">
+              {`Balance: ${balance?.Balance || 0}💎`}
             </Text>
           )}
 
