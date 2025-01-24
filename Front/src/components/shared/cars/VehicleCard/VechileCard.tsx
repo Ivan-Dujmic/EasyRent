@@ -236,8 +236,14 @@ export default function VehicleCard({
             <Text>
               <strong>Pick-up:</strong> {formatDateTime(vehicle.rentalFrom)}
             </Text>
+            <Text>
+              <strong>Pick-up location:</strong> {vehicle.pickupLocation}
+            </Text>
             <Text mt={2}>
               <strong>Drop-off:</strong> {formatDateTime(vehicle.rentalTo)}
+            </Text>
+            <Text>
+              <strong>Drop-off location:</strong> {vehicle.dropoffLocation}
             </Text>
           </ModalBody>
           <ModalFooter>
