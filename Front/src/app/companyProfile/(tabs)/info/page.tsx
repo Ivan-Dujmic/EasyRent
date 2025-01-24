@@ -17,15 +17,19 @@ import useSWR from "swr";
 export default function CompanyProfileInfo() {
     const { data: info } = useSWR(swrKeys.companyInfo, CustomGet<ICompanyInfo>);
     const { data: locations } = useSWR(swrKeys.companyLocations, CustomGet<ILocation[]>);
-    const {data : locationDetalis} = useSWR(
-        locations ? locations.map((location) => swrKeys.companyLocationInfo +  `${location.locationId}`) : null,
-        (urls) => Promise.all(urls.map(url => CustomGet<ILocationDetails>(url)))
-      );
+    const { data: locationDetails, isLoading: isDetailsLoading } = useSWR(
+        locations && Array.isArray(locations) ? 
+            locations.map((location) => swrKeys.companyLocationInfo + location.locationId) 
+            : null,
+        (urls) => urls ? Promise.all(urls.map(url => CustomGet<ILocationDetails>(url))) : null
+    );
+    console.log(locationDetails);
     const { user } = useUserContext();
 
-    if (!locationDetalis) return <div>Loading...</div>;
 
-    const mapLocations = locationDetalis.map((location, indx) => ({
+    if (!locationDetails) return <div>Loading...</div>;
+
+    const mapLocations = locationDetails.map((location, indx) => ({
     streetName: location.streetName,
     streetNo: location.streetNo,
     cityName: location.cityName,

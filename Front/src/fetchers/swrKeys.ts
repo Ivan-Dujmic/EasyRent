@@ -1,9 +1,11 @@
-const auth = 'https://easyrent-t7he.onrender.com/api/auth/';
-const home = 'https://easyrent-t7he.onrender.com/api/home/';
-const profile = 'https://easyrent-t7he.onrender.com/api/profile/';
-const wallet = 'https://easyrent-t7he.onrender.com/api/wallet/';
-// const auth = "http://127.0.0.1:8000/api/auth/";
-// const home = "http://127.0.0.1:8000/api/home/"
+// const auth = 'https://easyrent-t7he.onrender.com/api/auth/';
+// const home = 'https://easyrent-t7he.onrender.com/api/home/';
+// const profile = 'https://easyrent-t7he.onrender.com/api/profile/';
+// const wallet = 'https://easyrent-t7he.onrender.com/api/wallet/';
+const auth = "http://127.0.0.1:8000/api/auth/";
+const home = "http://127.0.0.1:8000/api/home/"
+const profile = "http://127.0.0.1:8000/api/profile/";
+const wallet = "http://127.0.0.1:8000/api/wallet/"
 
 export const swrKeys = {
   registerUser: `${auth}register-user/`,
@@ -46,26 +48,26 @@ export const swrKeys = {
   ) =>
     `${home}available-drop-off/${offer_id}/?dropOffLocationId=${dropOffLocationId}&pickUpDate=${pickUpDate}&pickUpLocationId=${pickUpLocationId}&pickUpTime=${pickUpTime}`,
 
-  companyInfo: `${profile}/company/info`,
-  companySetPass: `${profile}/company/pass`,
-  companySetHQ: `${profile}/company/setHQ/`, // + locationid
-  companyLocations: `${profile}/company/locations`,
-  companyLocationInfo: `${profile}/company/location/`, // + locationId
-  companyVehicles: `${profile}/company/vehicles`,
-  companyOffers: `${profile}/company/offers`,
-  companyVehicleVisi: `${profile}/company/toggle-vehicle-visibility/`, // + vehicleId
-  companyVehicleDelete: `${profile}/company/vehicles/edit-vehicle/`, // + vehicleId
-  companyOfferVisi: `${profile}/company/toggle-offer-visibility/`, // + offerId
-  companyOfferDelete: `${profile}/company/offer/`, // + offerId
-  companyLogsComplete: `${profile}/company/log/completed`, 
-  companyLogsOngoing: `${profile}/company/log/ongoing`, 
-  companyLogsUpcoming: `${profile}/company/log/upcoming`, 
-  companyReviews: `${profile}/company/reviews`,
-  companyEarnings: `${profile}/company/earnings`,
-  companyVehicleLog: `${profile}/company/vehicle-log/`, // + vehicleId
-  companyVehicleLogCompleted: `${profile}/company/log-completed/`, // + vehicleId
-  companyVehicleLogUpcoming: `${profile}/company/log-upcoming/`, // + vehicleId
-  companyVehicleReviews: `${profile}/company/log-reviews/`, // + vehicleId
+  companyInfo: `${profile}company/info`,
+  companySetPass: `${profile}company/pass`,
+  companySetHQ: `${profile}company/setHQ/`, // + locationid
+  companyLocations: `${profile}company/locations`,
+  companyLocationInfo: `${profile}company/location/`, // + locationId
+  companyVehicles: `${profile}company/vehicles`,
+  companyOffers: `${profile}company/offers`,
+  companyVehicleVisi: `${profile}company/toggle-vehicle-visibility/`, // + vehicleId
+  companyVehicleDelete: `${profile}company/vehicles/edit-vehicle/`, // + vehicleId
+  companyOfferVisi: `${profile}company/toggle-offer-visibility/`, // + offerId
+  companyOfferDelete: `${profile}company/offer/`, // + offerId
+  companyLogsComplete: `${profile}company/log/completed`, 
+  companyLogsOngoing: `${profile}company/log/ongoing`, 
+  companyLogsUpcoming: `${profile}company/log/upcoming`, 
+  companyReviews: `${profile}company/reviews`,
+  companyEarnings: `${profile}company/earnings`,
+  companyVehicleLog: `${profile}company/vehicle-log/`, // + vehicleId
+  companyVehicleLogCompleted: `${profile}company/log-completed/`, // + vehicleId
+  companyVehicleLogUpcoming: `${profile}company/log-upcoming/`, // + vehicleId
+  companyVehicleReviews: `${profile}company/log-reviews/`, // + vehicleId
 
 
 
