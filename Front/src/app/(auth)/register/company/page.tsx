@@ -140,7 +140,7 @@ export default function RegisterCompanyPage() {
   
               {preview && (
                 <Box textAlign="center">
-                  <Image src={preview} h="50px"/>
+                  <Image src={preview} h="50px" alt="Company Logo"/>
                 </Box>
               )}
             </Flex>
