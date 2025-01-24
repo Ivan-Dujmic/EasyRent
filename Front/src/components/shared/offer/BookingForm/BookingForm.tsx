@@ -498,9 +498,9 @@ const BookingForm: React.FC<BookingFormProps> = ({
           <ModalBody>
             <Text mb={3}>{modalDescription}</Text>
             {totalPrice !== null && (
-              <Text fontWeight="bold">
-                Total rental price: {totalPrice.toFixed(2)} €
-              </Text>
+                <Text fontWeight="bold">
+                Total rental price: {Math.round(totalPrice * 100)} 💎
+                </Text>
             )}
           </ModalBody>
           <ModalFooter>
