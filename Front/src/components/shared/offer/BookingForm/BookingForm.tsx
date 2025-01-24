@@ -33,6 +33,8 @@ interface BookingFormProps {
   balance: number;
   locations: ExtraLocationInfo[];
   offer_id: string;
+  /** Add this prop for daily price of the vehicle */
+  dailyPrice: number;
 }
 
 export interface Interval {
@@ -65,10 +67,24 @@ function reverseDateFormat(isoDate: string) {
   return `${day}-${month}-${year}`; // "DD-MM-YYYY"
 }
 
+// Format from "YYYY-MM-DD" to "DD.MM.YYYY" for display in the modal
+function reverseDateFormatDot(isoDate: string) {
+  if (!isoDate) return '';
+  const [year, month, day] = isoDate.split('-');
+  return `${day}.${month}.${year}`;
+}
+
+// Pads a single-digit hour with a leading zero (e.g., "3" -> "03")
+function padHour(hourString: string) {
+  const hour = parseInt(hourString, 10);
+  return hour < 10 ? `0${hour}` : `${hour}`;
+}
+
 const BookingForm: React.FC<BookingFormProps> = ({
   balance,
   locations,
   offer_id,
+  dailyPrice, // ← We receive the daily price here
 }) => {
   const toast = useToast();
   const router = useRouter();
@@ -86,8 +102,11 @@ const BookingForm: React.FC<BookingFormProps> = ({
   const [isDropOffDateTimeEnabled, setIsDropOffDateTimeEnabled] =
     useState(false);
 
-  // For available vehicle ID (the backend sets it once we pick up the date/time)
+  // For available vehicle ID
   const [vehicle_id, setVehicle_id] = useState('');
+
+  // Store computed total price for the rental
+  const [totalPrice, setTotalPrice] = useState<number | null>(null);
 
   // -- SWR for pickup intervals
   const [pickUpDateTimeAvaiable, setPickUpDateTimeAvaiable] = useState<
@@ -134,13 +153,14 @@ const BookingForm: React.FC<BookingFormProps> = ({
     }
   );
 
-  // ** 2) Create the SWR mutation for rentOffer
+  // ** SWR mutation for rentOffer
   const { trigger: rentOfferTrigger } = useSWRMutation(
     swrKeys.rentOffer(offer_id),
     CustomPost,
     {
       onSuccess: (data: any) => {
         if (data?.detail) {
+          // If the server returns a Stripe link
           if (typeof window !== 'undefined' && window.localStorage) {
             try {
               localStorage.setItem('trans_id', data.trans_id);
@@ -163,7 +183,6 @@ const BookingForm: React.FC<BookingFormProps> = ({
         }
       },
       onError: (error: any) => {
-        // If the backend returns "Insufficient funds." or some other 4xx
         if (error?.message?.includes('Insufficient funds')) {
           toast({
             title: 'Error',
@@ -199,6 +218,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
     }
   }, [dropoffLocationId, triggerDropOf]);
 
+  // Reset dependent states if the user changes the pickup location
   const handlePickupLocationChange = (locationId: string) => {
     setPickupLocationId(locationId);
     // Reset everything else
@@ -209,15 +229,19 @@ const BookingForm: React.FC<BookingFormProps> = ({
     setDropoffTime('');
     setIsDropOffDateTimeEnabled(false);
     setIsPickupDateEnabled(false);
+    setTotalPrice(null);
   };
 
+  // Reset some states if the user changes the dropoff location
   const handleDropOffLocationChange = (locationId: string) => {
     setDropoffLocationId(locationId);
     setDropoffDate('');
     setDropoffTime('');
     setIsDropOffDateTimeEnabled(false);
+    setTotalPrice(null);
   };
 
+  // Handle pick up date/time
   const handlePickUpDateTimeSelect = (dateTime: Date | null) => {
     if (dateTime) {
       const formattedDate = dateTime.toISOString().split('T')[0];
@@ -231,9 +255,11 @@ const BookingForm: React.FC<BookingFormProps> = ({
       setDropoffDate('');
       setDropoffTime('');
       setIsDropOffDateTimeEnabled(false);
+      setTotalPrice(null);
     }
   };
 
+  // Handle drop off date/time
   const handleDropoffDateTimeSelect = (dateTime: Date | null) => {
     if (dateTime) {
       const formattedDate = dateTime.toISOString().split('T')[0];
@@ -243,6 +269,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
     } else {
       setDropoffDate('');
       setDropoffTime('');
+      setTotalPrice(null);
     }
   };
 
@@ -250,11 +277,41 @@ const BookingForm: React.FC<BookingFormProps> = ({
   const isTransactionEnabled =
     isDropoffLocationEnabled && dropoffLocationId && dropoffDate && dropoffTime;
 
-  // ** 3) Actually call the rentOffer endpoint
+  // Calculate total price whenever pickup/dropoff date or time changes
+  useEffect(() => {
+    if (
+      pickupDate &&
+      pickupTime &&
+      dropoffDate &&
+      dropoffTime &&
+      dailyPrice > 0
+    ) {
+      const pickupDateTime = new Date(
+        `${pickupDate}T${padHour(pickupTime)}:00`
+      );
+      const dropoffDateTime = new Date(
+        `${dropoffDate}T${padHour(dropoffTime)}:00`
+      );
+
+      const diffMs = dropoffDateTime.getTime() - pickupDateTime.getTime();
+      if (diffMs > 0) {
+        const diffInHours = diffMs / (1000 * 60 * 60);
+        const hourlyRate = dailyPrice / 24; // dailyPrice / 24 hours
+        const total = diffInHours * hourlyRate;
+        setTotalPrice(total);
+      } else {
+        setTotalPrice(null);
+      }
+    } else {
+      setTotalPrice(null);
+    }
+  }, [pickupDate, pickupTime, dropoffDate, dropoffTime, dailyPrice]);
+
+  // Actually call the rentOffer endpoint
   const handleRent = async (paymentMethod: string) => {
     try {
       const body = {
-        paymentMethod: paymentMethod, // "wallet" or "stripe"
+        paymentMethod, // "wallet" or "stripe"
         dateFrom: reverseDateFormat(pickupDate), // "DD-MM-YYYY"
         dateTo: reverseDateFormat(dropoffDate), // "DD-MM-YYYY"
         pickLocId: Number(pickupLocationId),
@@ -263,9 +320,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
         dropoffTime: Number(dropoffTime),
       };
       console.log(body);
-      // Fire the SWR POST mutation
       await rentOfferTrigger(body);
-      // If successful, onSuccess handles the rest (redirect or toast).
     } catch (error) {
       console.error('Rent offer failed:', error);
     }
@@ -276,19 +331,6 @@ const BookingForm: React.FC<BookingFormProps> = ({
   // -------------
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  // Simple helper text for the modal
-  const padHour = (hourString: string) => {
-    const hour = parseInt(hourString, 10);
-    return hour < 10 ? `0${hour}` : `${hour}`;
-  };
-
-  // Example reverseDateFormat for "YYYY-MM-DD" → "DD.MM.YYYY"
-  function reverseDateFormatDot(isoDate: string) {
-    if (!isoDate) return '';
-    const [year, month, day] = isoDate.split('-');
-    return `${day}.${month}.${year}`;
-  }
-
   // Construct a more detailed modal description (with date & time)
   const pickupHourPadded = padHour(pickupTime);
   const dropoffHourPadded = padHour(dropoffTime);
@@ -297,6 +339,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
     from ${reverseDateFormatDot(pickupDate)} at ${pickupHourPadded}:00 
     to ${reverseDateFormatDot(dropoffDate)} at ${dropoffHourPadded}:00?`;
 
+  // For Chakra UI responsive widths
   const formWidth = useBreakpointValue({
     base: '100%',
     md: '80%',
@@ -316,6 +359,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
       <Heading size="md" mb={6} color="brandblue" textAlign="center">
         Book this car
       </Heading>
+
       <Stack spacing={4}>
         {/* Pick-up location */}
         <Box>
@@ -416,7 +460,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
         gap={4}
         direction={{ base: 'column', md: 'row' }}
       >
-        {/* PAY WITH WALLET - Open Modal instead of calling handleRent directly */}
+        {/* PAY WITH WALLET - Opens Modal */}
         <Button
           rightIcon={<FaWallet />}
           bg="brandblue"
@@ -430,7 +474,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
           Pay with Wallet
         </Button>
 
-        {/* PAY WITH CARD - same as before */}
+        {/* PAY WITH CARD */}
         <Button
           rightIcon={<FaCreditCard />}
           bg="brandblue"
@@ -452,7 +496,12 @@ const BookingForm: React.FC<BookingFormProps> = ({
           <ModalHeader>Confirm Wallet Payment</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Text>{modalDescription}</Text>
+            <Text mb={3}>{modalDescription}</Text>
+            {totalPrice !== null && (
+              <Text fontWeight="bold">
+                Total rental price: {totalPrice.toFixed(2)} €
+              </Text>
+            )}
           </ModalBody>
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={onClose} size="lg">
