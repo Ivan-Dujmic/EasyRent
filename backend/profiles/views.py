@@ -66,8 +66,8 @@ def userRentals(request):
             rentalData = []
             for rental in rentals:
                 vehicle = rental.vehicle
-                pickupLocation = Location.objects.get(location_id=rental.rentedLocation)
-                dropoffLocation = Location.objects.get(location_id=rental.returnLocation)
+                pickupLocation = rental.rentedLocation
+                dropoffLocation = rental.returnLocation
                 dealer = None
                 try:
                     dealer = rental.dealer
