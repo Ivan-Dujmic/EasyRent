@@ -108,40 +108,44 @@ export default function UserProfilePage() {
   const [currentRentals, setCurrentRentals] = useState<ICar[]>([]);
   const [previouslyRented, setPreviouslyRented] = useState<ICar[]>([]);
 
-  // On receiving `entries` from backend, split them
+  // 1) Define a helper function (outside the component):
+  function sortRentalsByReturnDate(rentals: IRentalEntry[]): IRentalEntry[] {
+    // Create a copy so we don't mutate the original array
+    return [...rentals].sort(
+      (a, b) =>
+        new Date(a.dateTimeReturned).getTime() -
+        new Date(b.dateTimeReturned).getTime()
+    );
+  }
+
+  // 2) Use it in your useEffect:
   useEffect(() => {
     if (!Array.isArray(entries)) return;
 
-    // "Ongoing" means it hasn't passed the return date yet
-    const curr = entries
+    // First, sort all rentals by their return date
+    const sorted = sortRentalsByReturnDate(entries);
+
+    // Then split them after sorting
+    const curr = sorted
       .filter((rental) => new Date(rental.dateTimeReturned) > new Date())
       .map((rental) => {
-        // Convert IRentalEntry → IReviewable
         const item = toOffer(rental) as IReviewable;
-
-        // Mark whether it's already rated
         item.rated = !rental.canReview;
-
-        // Add optional fields for "rental details"
         item.rentalFrom = rental.dateTimeRented;
         item.rentalTo = rental.dateTimeReturned;
-
         return item;
       })
-      // Sort so that un-rated rentals appear first
       .sort((a, b) => {
-        // a.rated = false means user can still review it
+        // Keep the earlier logic: un-rated rentals (rated=false) at front
         if (a.rated === false && b.rated !== false) return -1;
         if (b.rated === false && a.rated !== false) return 1;
         return 0;
       });
 
-    // "Previously rented" means the return date has passed
-    const prev = entries
+    const prev = sorted
       .filter((rental) => new Date(rental.dateTimeReturned) <= new Date())
       .map((rental) => {
         const item = toOffer(rental) as IReviewable;
-        // Possibly also add the rentalFrom/rentalTo if you want
         item.rentalFrom = rental.dateTimeRented;
         item.rentalTo = rental.dateTimeReturned;
         return item;
@@ -163,7 +167,11 @@ export default function UserProfilePage() {
     xl: 10,
   });
   const headingSize = useBreakpointValue({ base: '2xl', lg: '2xl' });
-  const rentalswidth = useBreakpointValue({ base: '100%', lg: '88%' });
+  const rentalswidth = useBreakpointValue({
+    base: '90vw',
+    lg: '70vw',
+    '3xl': '70vw',
+  });
   const rentalAlignment = useBreakpointValue({
     base: 'center',
     lg: 'space-between',

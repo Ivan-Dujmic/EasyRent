@@ -7,7 +7,7 @@ import VehicleCard from '../VehicleCard/VechileCard';
 import { ICar } from '@/typings/vehicles/vehicles.type';
 
 interface VehicleListProps extends FlexProps {
-  vehicles?: Array<ICar>;
+  vehicles?: ICar[];
   description?: string;
   numCards?: number;
   cardGap?: number;
@@ -25,75 +25,101 @@ export default function VehicleList({
   numCards = 4,
   cardGap = 24,
   justify = 'center',
-  showRentalDetailsOnClick = false, // <-- new prop
+  showRentalDetailsOnClick = false,
   ...rest
 }: VehicleListProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [containerWidth, setContainerWidth] = useState(0);
 
-  const [numCards_d, setNumCard] = useState(numCards);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [numCards_d, setNumCards_d] = useState(numCards);
+
+  // The starting index in the "vehicles" array of the leftmost visible card
   const [startIndex, setStartIndex] = useState(0);
 
+  // Constant for each card's width (in px)
+  const cardWidth = 260;
+
+  /**
+   * Updates containerWidth when the component mounts or the container is resized.
+   */
   useEffect(() => {
     const current = containerRef.current;
+    if (!current) return;
+
     const updateContainerWidth = () => {
-      if (current) {
-        const { width } = current.getBoundingClientRect();
-        setContainerWidth(width);
-      }
+      const { width } = current.getBoundingClientRect();
+      setContainerWidth(width);
     };
 
     updateContainerWidth();
-
-    // Observe container size changes
-    const resizeObserver = new ResizeObserver(() => {
-      updateContainerWidth();
-    });
-
-    if (current) {
-      resizeObserver.observe(current);
-    }
+    const resizeObserver = new ResizeObserver(updateContainerWidth);
+    resizeObserver.observe(current);
 
     return () => {
-      if (current) {
-        resizeObserver.unobserve(current);
-      }
+      resizeObserver.disconnect();
     };
   }, []);
 
-  const cardWidth = 260;
-
+  /**
+   * This effect recalculates how many cards can fit ("numCards_d")
+   * based on the container width.
+   */
   useEffect(() => {
+    // The total width needed to display numCards_d cards + gaps + a small buffer.
     const neededLength =
-      numCards_d * cardWidth + (numCards_d - 1) * cardGap + 120 + 1;
+      numCards_d * cardWidth + (numCards_d - 1) * cardGap + 120;
 
     // Decrease numCards_d if container is too small
     if (numCards_d > 1 && neededLength > containerWidth) {
-      setNumCard(numCards_d - 1);
+      setNumCards_d(numCards_d - 1);
     }
     // Increase numCards_d if there's still room
     else if (
       numCards_d < numCards &&
       neededLength + cardWidth + cardGap <= containerWidth
     ) {
-      setNumCard(numCards_d + 1);
+      setNumCards_d(numCards_d + 1);
     }
 
-    // Adjust startIndex if we've scrolled beyond the available items
-    if (vehicles.length - numCards_d <= startIndex && startIndex > 0) {
-      setStartIndex(startIndex - 1);
-    }
-  }, [cardGap, containerWidth, numCards, numCards_d, startIndex, vehicles]);
+    // Clamp the startIndex if we have fewer items than before
+    // We'll do that after we calculate maxIndex below.
+  }, [cardGap, containerWidth, numCards, numCards_d]);
 
+  /**
+   * Calculate maxIndex: the rightmost valid start index.
+   * If we have fewer items than we can display at once, maxIndex = 0.
+   */
+  const maxIndex = Math.max(0, vehicles.length - numCards_d);
+
+  /**
+   * Anytime something changes, make sure startIndex doesn't exceed maxIndex.
+   */
+  useEffect(() => {
+    if (startIndex > maxIndex) {
+      setStartIndex(maxIndex);
+    }
+  }, [startIndex, maxIndex]);
+
+  /**
+   * Called when user clicks the left or right arrow to scroll.
+   */
   const handleScroll = (direction: 'left' | 'right') => {
-    if (direction === 'right' && startIndex < vehicles.length - numCards_d) {
-      setStartIndex((prev) => prev + 1);
-    } else if (direction === 'left' && startIndex > 0) {
-      setStartIndex((prev) => prev - 1);
+    if (direction === 'right') {
+      // Move one card to the right, but don't exceed maxIndex
+      setStartIndex((prev) => Math.min(prev + 1, maxIndex));
+    } else {
+      // Move one card to the left, but can't go below zero
+      setStartIndex((prev) => Math.max(prev - 1, 0));
     }
   };
 
+  /**
+   * Slices out the portion of the array that should be visible.
+   */
   const visibleVehicles = vehicles.slice(startIndex, startIndex + numCards_d);
+
+  // If total vehicles <= numCards_d, we won't need to scroll at all
+  // But let's keep the logic consistent if we still want to show them all in a row.
   const justify_ = numCards > vehicles.length ? justify : 'center';
 
   return (
@@ -145,7 +171,6 @@ export default function VehicleList({
             <VehicleCard
               key={index}
               vehicle={vehicle}
-              // Pass the new prop to each card
               showRentalDetailsOnClick={showRentalDetailsOnClick}
             />
           ))}
@@ -153,7 +178,7 @@ export default function VehicleList({
 
         {/* Right Scroll Button */}
         <Flex width="60px" justify="center" align="center">
-          {startIndex < vehicles.length - numCards_d && (
+          {startIndex < maxIndex && (
             <IconButton
               mx="none"
               aria-label="Scroll right"

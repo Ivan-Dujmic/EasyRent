@@ -241,7 +241,17 @@ export default function VehicleCard({
             </Text>
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="blue" onClick={onCloseRentalModal}>
+            <Button
+              bgColor="brandblue"
+              color="brandwhite"
+              _hover={{
+                bg: 'brandyellow',
+                color: 'brandblack',
+                transform: 'translateY(-2px)',
+                transition: 'transform 0.2s ease, box-shadow 0.3s ease',
+              }}
+              onClick={onCloseRentalModal}
+            >
               OK
             </Button>
           </ModalFooter>
