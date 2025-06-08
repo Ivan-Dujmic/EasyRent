@@ -1,3 +1,7 @@
+_This is a fork._  
+My team role and contributions:  
+Developed as part of a Software Engineering course in a team of seven. Led the backend team and designed the overall system architecture. Built the backend using Django, documented RESTful API endpoints with SwaggerUI, produced project documentation, and collaborated on UI/UX design using Figma to support frontend development.
+
 # EasyRent - Car Rental Platform
 
 🌐 **Live Demo**: [EasyRent Website](https://easy-rent-ashy.vercel.app/home) (Backend goes to sleep after ~15 minutes of no visits so please give it time to load)
